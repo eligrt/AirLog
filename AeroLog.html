@@ -1902,39 +1902,6 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       <div class="stats-title">⚙️ הגדרות</div>
     </div>
 
-    <!-- GAS URL -->
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">🔗</span><span class="card-title">חיבור ל-Google Sheets</span></div>
-      <div class="card-body" style="gap:10px;">
-        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
-          כתובת ה-Apps Script המחוברת כרגע:
-        </div>
-        <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:10px;color:var(--text3);
-          background:var(--bg);border:1px solid var(--border);border-radius:6px;
-          padding:8px 10px;direction:ltr;word-break:break-all;line-height:1.5;"></div>
-        <button class="settings-action-btn secondary" onclick="openSetup()">
-          ✏️ שנה כתובת Apps Script
-        </button>
-      </div>
-    </div>
-
-    <!-- CLEAR RAM -->
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">🧹</span><span class="card-title">ניקוי זיכרון זמני</span></div>
-      <div class="card-body" style="gap:10px;">
-        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
-          הנתונים נטענים מ-Google Sheets ונשמרים זמנית בזיכרון המכשיר (RAM).<br>
-          ניקוי הזיכרון <strong style="color:var(--emerald)">לא מוחק</strong> שום דבר מה-Sheets — רק מאלץ טעינה מחדש בפעם הבאה.
-        </div>
-        <button class="settings-action-btn" onclick="clearRAM()">
-          🧹 נקה נתונים מהזיכרון
-        </button>
-        <div id="ramClearedMsg" style="display:none;font-size:12px;color:var(--emerald);text-align:center;font-weight:600;">
-          ✓ הזיכרון נוקה בהצלחה
-        </div>
-      </div>
-    </div>
-
     <!-- INSTALL PWA -->
     <div class="card" style="margin-bottom:10px;">
       <div class="card-head"><span class="card-icon">📲</span><span class="card-title">התקנת האפליקציה</span></div>
@@ -1943,7 +1910,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
         <!-- Android: real install button (shown only when prompt available) -->
         <div id="installAndroid" style="display:none;">
           <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;margin-bottom:10px;">
-            התקן את AeroLog כאפליקציה על המכשיר — תפעל גם ללא אינטרנט ותיפתח כמו אפליקציה רגילה.
+            התקן את AeroLog כאפליקציה על המכשיר — תיפתח כמו אפליקציה רגילה ישירות ממסך הבית.<br><span style="color:var(--amber);font-size:11px;">⚠ נדרש אינטרנט לרישום טיסות ולטעינת נתונים.</span>
           </div>
           <button class="settings-action-btn" id="btnInstall" onclick="triggerInstall()">
             📲 התקן את AeroLog
@@ -1988,6 +1955,39 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       </div>
     </div>
 
+    <!-- GAS URL -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">🔗</span><span class="card-title">חיבור ל-Google Sheets</span></div>
+      <div class="card-body" style="gap:10px;">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
+          כתובת ה-Apps Script המחוברת כרגע:
+        </div>
+        <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:10px;color:var(--text3);
+          background:var(--bg);border:1px solid var(--border);border-radius:6px;
+          padding:8px 10px;direction:ltr;word-break:break-all;line-height:1.5;"></div>
+        <button class="settings-action-btn secondary" onclick="openSetup()">
+          ✏️ שנה כתובת Apps Script
+        </button>
+      </div>
+    </div>
+
+    <!-- CLEAR RAM -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">🧹</span><span class="card-title">ניקוי זיכרון זמני</span></div>
+      <div class="card-body" style="gap:10px;">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
+          הנתונים נטענים מ-Google Sheets ונשמרים זמנית בזיכרון המכשיר (RAM).<br>
+          ניקוי הזיכרון <strong style="color:var(--emerald)">לא מוחק</strong> שום דבר מה-Sheets — רק מאלץ טעינה מחדש בפעם הבאה.
+        </div>
+        <button class="settings-action-btn" onclick="clearRAM()">
+          🧹 נקה נתונים מהזיכרון
+        </button>
+        <div id="ramClearedMsg" style="display:none;font-size:12px;color:var(--emerald);text-align:center;font-weight:600;">
+          ✓ הזיכרון נוקה בהצלחה
+        </div>
+      </div>
+    </div>
+
     <!-- DISCONNECT -->
     <div class="card" style="margin-bottom:10px;">
       <div class="card-head"><span class="card-icon">🔌</span><span class="card-title">ניתוק</span></div>
@@ -2004,6 +2004,10 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <div class="app-footer" dir="ltr">built by eligrt with ✈ &amp; ☕</div>
 
+
+    <div class="app-footer" dir="ltr">built by eligrt with ✈ &amp; ☕</div>
+
+  
   </div><!-- /view-settings -->
 
 </div><!-- /page -->
