@@ -193,7 +193,7 @@ body::before {
 .tab-bar {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 50;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -222,8 +222,6 @@ body::before {
   max-width: 520px;
   margin: 0 auto;
   padding: 20px 14px 60px;
-  position: relative;
-  z-index: 1;
 }
 
 /* ── VIEWS ── */
@@ -1188,15 +1186,43 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
   text-overflow: ellipsis;
 }
 .jc-body { padding: 0 14px 14px; border-top: 1px solid var(--border); }
-.jc-times {
+.jc-meta-row {
   display: flex;
-  gap: 14px;
-  font-size: 11px;
-  color: var(--text3);
+  flex-direction: column;
+  gap: 4px;
   padding: 10px 0 8px;
+}
+.jc-actype {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.jc-dur-row {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text3);
+  display: flex;
+  gap: 8px;
   flex-wrap: wrap;
 }
-.jc-times b { color: var(--text2); }
+.jc-dur-row b { color: var(--accent2); }
+.jc-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.jc-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.jc-badge.pic   { background: #3b82f620; color: #60a5fa; border: 1px solid #3b82f630; }
+.jc-badge.dual  { background: #22d3ee20; color: #22d3ee; border: 1px solid #22d3ee30; }
+.jc-badge.xc    { background: #f9731620; color: #fb923c; border: 1px solid #f9731630; }
+.jc-badge.night { background: #818cf820; color: #a5b4fc; border: 1px solid #818cf830; }
+.jc-badge.land  { background: #34d39920; color: #34d399; border: 1px solid #34d39930; }
 .jc-section { margin-bottom: 10px; }
 .jc-lbl   { font-size: 10px; font-weight: 700; color: var(--text3); margin-bottom: 4px; letter-spacing:.05em; }
 .jc-text  { font-size: 12px; color: var(--text2); line-height: 1.65; white-space: pre-wrap; }
@@ -1394,6 +1420,277 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   .stat-cards { grid-template-columns: 1fr 1fr; }
 }
 
+/* ── EDIT MODE ── */
+.btn-edit-toggle {
+  padding: 7px 14px;
+  background: var(--raised);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r-sm);
+  color: var(--text2);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-edit-toggle:hover { border-color: var(--amber); color: var(--amber); }
+.btn-edit-toggle.active {
+  background: #7f1d1d;
+  border-color: #ef4444;
+  color: #fca5a5;
+  box-shadow: 0 0 0 2px #ef444430;
+}
+
+.edit-banner {
+  background: #450a0a;
+  border: 1.5px solid #ef4444;
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fca5a5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  animation: pulse-border 2s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%, 100% { border-color: #ef4444; box-shadow: 0 0 0 0 #ef444400; }
+  50%       { border-color: #f87171; box-shadow: 0 0 0 4px #ef444420; }
+}
+.edit-banner-exit {
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.edit-banner-exit:hover { background: #991b1b; }
+
+/* cards in edit mode */
+.edit-mode .jc-card {
+  border-color: #7f1d1d !important;
+}
+.edit-mode .jc-card:hover {
+  border-color: #ef4444 !important;
+  background: #1c0808 !important;
+}
+.edit-mode .jc-card.selected {
+  border-color: #ef4444 !important;
+  background: #1c0808 !important;
+  box-shadow: 0 0 0 2px #ef444430;
+}
+
+.jc-delete-btn {
+  display: none;
+  width: 30px; height: 30px;
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 14px;
+  cursor: pointer;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s, transform .08s;
+}
+.jc-delete-btn:hover  { background: #991b1b; }
+.jc-delete-btn:active { transform: scale(.88); }
+.edit-mode .jc-delete-btn { display: flex; }
+
+/* archive progress */
+.archive-progress {
+  background: #450a0a;
+  border: 1px solid #ef4444;
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #fca5a5;
+  text-align: center;
+  margin-bottom: 8px;
+  display: none;
+}
+.archive-progress.show { display: block; }
+
+
+.fl-card {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+  direction: rtl;
+  transition: background .1s;
+}
+.fl-card:last-child { border-bottom: none; }
+.fl-card:hover { background: var(--raised); }
+
+/* Row 1: aircraft + date */
+.fl-row1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.fl-ac {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+.fl-ac-type {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text3);
+  font-family: var(--sans);
+  margin-right: 6px;
+}
+.fl-date {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--accent2);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Row 2: PIC / Dual / Total — always on its own line */
+.fl-row2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-bottom: 5px;
+}
+.fl-time {
+  font-size: 12px;
+  font-family: var(--mono);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fl-time.pic   { color: var(--accent2); }
+.fl-time.dual  { color: var(--cyan); }
+.fl-time.total { color: var(--emerald); }
+.fl-dot { color: var(--border2); font-size: 10px; flex-shrink: 0; }
+
+/* Row 3: badges */
+.fl-row3 {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.fl-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+.fl-badge.xc    { background: #f9731620; color: #fb923c; border: 1px solid #f9731630; }
+.fl-badge.night { background: #818cf820; color: #a5b4fc; border: 1px solid #818cf830; }
+.fl-badge.land  { background: #34d39920; color: #34d399; border: 1px solid #34d39930; }
+
+/* Row 4: description */
+.fl-desc {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+
+/* ── EDIT MODE ── */
+.btn-edit-toggle {
+  padding: 7px 14px;
+  background: var(--raised);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r-sm);
+  color: var(--text2);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-edit-toggle:hover { border-color: var(--red); color: var(--red); }
+.btn-edit-toggle.active {
+  background: #2d0a0a;
+  border-color: var(--red);
+  color: var(--red);
+  box-shadow: 0 0 0 2px #ef444420;
+}
+.edit-banner {
+  background: linear-gradient(135deg, #2d0a0a, #1c0808);
+  border: 1.5px solid #ef4444;
+  border-radius: var(--r-sm);
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  direction: rtl;
+  animation: pulseRed 2s ease-in-out infinite;
+}
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 0 0 0 #ef444420; }
+  50%       { box-shadow: 0 0 0 6px #ef444400; }
+}
+.edit-banner-exit {
+  background: none;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background .15s;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+.edit-banner-exit:hover { background: #ef444420; }
+.edit-mode .jc-card {
+  border-color: #7f1d1d !important;
+  background: #1c0808 !important;
+}
+.edit-mode .jc-card:hover { background: #2d0a0a !important; }
+.edit-mode .jc-date { color: #fca5a5 !important; }
+.jc-delete {
+  display: none;
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 13px;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition: background .15s, transform .08s;
+  flex-shrink: 0;
+}
+.jc-delete:hover  { background: #991b1b; color: #fff; }
+.jc-delete:active { transform: scale(.88); }
+.edit-mode .jc-delete { display: inline-flex; align-items: center; gap: 4px; }
+.jc-card.archiving {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity .35s ease, transform .35s ease;
+}
+
 /* ── SETTINGS ACTION BUTTONS ── */
 .settings-action-btn {
   width: 100%;
@@ -1473,7 +1770,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-right:6px;">v0.81</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.93</span>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -1705,12 +2002,13 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       <div class="card-body" style="gap:10px;">
         <div class="filter-row">
           <span class="filter-lbl">תקופה</span>
-          <div class="pill-group" id="periodPills">
+          <div class="pill-group" id="periodPills" style="flex-wrap:wrap;">
             <button class="pill active" data-period="all"    onclick="setPeriod('all')">הכל</button>
-            <button class="pill"        data-period="last6"  onclick="setPeriod('last6')">6 אחרונות</button>
+            <button class="pill"        data-period="last6"  onclick="setPeriod('last6')">6 טיסות אחרונות</button>
             <button class="pill"        data-period="d30"    onclick="setPeriod('d30')">30 יום</button>
             <button class="pill"        data-period="d90"    onclick="setPeriod('d90')">90 יום</button>
-            <button class="pill"        data-period="custom" onclick="setPeriod('custom')">מותאם</button>
+            <button class="pill"        data-period="d365"   onclick="setPeriod('d365')">365 יום</button>
+            <button class="pill"        data-period="custom" onclick="setPeriod('custom')">מותאם ✎</button>
           </div>
         </div>
         <div class="filter-row" id="customRange" style="display:none;">
@@ -1871,12 +2169,31 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <div class="stats-header">
       <div class="stats-title">🔎 יומן טיסות</div>
+      <button class="btn-edit-toggle" id="btnEditMode" onclick="toggleEditMode()">
+        ✏️ מצב עריכה
+      </button>
     </div>
+
+    <!-- Edit mode warning banner -->
+    <div id="editModeBanner" style="display:none;">
+      <div class="edit-banner">
+        ⚠️ מצב עריכה פעיל — לחץ על 🗑 כדי לארכב טיסה
+      </div>
+    </div>
+    <div class="archive-progress" id="archiveProgress"></div>
 
     <div class="card" style="margin-bottom:10px;">
       <div class="card-head"><span class="card-icon">🔍</span><span class="card-title">חיפוש בטיסות</span></div>
       <div class="card-body" style="padding:14px 16px;gap:10px;">
         <div class="search-hint">יומן הטיסות האישי שלך. חפש טיסה לפי מקום, תרגיל או נושא וחזור ללקחים שכתבת, כדי להגיע לטיסה הבאה מוכן יותר.<br><span style="color:var(--text3);font-size:11px;">החיפוש מתבצע בתיאורי הטיסות והלקחים · לדוגמה: ״מגידו״, ״רוח צד״, ״נחיתה״...</span></div>
+
+        <!-- Journal period filter -->
+        <div class="pill-group" id="journalPills" style="flex-wrap:wrap;gap:6px;margin-bottom:4px;">
+          <button class="pill active" data-jp="all"   onclick="setJournalPeriod('all')">הכל</button>
+          <button class="pill"        data-jp="last6" onclick="setJournalPeriod('last6')">6 טיסות אחרונות</button>
+          <button class="pill"        data-jp="d30"   onclick="setJournalPeriod('d30')">30 יום</button>
+          <button class="pill"        data-jp="d90"   onclick="setJournalPeriod('d90')">90 יום</button>
+        </div>
         <div class="search-input-wrap">
           <span class="search-icon" style="right:auto;left:10px;">🔍</span>
           <input type="text" id="journalSearch" class="search-input" placeholder="למשל: טל שחר, מגידו, הקפות, ניווט..." dir="rtl"
@@ -1965,9 +2282,9 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
         <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
           כתובת ה-Apps Script המחוברת כרגע:
         </div>
-        <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:10px;color:var(--text3);
+        <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:12px;color:var(--text2);
           background:var(--bg);border:1px solid var(--border);border-radius:6px;
-          padding:8px 10px;direction:ltr;word-break:break-all;line-height:1.5;"></div>
+          padding:10px 12px;direction:ltr;word-break:break-all;line-height:1.6;min-height:38px;"></div>
         <button class="settings-action-btn secondary" onclick="openSetup()">
           ✏️ שנה כתובת Apps Script
         </button>
@@ -1980,7 +2297,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       <div class="card-body" style="gap:10px;">
         <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
           הנתונים נטענים מ-Google Sheets ונשמרים זמנית בזיכרון המכשיר (RAM).<br>
-          ניקוי הזיכרון <strong style="color:var(--emerald)">לא מוחק</strong> שום דבר מה-Google Sheets — רק מאלץ טעינה מחדש בפעם הבאה.
+          ניקוי הזיכרון <strong style="color:var(--emerald)">לא מוחק</strong> שום דבר מה-Google Sheets, רק מאלץ טעינה מחדש בפעם הבאה.
         </div>
         <button class="settings-action-btn" onclick="clearRAM()">
           🧹 נקה נתונים מהזיכרון
@@ -2008,6 +2325,8 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer" dir="ltr">built by eligrt</div>
+
+</div><!-- /page -->
 
 <!-- ── GAS INFO MODAL ── -->
 <div id="gasInfoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
@@ -2044,8 +2363,6 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div>
 </div>
 
-</div><!-- /page -->
-
 <script>
 // ═══════════════════════════════════════════
 //  HELPERS
@@ -2076,6 +2393,8 @@ function saveSetup() {
   }
   saveUrl(u);
   el('setupOverlay').classList.remove('show');
+  refreshSettingsView();
+  fetchConnectedName();
 }
 
 // show setup on first run
@@ -2087,6 +2406,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initManual();
   setLandings(0);
   fetchConnectedName();
+  refreshSettingsView();
 });
 
 async function fetchConnectedName() {
@@ -2339,11 +2659,21 @@ function updatePeriodNote() {
   const now = new Date();
   const fmt = d => d.getDate().toString().padStart(2,'0') + '.' +
                    (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getFullYear();
-  if (activePeriod === 'd30' || activePeriod === 'd90') {
-    const days = activePeriod === 'd30' ? 30 : 90;
-    const from = new Date(now); from.setDate(from.getDate() - days);
-    note.textContent = '📅 ' + fmt(from) + ' – ' + fmt(now);
+
+  const labels = {
+    week:  'שבוע נוכחי',
+    month: 'חודש נוכחי — ' + ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'][now.getMonth()],
+    q:     'רבעון ' + (Math.floor(now.getMonth()/3)+1) + ' — ' + now.getFullYear(),
+    year:  'שנת ' + now.getFullYear(),
+    d30:   () => { const f=new Date(now); f.setDate(f.getDate()-30); return fmt(f)+' – '+fmt(now); },
+    d90:   () => { const f=new Date(now); f.setDate(f.getDate()-90); return fmt(f)+' – '+fmt(now); },
+  };
+
+  const v = labels[activePeriod];
+  if (v) {
+    note.textContent = '📅 ' + (typeof v === 'function' ? v() : v);
     note.style.display = 'block';
+    note.style.cssText = 'display:block;font-size:11px;color:var(--text3);padding:4px 0 8px;text-align:center;direction:rtl;';
   } else {
     note.style.display = 'none';
   }
@@ -2496,6 +2826,7 @@ async function loadStats() {
     }
 
     applyFilters(); renderYearly(); renderMonthly();
+    renderFlightCards(allRows); // initial render with all rows
     setLB(100, 'נטען! ' + allRows.length + ' טיסות');
     setTimeout(hideLB, 1000);
 
@@ -2581,23 +2912,46 @@ async function loadJournal() {
 function applyFilters() {
   if (!allRows.length) return;
 
-  const now      = new Date();
-  const typeFilter = el('fFilterType').value;
+  const now        = new Date();
+  const typeFilter = el('fFilterType') ? el('fFilterType').value : '';
 
+  // helper: date string for N days ago
   const daysAgo = n => { const d = new Date(now); d.setDate(d.getDate() - n); return d.toISOString().slice(0,10); };
+
+  // helper: start of current week (Sunday)
+  const weekStart = () => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - d.getDay());
+    return d.toISOString().slice(0,10);
+  };
+
+  // helper: start of current month
+  const monthStart = () => `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
+
+  // helper: start of current quarter
+  const quarterStart = () => {
+    const q = Math.floor(now.getMonth() / 3);
+    return `${now.getFullYear()}-${pad(q*3+1)}-01`;
+  };
+
+  // helper: start of current year
+  const yearStart = () => `${now.getFullYear()}-01-01`;
 
   let filtered = allRows.filter(r => {
     const rDate = (r.date || '').slice(0,10);
     if (!rDate || rDate.length < 10) return false;
 
-    if      (activePeriod === 'd30')  { if (rDate < daysAgo(30))  return false; }
-    else if (activePeriod === 'd90')  { if (rDate < daysAgo(90))  return false; }
-    else if (activePeriod === 'd365') { if (rDate < daysAgo(365)) return false; }
-    else if (activePeriod === 'last6') { /* handled by slice below */ }
+    if      (activePeriod === 'week')  { if (rDate < weekStart())    return false; }
+    else if (activePeriod === 'month') { if (rDate < monthStart())   return false; }
+    else if (activePeriod === 'q')     { if (rDate < quarterStart()) return false; }
+    else if (activePeriod === 'year')  { if (rDate < yearStart())    return false; }
+    else if (activePeriod === 'd30')   { if (rDate < daysAgo(30))    return false; }
+    else if (activePeriod === 'd90')   { if (rDate < daysAgo(90))    return false; }
+    else if (activePeriod === 'd365')  { if (rDate < daysAgo(365))   return false; }
+    else if (activePeriod === 'last6') { /* handled by slice below  */ }
     else if (activePeriod === 'custom') {
-      const v1 = el('fFrom').value;  // start date
-      const v2 = el('fTo').value;    // end date
-      // normalise so from <= to regardless of entry order
+      const v1 = el('fFrom') ? el('fFrom').value : '';
+      const v2 = el('fTo')   ? el('fTo').value   : '';
       const from = (!v1 || !v2) ? v1 : (v1 <= v2 ? v1 : v2);
       const to   = (!v1 || !v2) ? v2 : (v1 <= v2 ? v2 : v1);
       if (from && rDate < from) return false;
@@ -2608,10 +2962,69 @@ function applyFilters() {
     return true;
   });
 
-  if (activePeriod === 'last6') filtered = filtered.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 6);
+  if (activePeriod === 'last6') {
+    filtered = filtered.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 6);
+  }
 
   renderStats(filtered);
+  renderFlightCards(filtered);
 }
+
+// ── render clean flight cards ──
+function renderFlightCards(rows) {
+  const container = el('flightCardsList');
+  if (!container) return;
+
+  const sorted = [...rows].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  const count = el('flightListCount');
+  if (count) count.textContent = sorted.length + ' טיסות';
+
+  if (!sorted.length) {
+    container.innerHTML = '<div class="stats-empty" style="padding:24px;"><div class="ico">🔍</div><div>אין טיסות בתקופה זו</div></div>';
+    return;
+  }
+
+  container.innerHTML = sorted.map(r => {
+    const picMin   = parseHM(r.pic  || '0:00');
+    const dualMin  = parseHM(r.dual || '0:00');
+    const totalMin = picMin + dualMin;
+    const isXC     = (r.xc    || '').includes('כן');
+    const isNight  = (r.night || '').includes('כן');
+    const lands    = parseInt(r.landings || '0', 10);
+
+    // ── Row 1: aircraft id  ·  ac-type  |  date ──
+    const row1 = `
+      <div class="fl-row1">
+        <div>
+          <span class="fl-ac">${r.aircraft || ''}</span>
+          <span class="fl-ac-type">${r.acType || ''}</span>
+        </div>
+        <span class="fl-date">${fmtDate(r.date)}</span>
+      </div>`;
+
+    // ── Row 2: PIC h:mm  ·  Dual h:mm  ·  Total h:mm ──
+    const timeParts = [];
+    if (picMin  > 0) timeParts.push(`<span class="fl-time pic">✈ PIC&nbsp;${toHM(picMin)}</span>`);
+    if (dualMin > 0) timeParts.push(`<span class="fl-time dual">🎓 Dual&nbsp;${toHM(dualMin)}</span>`);
+    timeParts.push(`<span class="fl-time total">סה״כ&nbsp;${toHM(totalMin)}</span>`);
+    const row2 = `<div class="fl-row2">${timeParts.join('<span class="fl-dot">·</span>')}</div>`;
+
+    // ── Row 3: badges (XC / night / landings) ──
+    const badges = [];
+    if (isXC)    badges.push(`<span class="fl-badge xc">🗺 XC</span>`);
+    if (isNight) badges.push(`<span class="fl-badge night">🌙 לילה</span>`);
+    if (lands)   badges.push(`<span class="fl-badge land">🛬 ${lands} נחיתות</span>`);
+    const row3 = badges.length ? `<div class="fl-row3">${badges.join('')}</div>` : '';
+
+    // ── Row 4: description preview ──
+    const desc = (r.description || '').replace(/\n/g,' ').slice(0, 90);
+    const row4 = desc ? `<div class="fl-desc">${desc}${(r.description||'').length > 90 ? '…' : ''}</div>` : '';
+
+    return `<div class="fl-card">${row1}${row2}${row3}${row4}</div>`;
+  }).join('');
+}
+
 
 // ── render summary + split bar (filtered view) ──
 function renderStats(rows) {
@@ -2910,12 +3323,32 @@ function renderMonthly() {
   el('monthlyChartBody').innerHTML = svg + legend;
 }
 
+let journalPeriod = 'all';
+
+function setJournalPeriod(p) {
+  journalPeriod = p;
+  document.querySelectorAll('#journalPills .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.jp === p));
+  searchJournal();
+}
+
+function filterJournalRows(rows) {
+  if (journalPeriod === 'all') return rows;
+  const now = new Date();
+  const daysAgo = n => { const d = new Date(now); d.setDate(d.getDate() - n); return d.toISOString().slice(0,10); };
+  if (journalPeriod === 'last6') {
+    return [...rows].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,6);
+  }
+  const cutoff = journalPeriod === 'd30' ? daysAgo(30) : daysAgo(90);
+  return rows.filter(r => (r.date||'').slice(0,10) >= cutoff);
+}
+
 // ── journal search ──
 function searchJournal() {
   const q = (el('journalSearch').value || '').trim().toLowerCase();
   const out = el('searchResults');
 
-  if (!q) {
+  if (!q && journalPeriod === 'all') {
     out.innerHTML = '<div class="stats-empty" style="padding:24px 0;text-align:center;">' +
       '<div style="font-size:32px;margin-bottom:8px;">✈️</div>' +
       '<div style="font-size:13px;color:var(--text2);">הזן מילת חיפוש</div>' +
@@ -2932,7 +3365,8 @@ function searchJournal() {
     return;
   }
 
-  const hits = journalRows.filter(function(r) {
+  const hits = filterJournalRows(journalRows).filter(function(r) {
+    if (!q) return true;
     return (r.description || '').toLowerCase().includes(q) ||
            (r.lessons     || '').toLowerCase().includes(q);
   }).sort(function(a,b) { return (b.date||'').localeCompare(a.date||''); });
@@ -2947,6 +3381,8 @@ function searchJournal() {
 
   const countDesc = hits.filter(function(r){ return (r.description||'').toLowerCase().includes(q); }).length;
   const countLess = hits.filter(function(r){ return (r.lessons||'').toLowerCase().includes(q); }).length;
+
+  _journalHits = hits; // store for archiveFlight lookup
 
   var html2 = '<div class="jc-summary">נמצאו <strong>' + hits.length + '</strong> טיסות' +
     '<span class="jc-sum-pills">' +
@@ -2975,21 +3411,25 @@ function searchJournal() {
 
     var bodyContent =
       '<div class="jc-meta-row">' +
-        '<span class="jc-actype">\uD83D\uDCE6 ' + (r.acType||'') + '</span>' +
-        '<span class="jc-dur-row"><b>' + picT + '</b> PIC \xb7 <b>' + dualT + '</b> Dual</span>' +
+        '<span class="jc-actype">' + (r.acType||'') + '</span>' +
+        '<div class="jc-dur-row">' +
+          (picMin  > 0 ? '<span style="color:var(--accent2)">✈ PIC <b>' + picT  + '</b></span>' : '') +
+          (dualMin > 0 ? '<span style="color:var(--cyan)">🎓 Dual <b>' + dualT + '</b></span>' : '') +
+          '<span style="color:var(--emerald)">סה״כ <b>' + total + '</b></span>' +
+        '</div>' +
       '</div>' +
       (badges ? '<div class="jc-badges">' + badges + '</div>' : '');
 
     if (r.description) {
       bodyContent += '<div class="jc-section">' +
         '<div class="jc-lbl">\uD83D\uDCCB \u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05d8\u05d9\u05e1\u05d4</div>' +
-        '<div class="jc-text">' + highlight(r.description, q) + '</div>' +
+        '<div class="jc-text">' + (q ? highlight(r.description, q) : r.description) + '</div>' +
         '</div>';
     }
     if (r.lessons) {
       bodyContent += '<div class="jc-section">' +
         '<div class="jc-lbl">\uD83D\uDCA1 \u05dc\u05e7\u05d7\u05d9\u05dd \u05d5\u05ea\u05d5\u05d1\u05e0\u05d5\u05ea</div>' +
-        '<div class="jc-text">' + highlight(r.lessons, q) + '</div>' +
+        '<div class="jc-text">' + (q ? highlight(r.lessons, q) : r.lessons) + '</div>' +
         '</div>';
     }
     if (!r.description && !r.lessons) {
@@ -2997,14 +3437,15 @@ function searchJournal() {
     }
 
     html2 +=
-      '<div class="jc-card" id="jc-' + idx + '">' +
-        '<div class="jc-row" onclick="toggleJC(' + idx + ')">' +
+      '<div class="jc-card" id="jc-' + idx + '" data-ridx="' + idx + '">' +
+        '<div class="jc-row" onclick="handleJcClick(event,' + idx + ')">' +
           '<div class="jc-meta">' +
             '<span class="jc-date">' + fmtDate(r.date) + '</span>' +
             '<span class="jc-ac">' + (r.aircraft||'') + '</span>' +
           '</div>' +
           '<div class="jc-right">' +
             '<span class="jc-total">' + total + '</span>' +
+            '<button class="jc-delete-btn" onclick="archiveFlight(event,' + idx + ')" title="Archive">🗑</button>' +
             '<button class="jc-copy" onclick="copyFlight(event,' + idx + ')" title="\u05d4\u05e2\u05ea\u05e7">\u2398</button>' +
             '<span class="jc-chevron" id="chv-' + idx + '">\u25b6</span>' +
           '</div>' +
@@ -3017,6 +3458,9 @@ function searchJournal() {
   });
 
   out.innerHTML = html2;
+  // re-apply edit mode class if active
+  if (_editMode) out.classList.add('edit-mode');
+  else out.classList.remove('edit-mode');
 }
 
 
@@ -3089,6 +3533,18 @@ function fallbackCopy(text) {
   } catch(e) { return false; }
 }
 
+// ═══════════════════════════════════════════
+//  EDIT MODE
+// ═══════════════════════════════════════════
+let _editMode = false;
+// _journalHits holds the current displayed rows so archiveFlight can look up by index
+let _journalHits = [];
+
+function handleJcClick(e, idx) {
+  if (_editMode) return;
+  toggleJC(idx);
+}
+
 function fmtDate(d) {
   if (!d) return '';
   const parts = d.split('-');
@@ -3110,17 +3566,87 @@ self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => n
 }
 
 // ═══════════════════════════════════════════
-//  SETTINGS
+//  EDIT MODE
 // ═══════════════════════════════════════════
+
+function toggleEditMode() {
+  if (!_editMode) {
+    // Turning ON — confirm first
+    if (!confirm('⚠️ מצב עריכה\n\nבמצב זה תוכל לארכב טיסות מהרשימה.\nהטיסה לא תימחק — היא תועבר לטאב "Archive" בגיליון.\n\nלהמשיך למצב עריכה?')) return;
+    _editMode = true;
+    el('btnEditMode').classList.add('active');
+    el('btnEditMode').textContent = '✕ צא ממצב עריכה';
+    el('editModeBanner').style.display = 'block';
+    el('searchResults').classList.add('edit-mode');
+  } else {
+    // Turning OFF
+    _editMode = false;
+    el('btnEditMode').classList.remove('active');
+    el('btnEditMode').textContent = '✏️ מצב עריכה';
+    el('editModeBanner').style.display = 'none';
+    el('searchResults').classList.remove('edit-mode');
+  }
+}
+
+async function archiveFlight(e, idx) {
+  e.stopPropagation();
+  if (!_editMode) return;
+
+  const card = el('jc-' + idx);
+  const dateEl = card ? card.querySelector('.jc-date') : null;
+  const acEl   = card ? card.querySelector('.jc-ac')   : null;
+  const date   = dateEl ? dateEl.textContent : '';
+  const ac     = acEl   ? acEl.textContent   : '';
+
+  if (!confirm(`🗑 ארכוב טיסה\n\n${date}  ·  ${ac}\n\nהטיסה תועבר לטאב "Archive" בגיליון ולא תופיע ביומן.\nהנתונים שמורים לחלוטין.\n\nלארכב?`)) return;
+
+  const gasUrl = getUrl();
+  if (!gasUrl) { openSetup(); return; }
+
+  // find the row in journalRows by idx
+  const hits = filterJournalRows(journalRows);
+  const q    = (el('journalSearch').value || '').trim().toLowerCase();
+  const filtered = q
+    ? hits.filter(r => (r.description||'').toLowerCase().includes(q) || (r.lessons||'').toLowerCase().includes(q))
+    : hits;
+  const sorted = [...filtered].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const row = sorted[idx];
+  if (!row) return;
+
+  // animate out
+  card.classList.add('archiving');
+
+  try {
+    const res  = await fetch(gasUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'archive', rowId: row.rowId || row.timestamp || row.date + '_' + (row.aircraft||'') })
+    });
+    const text = await res.text();
+    if (!text.includes('success') && !res.ok) throw new Error(text);
+
+    // remove from local data
+    setTimeout(() => {
+      journalRows  = journalRows.filter(r  => r !== row);
+      allRows      = allRows.filter(r      => r.date !== row.date || r.aircraft !== row.aircraft || r.timestamp !== row.timestamp);
+      searchJournal(); // re-render
+    }, 380);
+
+  } catch(err) {
+    card.classList.remove('archiving');
+    alert('שגיאה בארכוב: ' + err.message);
+  }
+}
+
+
 function refreshSettingsView() {
   const url = getUrl();
   const display = el('currentUrlDisplay');
-  if (display) display.textContent = url || '— לא מוגדר —';
+  if (display) display.textContent = url || 'לא מוגדר';
   if (el('ramClearedMsg')) el('ramClearedMsg').style.display = 'none';
 }
 
 function clearRAM() {
-  if (!confirm('לנקות את הנתונים מהזיכרון?\nהנתונים ב-Google Sheets לא יימחקו — רק הטעינה המקומית תתאפס.')) return;
+  if (!confirm('לנקות את הנתונים מהזיכרון?\nהנתונים ב-Google Sheets לא יימחקו, רק הטעינה המקומית תתאפס.')) return;
   allRows = []; journalRows = []; _journalLoading = false;
   // Clear rendered values in stats/history tabs
   ['s-flights','s-landings','s-pic','s-dual','s-total',
