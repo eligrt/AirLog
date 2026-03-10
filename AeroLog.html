@@ -1386,6 +1386,38 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   .grid2 { grid-template-columns: 1fr; }
   .stat-cards { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── SETTINGS ACTION BUTTONS ── */
+.settings-action-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--raised);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r-sm);
+  color: var(--text2);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: right;
+  transition: all .15s;
+  direction: rtl;
+}
+.settings-action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent2);
+  background: var(--hover);
+}
+.settings-action-btn.danger {
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+.settings-action-btn.danger:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: #1c0808;
+}
+
 </style>
 </head>
 <body>
@@ -1419,6 +1451,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <div class="tab"        id="tab-stats"   onclick="switchTab('stats')">📊 סיכום שעות</div>
   <div class="tab"        id="tab-history" onclick="switchTab('history')">📅 מבט רב שנתי</div>
   <div class="tab"        id="tab-search"  onclick="switchTab('search')">🔎 יומן</div>
+  <div class="tab"        id="tab-settings" onclick="switchTab('settings')">⚙️ הגדרות</div>
 </div>
 
 <div class="page">
@@ -1609,10 +1642,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       <button class="btn-again" onclick="resetForm()">+ רישום טיסה נוספת</button>
     </div>
 
-    <div class="settings-row">
-      <a onclick="openSetup()">⚙ שנה כתובת Apps Script</a>
-    </div>
-    <div class="app-footer" dir="ltr">built by eligrt with ✈ &amp; ☕</div>
+
 
   </div><!-- /view-log -->
 
@@ -1829,6 +1859,65 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
   </div><!-- /view-search -->
 
+
+  <!-- ══════════ SETTINGS VIEW ══════════ -->
+  <div class="view" id="view-settings">
+
+    <div class="stats-header">
+      <div class="stats-title">⚙️ הגדרות</div>
+    </div>
+
+    <!-- GAS URL -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">🔗</span><span class="card-title">חיבור ל-Google Sheets</span></div>
+      <div class="card-body" style="gap:10px;">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
+          כתובת ה-Apps Script המחוברת כרגע:
+        </div>
+        <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:10px;color:var(--text3);
+          background:var(--bg);border:1px solid var(--border);border-radius:6px;
+          padding:8px 10px;direction:ltr;word-break:break-all;line-height:1.5;"></div>
+        <button class="settings-action-btn" onclick="openSetup()">
+          ✏️ שנה כתובת Apps Script
+        </button>
+      </div>
+    </div>
+
+    <!-- CLEAR RAM -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">🧹</span><span class="card-title">ניקוי זיכרון זמני</span></div>
+      <div class="card-body" style="gap:10px;">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
+          הנתונים נטענים מ-Google Sheets ונשמרים זמנית בזיכרון המכשיר (RAM).<br>
+          ניקוי הזיכרון <strong style="color:var(--emerald)">לא מוחק</strong> שום דבר מה-Sheets — רק מאלץ טעינה מחדש בפעם הבאה.
+        </div>
+        <button class="settings-action-btn" onclick="clearRAM()">
+          🧹 נקה נתונים מהזיכרון
+        </button>
+        <div id="ramClearedMsg" style="display:none;font-size:12px;color:var(--emerald);text-align:center;font-weight:600;">
+          ✓ הזיכרון נוקה בהצלחה
+        </div>
+      </div>
+    </div>
+
+    <!-- DISCONNECT -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">🔌</span><span class="card-title">ניתוק</span></div>
+      <div class="card-body" style="gap:10px;">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
+          ניתוק מסיר את כתובת ה-Apps Script מהמכשיר ומנקה את הזיכרון.<br>
+          <strong style="color:var(--amber)">הנתונים ב-Google Sheets נשארים שלמים לחלוטין.</strong>
+        </div>
+        <button class="settings-action-btn danger" onclick="disconnectApp()">
+          🔌 נתק והסר כתובת
+        </button>
+      </div>
+    </div>
+
+    <div class="app-footer" dir="ltr">built by eligrt with ✈ &amp; ☕</div>
+
+  </div><!-- /view-settings -->
+
 </div><!-- /page -->
 
 <script>
@@ -1898,7 +1987,7 @@ async function fetchConnectedName() {
 //  TABS
 // ═══════════════════════════════════════════
 function switchTab(t) {
-  ['log','stats','history','search'].forEach(id => {
+  ['log','stats','history','search','settings'].forEach(id => {
     el(`tab-${id}`).classList.toggle('active', id === t);
     el(`view-${id}`).classList.toggle('active', id === t);
   });
@@ -1906,6 +1995,7 @@ function switchTab(t) {
   if (t === 'search') {
     if (allRows.length === 0 || journalRows.length === 0) loadStatsAndJournal();
   }
+  if (t === 'settings') refreshSettingsView();
 }
 
 // ═══════════════════════════════════════════
@@ -2877,6 +2967,33 @@ self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => n
   const swUrl = URL.createObjectURL(blob);
   navigator.serviceWorker.register(swUrl, {scope: '/'}).catch(()=>{});
 }
+
+// ═══════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════
+function refreshSettingsView() {
+  const url = getUrl();
+  const display = el('currentUrlDisplay');
+  if (display) display.textContent = url || '— לא מוגדר —';
+  if (el('ramClearedMsg')) el('ramClearedMsg').style.display = 'none';
+}
+
+function clearRAM() {
+  allRows = []; journalRows = []; _journalLoading = false;
+  const msg = el('ramClearedMsg');
+  if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display='none', 3000); }
+}
+
+function disconnectApp() {
+  if (!confirm('לנתק את האפליקציה? הכתובת תימחק מהמכשיר. הנתונים ב-Sheets בטוחים לחלוטין.')) return;
+  localStorage.removeItem(LS_KEY);
+  allRows = []; journalRows = []; _journalLoading = false;
+  const badge = el('connBadge');
+  badge.textContent = '';
+  badge.classList.remove('visible');
+  openSetup();
+}
+
 </script>
 </body>
 </html>
