@@ -3125,7 +3125,6 @@ function updateInstallUI() {
   const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
                       window.navigator.standalone === true;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-  const isAndroid = /android/i.test(navigator.userAgent);
 
   const android = el('installAndroid');
   const ios     = el('installIOS');
@@ -3139,16 +3138,30 @@ function updateInstallUI() {
   desktop.style.display = 'none';
 
   if (isInstalled) {
+    // Already running as installed PWA
     done.style.display = 'block';
-  } else if (_installPrompt && isAndroid) {
-    android.style.display = 'block';
   } else if (isIOS) {
+    // iPhone/iPad — always show guide (no API available)
     ios.style.display = 'block';
   } else if (_installPrompt) {
-    // Chrome desktop
+    // Android/Chrome — native prompt available
     android.style.display = 'block';
   } else {
-    desktop.style.display = 'block';
+    // Android/Chrome but prompt not available yet (already installed, or dismissed before)
+    // Show manual guide
+    android.style.display = 'block';
+    const btn = el('btnInstall');
+    if (btn) {
+      btn.textContent = '📲 הוסף למסך הבית';
+      btn.onclick = () => {
+        alert(
+          'כדי להתקין:\n\n' +
+          '1. לחץ על תפריט Chrome (3 נקודות ⋮ בפינה)\n' +
+          '2. בחר ״הוסף למסך הבית״ או ״התקן אפליקציה״\n' +
+          '3. אשר את ההתקנה'
+        );
+      };
+    }
   }
 }
 
