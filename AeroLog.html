@@ -1429,6 +1429,26 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 }
 .settings-action-btn.danger:hover { opacity: .85; }
 
+
+/* ── INSTALL STEPS ── */
+.install-steps {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 10px;
+}
+.install-step {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--text2); line-height: 1.5;
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+}
+.install-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+
 </style>
 </head>
 <body>
@@ -1915,6 +1935,59 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       </div>
     </div>
 
+    <!-- INSTALL PWA -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">📲</span><span class="card-title">התקנת האפליקציה</span></div>
+      <div class="card-body" style="gap:12px;">
+
+        <!-- Android: real install button (shown only when prompt available) -->
+        <div id="installAndroid" style="display:none;">
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;margin-bottom:10px;">
+            התקן את AeroLog כאפליקציה על המכשיר — תפעל גם ללא אינטרנט ותיפתח כמו אפליקציה רגילה.
+          </div>
+          <button class="settings-action-btn" id="btnInstall" onclick="triggerInstall()">
+            📲 התקן את AeroLog
+          </button>
+        </div>
+
+        <!-- iOS: step by step guide -->
+        <div id="installIOS" style="display:none;">
+          <div style="font-size:12px;color:var(--text2);line-height:1.8;direction:rtl;">
+            כדי להתקין על iPhone / iPad:
+          </div>
+          <div class="install-steps">
+            <div class="install-step">
+              <span class="install-num">1</span>
+              <span>לחץ על כפתור השיתוף <strong style="color:var(--accent2)">⬆</strong> בתחתית Safari</span>
+            </div>
+            <div class="install-step">
+              <span class="install-num">2</span>
+              <span>גלול מטה ובחר <strong style="color:var(--accent2)">״הוסף למסך הבית״</strong></span>
+            </div>
+            <div class="install-step">
+              <span class="install-num">3</span>
+              <span>לחץ <strong style="color:var(--accent2)">״הוסף״</strong> בפינה הימנית העליונה</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Already installed -->
+        <div id="installDone" style="display:none;">
+          <div style="font-size:13px;color:var(--emerald);font-weight:600;text-align:center;padding:8px 0;">
+            ✅ האפליקציה מותקנת על המכשיר
+          </div>
+        </div>
+
+        <!-- Fallback for desktop/other -->
+        <div id="installDesktop" style="display:none;">
+          <div style="font-size:12px;color:var(--text3);line-height:1.6;direction:rtl;">
+            התקנה זמינה בדפדפן Chrome על Android, או Safari על iPhone/iPad.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- DISCONNECT -->
     <div class="card" style="margin-bottom:10px;">
       <div class="card-head"><span class="card-icon">🔌</span><span class="card-title">ניתוק</span></div>
@@ -2009,7 +2082,7 @@ function switchTab(t) {
   if (t === 'search') {
     if (allRows.length === 0 || journalRows.length === 0) loadStatsAndJournal();
   }
-  if (t === 'settings') refreshSettingsView();
+  if (t === 'settings') { refreshSettingsView(); updateInstallUI(); }
 }
 
 // ═══════════════════════════════════════════
@@ -3028,6 +3101,64 @@ function disconnectApp() {
   badge.textContent = '';
   badge.classList.remove('visible');
   openSetup();
+}
+
+
+// ═══════════════════════════════════════════
+//  PWA INSTALL
+// ═══════════════════════════════════════════
+let _installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  // Show install button if user is on settings tab
+  updateInstallUI();
+});
+
+window.addEventListener('appinstalled', () => {
+  _installPrompt = null;
+  updateInstallUI();
+});
+
+function updateInstallUI() {
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+                      window.navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const isAndroid = /android/i.test(navigator.userAgent);
+
+  const android = el('installAndroid');
+  const ios     = el('installIOS');
+  const done    = el('installDone');
+  const desktop = el('installDesktop');
+  if (!android) return;
+
+  android.style.display = 'none';
+  ios.style.display     = 'none';
+  done.style.display    = 'none';
+  desktop.style.display = 'none';
+
+  if (isInstalled) {
+    done.style.display = 'block';
+  } else if (_installPrompt && isAndroid) {
+    android.style.display = 'block';
+  } else if (isIOS) {
+    ios.style.display = 'block';
+  } else if (_installPrompt) {
+    // Chrome desktop
+    android.style.display = 'block';
+  } else {
+    desktop.style.display = 'block';
+  }
+}
+
+async function triggerInstall() {
+  if (!_installPrompt) return;
+  const result = await _installPrompt.prompt();
+  if (result && result.outcome === 'accepted') {
+    _installPrompt = null;
+    updateInstallUI();
+  }
 }
 
 </script>
