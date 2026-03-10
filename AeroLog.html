@@ -168,6 +168,9 @@ body::before {
   padding: 8px 16px; background: var(--surface);
   border-bottom: 1px solid var(--border);
   gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 .top-title {
   font-size: 14px; font-weight: 700; color: var(--text1);
@@ -192,8 +195,8 @@ body::before {
 /* ── TABS ── */
 .tab-bar {
   position: sticky;
-  top: 0;
-  z-index: 50;
+  top: 41px;
+  z-index: 15;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -1013,6 +1016,7 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 .mo-leg-item {
   font-size: 10px;
   font-weight: 600;
+  font-family: var(--mono);
 }
 
 /* ── AC TYPE — stacked PIC/DUAL bar (like yearly view) ── */
@@ -1424,14 +1428,14 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 .btn-edit-toggle {
   padding: 7px 14px;
   background: var(--raised);
-  border: 1.5px solid var(--border2);
+  border: 1.5px solid var(--accent);
   border-radius: var(--r-sm);
-  color: var(--text2);
+  color: var(--accent2);
   font-family: var(--sans);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all .15s;
+  transition: all .2s;
   display: flex; align-items: center; gap: 6px;
 }
 .btn-edit-toggle:hover { border-color: var(--amber); color: var(--amber); }
@@ -1612,25 +1616,6 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 
 /* ── EDIT MODE ── */
-.btn-edit-toggle {
-  padding: 7px 14px;
-  background: var(--raised);
-  border: 1.5px solid var(--border2);
-  border-radius: var(--r-sm);
-  color: var(--text2);
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .15s;
-}
-.btn-edit-toggle:hover { border-color: var(--red); color: var(--red); }
-.btn-edit-toggle.active {
-  background: #2d0a0a;
-  border-color: var(--red);
-  color: var(--red);
-  box-shadow: 0 0 0 2px #ef444420;
-}
 .edit-banner {
   background: linear-gradient(135deg, #2d0a0a, #1c0808);
   border: 1.5px solid #ef4444;
@@ -1770,7 +1755,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.93</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.96</span>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -2439,6 +2424,7 @@ function switchTab(t) {
   if ((t === 'stats' || t === 'history') && allRows.length === 0) loadStats();
   if (t === 'search') {
     if (allRows.length === 0 || journalRows.length === 0) loadStatsAndJournal();
+    else searchJournal(); // re-render with current filter
   }
   if (t === 'settings') { refreshSettingsView(); updateInstallUI(); }
 }
@@ -2450,8 +2436,9 @@ function initDate() {
   const t  = new Date();
   el('fDate').value = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
   const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-  el('headerDate').textContent =
-    `יום ${days[t.getDay()]} · ${t.getDate()}.${t.getMonth()+1}.${t.getFullYear()}`;
+  el('headerDate').innerHTML =
+    `<span style="font-family:var(--sans)">יום ${days[t.getDay()]}</span>` +
+    `<span style="font-family:var(--mono)"> · ${t.getDate()}.${t.getMonth()+1}.${t.getFullYear()}</span>`;
 }
 
 // ═══════════════════════════════════════════
@@ -3287,7 +3274,7 @@ function renderMonthly() {
       const valY = isCur && total === 0 ? chartH - 10 : toBarY(total) - 3;
       const valColor = isCur ? '#a5b4fc' : '#6b7280';
       labels += '<text x="' + cx.toFixed(1) + '" y="' + valY.toFixed(1) + '"' +
-        ' text-anchor="middle" font-size="7.5" fill="' + valColor + '" font-family="monospace">' +
+        ' text-anchor="middle" font-size="10" fill="' + valColor + '" font-family="\'IBM Plex Mono\', monospace">' +
         toHM(total) + '</text>';
     }
   }
@@ -3297,8 +3284,11 @@ function renderMonthly() {
     const ay = toBarY(avgMin);
     lines += `<line x1="0" y1="${ay}" x2="${W}" y2="${ay}"
       stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="5 3" opacity="0.85"/>`;
-    lines += `<text x="${(W*0.72).toFixed(1)}" y="${ay-3}" font-size="7.5" fill="#fbbf24"
-      font-family="monospace" text-anchor="middle" opacity="0.9">${toHM(avgMin)}/חודש</text>`;
+    const ax = (W * 0.72).toFixed(1);
+    lines += `<text x="${ax}" y="${ay - 3}" text-anchor="middle" opacity="0.9" fill="#fbbf24">` +
+      `<tspan font-family="'IBM Plex Mono', monospace" font-size="10">${toHM(avgMin)}</tspan>` +
+      `<tspan font-family="'IBM Plex Sans Hebrew', sans-serif" font-size="10">/חודש</tspan>` +
+      `</text>`;
   }
 
   // estimate line removed — value shown in legend only
