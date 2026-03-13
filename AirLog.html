@@ -1907,7 +1907,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.129</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.130</span>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -3373,7 +3373,11 @@ function renderCurrency() {
   const now     = new Date();
   const today   = now.toISOString().slice(0,10);
   const fmt     = d => { const [y,m,dy] = d.split('-'); return dy+'.'+m+'.'+y; };
-  const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+  // iOS-safe date parse: avoid new Date('YYYY-MM-DD') which is UTC on iOS
+  const parseDate = str => { const [y,m,d] = (str||'').split('-').map(Number); return new Date(y, m-1, d); };
+  const daysBetween = (a, b) => Math.round((parseDate(b) - parseDate(a)) / 86400000);
+  // iOS-safe landings parse: trim whitespace, handle empty/null
+  const parseLandings = v => { const n = parseInt((v||'').toString().trim(), 10); return isNaN(n) ? 0 : n; };
   const circ    = 201.06; // 2π×32
 
   let alertLevel = ''; // '' | 'amber' | 'red'
@@ -3430,10 +3434,12 @@ function renderCurrency() {
   }
 
   // ── B. נוסע ביום ──
-  const cutoff90    = new Date(now); cutoff90.setDate(cutoff90.getDate() - 90);
-  const cutoff90str = cutoff90.toISOString().slice(0,10);
+  const cutoff90    = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90);
+  const cutoff90str = cutoff90.getFullYear() + '-' +
+    String(cutoff90.getMonth()+1).padStart(2,'0') + '-' +
+    String(cutoff90.getDate()).padStart(2,'0');
   const paxRows     = allRows.filter(r => r.date && r.date >= cutoff90str);
-  const paxLands    = paxRows.reduce((s,r) => s + parseInt(r.landings||'0',10), 0);
+  const paxLands    = paxRows.reduce((s,r) => s + parseLandings(r.landings), 0);
   const paxOk       = paxLands >= 3;
   const paxBody     = el('cur-pax-body');
   if (!paxOk) raiseAlert('red');
