@@ -658,7 +658,16 @@ select {
   font-size: 24px;
 }
 .ok-title { font-size: 20px; font-weight: 700; color: var(--text); }
-.ok-meta { font-family: var(--mono); font-size: 11px; color: var(--text3); letter-spacing: .08em; line-height: 1.9; direction: ltr; }
+.ok-meta { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 4px; }
+.ok-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; direction: rtl; }
+.ok-date { font-size: 18px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+.ok-ac   { font-size: 13px; color: var(--text2); }
+.ok-times { font-size: 13px; color: var(--text2); font-family: var(--mono); gap: 8px; }
+.ok-time-item { display: inline-flex; align-items: baseline; gap: 4px; }
+.ok-time-lbl  { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: .05em; }
+.ok-sep  { color: var(--border2); }
+.ok-flags { gap: 8px; margin-top: 2px; }
+.ok-badge { font-size: 12px; font-weight: 600; color: var(--text2); }
 .btn-again {
   margin-top: 4px;
   padding: 9px 22px;
@@ -1226,6 +1235,7 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 .jc-badge.dual  { background: #22d3ee20; color: #22d3ee; border: 1px solid #22d3ee30; }
 .jc-badge.xc    { background: #f9731620; color: #fb923c; border: 1px solid #f9731630; }
 .jc-badge.night { background: #818cf820; color: #a5b4fc; border: 1px solid #818cf830; }
+.jc-badge.level { background: #34d39920; color: #34d399; border: 1px solid #34d39930; }
 .jc-badge.land  { background: #34d39920; color: #34d399; border: 1px solid #34d39930; }
 .jc-section { margin-bottom: 10px; }
 .jc-lbl   { font-size: 10px; font-weight: 700; color: var(--text3); margin-bottom: 4px; letter-spacing:.05em; }
@@ -1383,23 +1393,36 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 .accord-body { animation: fadeIn .15s ease; }
 @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
 
-/* flight-char-row: date + checkboxes inline */
-.flight-char-row {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 8px; margin-bottom: 10px;
+/* flight classification grid */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
-.check-inline {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  height: 44px; padding: 0 12px;
-  background: var(--raised); border: 1px solid var(--border);
-  border-radius: 10px; cursor: pointer;
+.char-tile {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; padding: 12px 8px;
+  background: var(--raised);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
   transition: border-color .15s, background .15s;
-  box-sizing: border-box;
+  user-select: none;
 }
-.check-inline:has(input:checked) {
-  border-color: var(--accent); background: #6366f118;
+.char-tile input[type="checkbox"] { display: none; }
+.char-icon { font-size: 22px; line-height: 1; }
+.char-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text2); text-align: center;
+  transition: color .15s;
 }
-.check-inline .check-label { font-size: 14px; font-weight: 500; }
+.char-tile:has(input:checked) {
+  border-color: var(--accent);
+  background: #3b82f618;
+}
+.char-tile:has(input:checked) .char-label { color: var(--accent2); }
+.char-tile:hover { border-color: var(--border2); background: var(--hover); }
 
 /* landings hint */
 .land-chips-wrap {
@@ -1601,6 +1624,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 }
 .fl-badge.xc    { background: #f9731620; color: #fb923c; border: 1px solid #f9731630; }
 .fl-badge.night { background: #818cf820; color: #a5b4fc; border: 1px solid #818cf830; }
+.fl-badge.level { background: #34d39920; color: #34d399; border: 1px solid #34d39930; }
 .fl-badge.land  { background: #34d39920; color: #34d399; border: 1px solid #34d39930; }
 
 /* Row 4: description */
@@ -1755,14 +1779,13 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.100</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.113</span>
 </div>
 
 <!-- ── TAB BAR ── -->
 <div class="tab-bar">
   <div class="tab active" id="tab-log"      onclick="switchTab('log')">רישום טיסה</div>
-  <div class="tab"        id="tab-stats"    onclick="switchTab('stats')">סיכום שעות</div>
-  <div class="tab"        id="tab-history"  onclick="switchTab('history')">מבט רב שנתי</div>
+  <div class="tab"        id="tab-stats"    onclick="switchTab('stats')">סטטיסטיקה</div>
   <div class="tab"        id="tab-search"   onclick="switchTab('search')">יומן</div>
   <div class="tab"        id="tab-settings" onclick="switchTab('settings')">הגדרות</div>
 </div>
@@ -1785,20 +1808,46 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
             <label class="lbl"><span class="req">*</span> תאריך</label>
             <input type="date" id="fDate" required>
           </div>
-          <!-- Row 2: לילה + XC toggles -->
-          <div class="flight-char-row">
-            <label class="check-item check-inline">
-              <input type="checkbox" id="fNight">
-              <span class="check-box"></span>
-              <span class="check-label">🌙 טיסת לילה</span>
-            </label>
-            <label class="check-item check-inline">
-              <input type="checkbox" id="fXC">
-              <span class="check-box"></span>
-              <span class="check-label">🗺 טיסת XC</span>
-            </label>
+          <!-- Row 2: סיווג טיסה accordion -->
+        </div>
+      </div>
+
+      <!-- 🏷 סיווג טיסה ACCORDION -->
+      <div class="card accord-card" id="charCard">
+        <div class="card-head accord-head" onclick="toggleChar()">
+          <span class="card-icon">🏷</span>
+          <span class="card-title">סיווג טיסה</span>
+          <span class="accord-hint" id="charHint">לא סווגה</span>
+          <span class="accord-chevron" id="charChevron">▶</span>
+        </div>
+        <div class="accord-body" id="charBody" style="display:none;">
+          <div class="card-body" style="padding-top:10px;padding-bottom:14px;">
+            <div class="char-grid">
+              <label class="char-tile">
+                <input type="checkbox" id="fXC" onchange="updateCharHint()">
+                <span class="char-icon">🗺</span>
+                <span class="char-label">XC</span>
+              </label>
+              <label class="char-tile">
+                <input type="checkbox" id="fNight" onchange="updateCharHint()">
+                <span class="char-icon">🌙</span>
+                <span class="char-label">לילה</span>
+              </label>
+              <label class="char-tile">
+                <input type="checkbox" id="fLevelCheck" onchange="updateCharHint()">
+                <span class="char-icon">📋</span>
+                <span class="char-label">מבחן רמה</span>
+              </label>
+            </div>
           </div>
-          <!-- Row 2: סוג מטוס + זיהוי מטוס — המטוס -->
+        </div>
+      </div>
+
+      <!-- ✈ AIRCRAFT -->
+      <div class="card">
+        <div class="card-head"><span class="card-icon">✈</span><span class="card-title">מטוס</span></div>
+        <div class="card-body">
+          <!-- סוג מטוס + זיהוי מטוס -->
           <div class="grid2" style="grid-template-columns: 2fr 1fr;">
             <div class="field">
               <label class="lbl"><span class="req">*</span> סוג מטוס</label>
@@ -1958,11 +2007,11 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
   </div><!-- /view-log -->
 
-  <!-- ══════════ STATS VIEW ══════════ -->
+  <!-- ══════════ STATS VIEW (merged) ══════════ -->
   <div class="view" id="view-stats">
 
     <div class="stats-header">
-      <div class="stats-title">📊 סיכום שעות טיסה</div>
+      <div class="stats-title">📊 סטטיסטיקה</div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
         <button class="btn-refresh" id="btnRefresh" onclick="loadStats()">
           <span class="refresh-icon">↻</span> רענן
@@ -1970,28 +2019,66 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
         <span id="syncStamp" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
       </div>
     </div>
+
     <div class="load-bar-wrap" id="loadBarStats" style="display:none;">
       <div class="load-bar-icon">📊</div>
       <div class="load-bar-title">טוען נתוני טיסות...</div>
       <div class="load-bar-track" dir="ltr"><div class="load-bar-fill" id="loadBarStatsFill"></div></div>
       <div class="load-bar-label" id="loadBarStatsLabel">מתחבר לשרת...</div>
     </div>
-    <div class="fetch-bar-wrap" id="statsLoadBar" style="display:none;">
-      <div class="fetch-bar-track" dir="ltr">
-        <div class="fetch-bar-fill" id="statsLoadFill"></div>
-      </div>
-      <div class="fetch-bar-label" id="statsLoadLabel">טוען נתונים...</div>
+
+    <!-- ── ALL-TIME STRIP ── -->
+    <div class="stat-strip" style="margin-bottom:10px;">
+      <div class="ss-item"><span class="ss-val" id="h-flights">—</span><span class="ss-lbl">טיסות</span></div>
+      <div class="ss-sep"></div>
+      <div class="ss-item"><span class="ss-val" id="h-landings">—</span><span class="ss-lbl">נחיתות</span></div>
+      <div class="ss-sep"></div>
+      <div class="ss-item"><span class="ss-val cyan" id="h-dual">—</span><span class="ss-lbl">Dual</span></div>
+      <div class="ss-sep"></div>
+      <div class="ss-item"><span class="ss-val green" id="h-pic">—</span><span class="ss-lbl">PIC</span></div>
+      <div class="ss-sep"></div>
+      <div class="ss-item"><span class="ss-val amber" id="h-total">—</span><span class="ss-lbl">סה״כ</span></div>
     </div>
 
-    <!-- FILTERS CARD -->
+    <!-- ── CURRENT YEAR CHART ── -->
     <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">🔍</span><span class="card-title">סינון</span></div>
+      <div class="card-head"><span class="card-icon">📆</span><span class="card-title" id="curYearTitle">שנה נוכחית</span></div>
+      <div class="card-body" style="padding:14px 16px;" id="monthlyChartBody">
+        <div class="stats-empty" style="padding:16px 0;font-size:12px;"><div>לחץ רענן כדי לטעון</div></div>
+      </div>
+    </div>
+
+    <!-- ── MULTI-YEAR ACCORDION ── -->
+    <div class="card accord-card" style="margin-bottom:10px;">
+      <div class="card-head accord-head" onclick="toggleYearlyAccord()">
+        <span class="card-icon">📅</span>
+        <span class="card-title">מבט רב שנתי</span>
+        <span class="accord-chevron" id="yearlyChevron" style="margin-right:auto;">▶</span>
+      </div>
+      <div id="yearlyAccordBody" style="display:none;">
+        <div style="padding:10px 14px 0;display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="pill active" id="yrView-picdual" onclick="setYearlyView('picdual')">PIC / Dual</button>
+          <button class="pill"        id="yrView-xc"      onclick="setYearlyView('xc')">XC / מקומי</button>
+          <button class="pill"        id="yrView-ac"      onclick="setYearlyView('ac')">לפי מטוס</button>
+        </div>
+        <div class="card-body" style="padding:14px 16px;" id="yearlyBody">
+          <div class="stats-empty" style="padding:20px 0;">
+            <div class="ico" style="font-size:24px;">📅</div>
+            <div>לחץ רענן כדי לטעון</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── QUICK SUM ── -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">🔢</span><span class="card-title">סיכום מהיר</span></div>
       <div class="card-body" style="gap:10px;">
         <div class="filter-row">
           <span class="filter-lbl">תקופה</span>
           <div class="pill-group" id="periodPills" style="flex-wrap:wrap;">
             <button class="pill active" data-period="all"    onclick="setPeriod('all')">הכל</button>
-            <button class="pill"        data-period="last6"  onclick="setPeriod('last6')">6 טיסות אחרונות</button>
+            <button class="pill"        data-period="last6"  onclick="setPeriod('last6')">6 אחרונות</button>
             <button class="pill"        data-period="d30"    onclick="setPeriod('d30')">30 יום</button>
             <button class="pill"        data-period="d90"    onclick="setPeriod('d90')">90 יום</button>
             <button class="pill"        data-period="d365"   onclick="setPeriod('d365')">365 יום</button>
@@ -2012,147 +2099,33 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
             <option value="">הכל</option>
           </select>
         </div>
-      </div>
-    </div>
-
-    <!-- SUMMARY STRIP: flights | landings | dual | pic | total (RTL) -->
-    <div class="stat-strip">
-      <div class="ss-item">
-        <span class="ss-val" id="s-flights">—</span>
-        <span class="ss-lbl">טיסות</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val" id="s-landings">—</span>
-        <span class="ss-lbl">נחיתות</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val cyan" id="s-dual">—</span>
-        <span class="ss-lbl">Dual</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val green" id="s-pic">—</span>
-        <span class="ss-lbl">PIC</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val amber" id="s-total">—</span>
-        <span class="ss-lbl">סה״כ</span>
-      </div>
-    </div>
-    <div class="period-note" id="periodNote" style="display:none;"></div>
-
-    <!-- PIC/Dual now in strip — hidden elements kept for JS compat -->
-    <span id="barPic"    style="display:none"></span>
-    <span id="barDual"   style="display:none"></span>
-    <span id="barPicVal" style="display:none"></span>
-    <span id="barDualVal" style="display:none"></span>
-
-    <!-- XC vs LOCAL -->
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">🗺</span><span class="card-title">XC מול טיסה מקומית</span></div>
-      <div class="card-body" style="padding:14px 16px;">
-        <div class="bar-chart">
-          <div class="bar-row">
-            <span class="bar-name">XC</span>
-            <div class="bar-track"><div class="bar-fill" id="barXC" style="width:0%;background:linear-gradient(90deg,#f97316,#fb923c)"></div></div>
-            <span class="bar-val" id="barXCVal">—</span>
-          </div>
-          <div class="bar-row">
-            <span class="bar-name">מקומית</span>
-            <div class="bar-track"><div class="bar-fill" id="barLocal" style="width:0%;background:linear-gradient(90deg,#6366f1,#818cf8)"></div></div>
-            <span class="bar-val" id="barLocalVal">—</span>
-          </div>
+        <div class="stat-strip" style="border:none;background:none;margin-bottom:0;padding:6px 0;">
+          <div class="ss-item"><span class="ss-val" id="s-flights">—</span><span class="ss-lbl">טיסות</span></div>
+          <div class="ss-sep"></div>
+          <div class="ss-item"><span class="ss-val" id="s-landings">—</span><span class="ss-lbl">נחיתות</span></div>
+          <div class="ss-sep"></div>
+          <div class="ss-item"><span class="ss-val cyan" id="s-dual">—</span><span class="ss-lbl">Dual</span></div>
+          <div class="ss-sep"></div>
+          <div class="ss-item"><span class="ss-val green" id="s-pic">—</span><span class="ss-lbl">PIC</span></div>
+          <div class="ss-sep"></div>
+          <div class="ss-item"><span class="ss-val amber" id="s-total">—</span><span class="ss-lbl">סה״כ</span></div>
         </div>
+        <div class="period-note" id="periodNote" style="display:none;"></div>
       </div>
     </div>
 
-    <!-- AC TYPE BREAKDOWN -->
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">✈</span><span class="card-title">לפי סוג מטוס</span></div>
-      <div class="card-body" style="padding:14px 16px;">
-        <div class="bar-chart" id="acTypeBody">
-          <div class="stats-empty" style="padding:10px 0;font-size:12px;"><div>לחץ רענן כדי לטעון</div></div>
-        </div>
-      </div>
-    </div>
+    <!-- hidden compat stubs -->
+    <span id="barPic"      style="display:none"></span>
+    <span id="barDual"     style="display:none"></span>
+    <span id="barPicVal"   style="display:none"></span>
+    <span id="barDualVal"  style="display:none"></span>
+    <span id="syncStampHist" style="display:none"></span>
+    <span id="barXC"       style="display:none"></span>
+    <span id="barLocal"    style="display:none"></span>
+    <span id="barXCVal"    style="display:none"></span>
+    <span id="barLocalVal" style="display:none"></span>
 
   </div><!-- /view-stats -->
-
-  <!-- ══════════ HISTORY VIEW ══════════ -->
-  <div class="view" id="view-history">
-
-    <div class="stats-header">
-      <div class="stats-title">📅 מבט רב שנתי</div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <button class="btn-refresh" id="btnRefreshHist" onclick="loadStats()">
-          <span class="refresh-icon">↻</span> רענן
-        </button>
-        <span id="syncStampHist" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
-      </div>
-    </div>
-    <div class="load-bar-wrap" id="loadBarHist" style="display:none;">
-      <div class="load-bar-icon">📅</div>
-      <div class="load-bar-title">טוען נתוני טיסות...</div>
-      <div class="load-bar-track" dir="ltr"><div class="load-bar-fill" id="loadBarHistFill"></div></div>
-      <div class="load-bar-label" id="loadBarHistLabel">מתחבר לשרת...</div>
-    </div>
-    <div class="fetch-bar-wrap" id="histLoadBar" style="display:none;">
-      <div class="fetch-bar-track" dir="ltr">
-        <div class="fetch-bar-fill" id="histLoadFill"></div>
-      </div>
-      <div class="fetch-bar-label" id="histLoadLabel">טוען נתונים...</div>
-    </div>
-
-    <!-- ALL-TIME TOTALS strip -->
-    <div class="stat-strip" style="margin-bottom:10px;">
-      <div class="ss-item">
-        <span class="ss-val" id="h-flights">—</span>
-        <span class="ss-lbl">טיסות</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val" id="h-landings">—</span>
-        <span class="ss-lbl">נחיתות</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val cyan" id="h-dual">—</span>
-        <span class="ss-lbl">Dual</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val green" id="h-pic">—</span>
-        <span class="ss-lbl">PIC</span>
-      </div>
-      <div class="ss-sep"></div>
-      <div class="ss-item">
-        <span class="ss-val amber" id="h-total">—</span>
-        <span class="ss-lbl">סה״כ</span>
-      </div>
-    </div>
-
-    <!-- CURRENT YEAR MONTHLY CHART -->
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">📆</span><span class="card-title" id="curYearTitle">שנה נוכחית</span></div>
-      <div class="card-body" style="padding:14px 16px;" id="monthlyChartBody">
-        <div class="stats-empty" style="padding:16px 0;font-size:12px;"><div>לחץ רענן כדי לטעון</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><span class="card-icon">📅</span><span class="card-title">סיכום שנתי — כל השנים</span></div>
-      <div class="card-body" style="padding:14px 16px;" id="yearlyBody">
-        <div class="stats-empty" style="padding:20px 0;">
-          <div class="ico" style="font-size:24px;">📅</div>
-          <div>לחץ רענן כדי לטעון</div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /view-history -->
 
   <!-- ══════════ SEARCH / JOURNAL VIEW ══════════ -->
   <div class="view" id="view-search">
@@ -2183,6 +2156,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <button class="pill"        data-jp="last6" onclick="setJournalPeriod('last6')">6 טיסות אחרונות</button>
           <button class="pill"        data-jp="d30"   onclick="setJournalPeriod('d30')">30 יום</button>
           <button class="pill"        data-jp="d90"   onclick="setJournalPeriod('d90')">90 יום</button>
+          <button class="pill"        data-jp="xc"    onclick="setJournalPeriod('xc')">XC</button>
         </div>
         <div class="search-input-wrap">
           <span class="search-icon" style="right:auto;left:10px;">🔍</span>
@@ -2422,14 +2396,14 @@ async function fetchConnectedName() {
 //  TABS
 // ═══════════════════════════════════════════
 function switchTab(t) {
-  ['log','stats','history','search','settings'].forEach(id => {
+  ['log','stats','search','settings'].forEach(id => {
     el(`tab-${id}`).classList.toggle('active', id === t);
     el(`view-${id}`).classList.toggle('active', id === t);
   });
-  if ((t === 'stats' || t === 'history') && allRows.length === 0) loadStats();
+  if (t === 'stats' && allRows.length === 0) loadStats();
   if (t === 'search') {
     if (allRows.length === 0 || journalRows.length === 0) loadStatsAndJournal();
-    else searchJournal(); // re-render with current filter
+    else searchJournal();
   }
   if (t === 'settings') { refreshSettingsView(); updateInstallUI(); }
 }
@@ -2569,6 +2543,7 @@ document.addEventListener('DOMContentLoaded', () => {
       total:       toHM(state.pic + state.dual),
       night:       el('fNight').checked ? 'כן' : 'לא',
       xc:          el('fXC').checked   ? 'כן' : 'לא',
+      levelCheck:  el('fLevelCheck').checked ? 'כן' : 'לא',
       landings:    parseInt(el('fLandings').value || '0', 10),
       description: el('fDesc').value.trim(),
       lessons:     el('fLessons').value.trim(),
@@ -2590,9 +2565,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (text.includes('success') || res.ok) {
         form.style.display = 'none';
         el('successScreen').classList.add('show');
-        el('okMeta').textContent =
-          payload.date + '  ·  ' + payload.aircraft + '  ·  ' + payload.acType +
-          '\nPIC ' + payload.pic + '  ·  Dual ' + payload.dual + '  ·  סה"כ ' + payload.total;
+
+        // Build badges for active classifications
+        const flags = [];
+        if ((payload.xc         ||'') === 'כן') flags.push('<span class="ok-badge xc">🗺 XC</span>');
+        if ((payload.night      ||'') === 'כן') flags.push('<span class="ok-badge night">🌙 לילה</span>');
+        if ((payload.levelCheck ||'') === 'כן') flags.push('<span class="ok-badge level">📋 מבחן רמה</span>');
+        const flagsHtml = flags.join('<span class="ok-sep"> · </span>');
+
+        el('okMeta').innerHTML = `
+          <div class="ok-row ok-date">${fmtDate(payload.date)}</div>
+          <div class="ok-row ok-ac">${payload.aircraft} <span class="ok-sep">·</span> ${payload.acType}</div>
+          <div class="ok-row ok-times">
+            <span class="ok-time-item"><span class="ok-time-lbl">PIC</span> ${payload.pic}</span>
+            <span class="ok-sep">·</span>
+            <span class="ok-time-item"><span class="ok-time-lbl">Dual</span> ${payload.dual}</span>
+            <span class="ok-sep">·</span>
+            <span class="ok-time-item"><span class="ok-time-lbl">סה"כ</span> ${payload.total}</span>
+            <span class="ok-sep">·</span>
+            <span class="ok-time-item"><span class="ok-time-lbl">נחיתות</span> ${payload.landings}</span>
+          </div>
+          ${flags.length ? '<div class="ok-row ok-flags">' + flagsHtml + '</div>' : ''}
+        `;
         allRows = []; journalRows = []; _journalLoading = false; // force reload next time
       } else { throw new Error(text); }
     } catch(err) {
@@ -2625,6 +2619,11 @@ function resetForm() {
   el('btnSpinner').style.display = 'none';
   el('fNight').checked = false;
   el('fXC').checked = false;
+  el('fLevelCheck').checked = false;
+  // close char accordion
+  var cb = el('charBody'); if(cb) cb.style.display='none';
+  var cc = el('charChevron'); if(cc) cc.textContent='▶';
+  updateCharHint();
   setLandings(0);
   el('errBar').classList.remove('show');
   // close notes accordion
@@ -2640,7 +2639,7 @@ function setPeriod(p) {
   activePeriod = p;
   document.querySelectorAll('#periodPills .pill').forEach(b =>
     b.classList.toggle('active', b.dataset.period === p));
-  el('customRange').style.display = p === 'custom' ? 'flex' : 'none';
+  if (el('customRange')) el('customRange').style.display = p === 'custom' ? 'flex' : 'none';
   applyFilters();
   updatePeriodNote();
 }
@@ -2710,6 +2709,32 @@ function toggleNotes() {
   }
 }
 
+function toggleChar() {
+  var body    = el('charBody');
+  var chevron = el('charChevron');
+  var open    = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  chevron.textContent = open ? '▶' : '▼';
+  updateCharHint();
+}
+
+function updateCharHint() {
+  var hint   = el('charHint');
+  if (!hint) return;
+  var flags  = [];
+  if (el('fNight')      && el('fNight').checked)      flags.push('🌙 לילה');
+  if (el('fXC')         && el('fXC').checked)         flags.push('🗺 XC');
+  if (el('fLevelCheck') && el('fLevelCheck').checked) flags.push('📋 מבחן רמה');
+  if (flags.length) {
+    hint.textContent = flags.join(' · ');
+    hint.style.color = 'var(--accent2)';
+  } else {
+    hint.textContent = 'לא סווגה';
+    hint.style.color = '';
+  }
+}
+
+
 function autoExpand(ta) {
   ta.style.height = 'auto';
   ta.style.height = ta.scrollHeight + 'px';
@@ -2761,22 +2786,20 @@ async function loadStats() {
   const gasUrl = getUrl();
   if (!gasUrl) { openSetup(); return; }
 
-  ['btnRefresh','btnRefreshHist'].forEach(b => { if(el(b)) el(b).classList.add('loading'); });
+  ['btnRefresh'].forEach(b => { if(el(b)) el(b).classList.add('loading'); });
 
   var _lbAnim = null;
   var _totalCount = 0;
 
   function setLB(pct, label) {
-    ['Stats','Hist'].forEach(function(k) {
-      var wrap = el('loadBar'+k), fill = el('loadBar'+k+'Fill'), lbl = el('loadBar'+k+'Label');
-      if (!wrap) return;
-      wrap.style.display = 'flex';
-      if (fill) fill.style.width = Math.round(pct) + '%';
-      if (lbl)  lbl.textContent  = label;
-    });
+    var wrap = el('loadBarStats'), fill = el('loadBarStatsFill'), lbl = el('loadBarStatsLabel');
+    if (!wrap) return;
+    wrap.style.display = 'flex';
+    if (fill) fill.style.width = Math.round(pct) + '%';
+    if (lbl)  lbl.textContent  = label;
   }
   function hideLB() {
-    ['Stats','Hist'].forEach(function(k){ var w=el('loadBar'+k); if(w) w.style.display='none'; });
+    var w = el('loadBarStats'); if(w) w.style.display='none';
   }
 
   // Pre-fetch count for real progress
@@ -2817,18 +2840,21 @@ async function loadStats() {
         types.map(t => '<option value="' + t + '">' + t + '</option>').join('');
     }
 
-    applyFilters(); renderYearly(); renderMonthly();
-    renderFlightCards(allRows); // initial render with all rows
+    applyFilters();
+    try { renderYearly(); } catch(e) { console.error('renderYearly:', e); }
+    try { renderMonthly(); } catch(e) { console.error('renderMonthly:', e); }
+    renderFlightCards(allRows);
     setLB(100, 'נטען! ' + allRows.length + ' טיסות');
     setTimeout(hideLB, 1000);
     stampSync();
 
   } catch(err) {
     cancelAnimationFrame(_lbAnim);
-    setLB(100, '⚠ שגיאה בטעינה');
+    console.error('loadStats error:', err);
+    setLB(100, '⚠ ' + (err && err.message ? err.message.slice(0,60) : 'שגיאה בטעינה'));
     ['s-flights','s-landings','s-total'].forEach(id => { if(el(id)) el(id).textContent = '!'; });
   } finally {
-    ['btnRefresh','btnRefreshHist'].forEach(b => { if(el(b)) el(b).classList.remove('loading'); });
+    ['btnRefresh'].forEach(b => { if(el(b)) el(b).classList.remove('loading'); });
   }
 }
 
@@ -3007,6 +3033,7 @@ function renderFlightCards(rows) {
     const badges = [];
     if (isXC)    badges.push(`<span class="fl-badge xc">🗺 XC</span>`);
     if (isNight) badges.push(`<span class="fl-badge night">🌙 לילה</span>`);
+    if ((r.levelCheck||'').includes('כן')) badges.push(`<span class="fl-badge level">📋 מבחן רמה</span>`);
     if (lands)   badges.push(`<span class="fl-badge land">🛬 ${lands} נחיתות</span>`);
     const row3 = badges.length ? `<div class="fl-row3">${badges.join('')}</div>` : '';
 
@@ -3064,6 +3091,7 @@ function renderStats(rows) {
 
 // ── render ac-type breakdown — stacked PIC/DUAL per type ──
 function renderAcTypes(rows) {
+  if (!el('acTypeBody')) return; // element removed in new layout
   const byType = {};
   rows.forEach(r => {
     const t = r.acType || 'Unknown';
@@ -3107,65 +3135,163 @@ function renderAcTypes(rows) {
 }
 
 // ── render yearly breakdown (always uses allRows, ignores period filter) ──
+// ── yearly accordion toggle ──
+let _yearlyView = 'picdual';
+
+function toggleYearlyAccord() {
+  const body = el('yearlyAccordBody');
+  const chev = el('yearlyChevron');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  chev.textContent = open ? '▶' : '▼';
+  if (!open && allRows.length) renderYearly();
+}
+
+function setYearlyView(v) {
+  _yearlyView = v;
+  ['picdual','xc','ac'].forEach(id => {
+    const b = el('yrView-' + id);
+    if (b) b.classList.toggle('active', id === v);
+  });
+  renderYearly();
+}
+
 function renderYearly() {
   if (!allRows.length) return;
 
-  // group by year
-  const byYear = {};
-  allRows.forEach(r => {
-    if (!r.date) return;
-    const yr = r.date.split('-')[0];
-    if (!byYear[yr]) byYear[yr] = { pic: 0, dual: 0, flights: 0 };
-    byYear[yr].pic    += parseHM(r.pic  || '0:00');
-    byYear[yr].dual   += parseHM(r.dual || '0:00');
-    byYear[yr].flights++;
-  });
-
-  const years = Object.keys(byYear).sort((a,b) => b - a); // newest first
-  const maxTotal = Math.max(...years.map(y => byYear[y].pic + byYear[y].dual));
-
-  const html = years.map(yr => {
-    const d = byYear[yr];
-    const total   = d.pic + d.dual;
-    const picPct  = total > 0 ? Math.round(d.pic  / total * 100) : 0;
-    const dualPct = total > 0 ? Math.round(d.dual / total * 100) : 0;
-    const trackPct = maxTotal > 0 ? Math.round(total / maxTotal * 100) : 0;
-    const isCurrentYear = yr === String(new Date().getFullYear());
-
-    return `
-      <div class="yr-row">
-        <div class="yr-head">
-          <span class="yr-label">${yr}${isCurrentYear ? ' <span class="yr-now">עכשיו</span>' : ''}</span>
-          <span class="yr-meta">${d.flights} טיסות</span>
-          <span class="yr-total">${toHM(total)}</span>
-        </div>
-        <div class="yr-track">
-          <div class="yr-fill" style="width:${trackPct}%">
-            <div class="yr-dual" style="width:${dualPct}%"></div>
-            <div class="yr-pic"  style="width:${picPct}%"></div>
-          </div>
-        </div>
-        <div class="yr-breakdown">
-          <span class="yr-b dual">🎓 Dual ${toHM(d.dual)} (${dualPct}%)</span>
-          <span class="yr-b pic">✈ PIC ${toHM(d.pic)} (${picPct}%)</span>
-        </div>
-      </div>`;
-  }).join('');
-
-  el('yearlyBody').innerHTML = html || `<div class="stats-empty" style="padding:20px 0;"><div>אין נתונים</div></div>`;
-
-  // Fill all-time totals in history tab
+  // ── fill all-time totals strip ──
   let htPic = 0, htDual = 0;
   allRows.forEach(r => {
     htPic  += parseHM(r.pic  || '0:00');
     htDual += parseHM(r.dual || '0:00');
   });
-  el('h-flights').textContent = allRows.length;
-  const hLandings = allRows.reduce(function(s,r){ return s + parseInt(r.landings||'0',10); }, 0);
+  if (el('h-flights')) el('h-flights').textContent = allRows.length;
+  const hLandings = allRows.reduce((s,r) => s + parseInt(r.landings||'0',10), 0);
   if (el('h-landings')) el('h-landings').textContent = hLandings || '—';
-  el('h-pic').textContent     = toHM(htPic);
-  el('h-dual').textContent    = toHM(htDual);
-  el('h-total').textContent   = toHM(htPic + htDual);
+  if (el('h-pic'))   el('h-pic').textContent   = toHM(htPic);
+  if (el('h-dual'))  el('h-dual').textContent  = toHM(htDual);
+  if (el('h-total')) el('h-total').textContent = toHM(htPic + htDual);
+
+  // only render accordion body if open
+  const accordBody = el('yearlyAccordBody');
+  if (!accordBody || accordBody.style.display === 'none') return;
+
+  const years = [...new Set(allRows.map(r => r.date && r.date.split('-')[0]).filter(Boolean))].sort((a,b) => b-a);
+  const nowYr = String(new Date().getFullYear());
+  let html = '';
+
+  if (_yearlyView === 'picdual') {
+    const byYear = {};
+    allRows.forEach(r => {
+      if (!r.date) return;
+      const yr = r.date.split('-')[0];
+      if (!byYear[yr]) byYear[yr] = { pic:0, dual:0, flights:0 };
+      byYear[yr].pic    += parseHM(r.pic  || '0:00');
+      byYear[yr].dual   += parseHM(r.dual || '0:00');
+      byYear[yr].flights++;
+    });
+    const maxTotal = Math.max(...years.map(y => byYear[y].pic + byYear[y].dual), 1);
+    html = years.map(yr => {
+      const d = byYear[yr];
+      const total    = d.pic + d.dual;
+      const picPct   = total > 0 ? Math.round(d.pic  / total * 100) : 0;
+      const dualPct  = 100 - picPct;
+      const trackPct = Math.round(total / maxTotal * 100);
+      const isCur    = yr === nowYr;
+      return `<div class="yr-row">
+        <div class="yr-head">
+          <span class="yr-label">${yr}${isCur ? ' <span class="yr-now">עכשיו</span>' : ''}</span>
+          <span class="yr-meta">${d.flights} טיסות</span>
+          <span class="yr-total">${toHM(total)}</span>
+        </div>
+        <div class="yr-track"><div class="yr-fill" style="width:${trackPct}%">
+          <div class="yr-dual" style="width:${dualPct}%"></div>
+          <div class="yr-pic"  style="width:${picPct}%"></div>
+        </div></div>
+        <div class="yr-breakdown">
+          <span class="yr-b dual">🎓 Dual ${toHM(d.dual)} (${dualPct}%)</span>
+          <span class="yr-b pic">✈ PIC ${toHM(d.pic)} (${picPct}%)</span>
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if (_yearlyView === 'xc') {
+    const byYear = {};
+    allRows.forEach(r => {
+      if (!r.date) return;
+      const yr = r.date.split('-')[0];
+      if (!byYear[yr]) byYear[yr] = { xc:0, local:0, flights:0 };
+      if ((r.xc||'').includes('כן')) byYear[yr].xc++;
+      else byYear[yr].local++;
+      byYear[yr].flights++;
+    });
+    const maxTotal = Math.max(...years.map(y => byYear[y].flights), 1);
+    html = years.map(yr => {
+      const d = byYear[yr];
+      const total    = d.flights;
+      const xcPct    = total > 0 ? Math.round(d.xc    / total * 100) : 0;
+      const locPct   = 100 - xcPct;
+      const trackPct = Math.round(total / maxTotal * 100);
+      const isCur    = yr === nowYr;
+      return `<div class="yr-row">
+        <div class="yr-head">
+          <span class="yr-label">${yr}${isCur ? ' <span class="yr-now">עכשיו</span>' : ''}</span>
+          <span class="yr-meta">${d.flights} טיסות</span>
+          <span class="yr-total" style="color:var(--text2)">${d.xc} XC · ${d.local} מקומי</span>
+        </div>
+        <div class="yr-track"><div class="yr-fill" style="width:${trackPct}%">
+          <div style="flex:0 0 ${xcPct}%;background:#f97316;"></div>
+          <div style="flex:0 0 ${locPct}%;background:#6366f1;"></div>
+        </div></div>
+        <div class="yr-breakdown">
+          <span class="yr-b" style="color:#fb923c">🗺 XC ${d.xc} (${xcPct}%)</span>
+          <span class="yr-b" style="color:#818cf8">מקומי ${d.local} (${locPct}%)</span>
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if (_yearlyView === 'ac') {
+    const byYear = {};
+    const allAcSet = new Set();
+    allRows.forEach(r => {
+      if (!r.date) return;
+      const yr = r.date.split('-')[0];
+      const ac = r.acType || r.aircraft || '?';
+      allAcSet.add(ac);
+      if (!byYear[yr]) byYear[yr] = { flights:0, ac:{} };
+      if (!byYear[yr].ac[ac]) byYear[yr].ac[ac] = 0;
+      byYear[yr].ac[ac]++;
+      byYear[yr].flights++;
+    });
+    const allAc = [...allAcSet];
+    const acColors = ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#22d3ee'];
+    const acColor  = ac => acColors[allAc.indexOf(ac) % acColors.length];
+
+    html = years.map(yr => {
+      const d = byYear[yr];
+      const acEntries = Object.entries(d.ac).sort((a,b) => b[1]-a[1]);
+      const total = d.flights;
+      const barParts = acEntries.map(([ac, cnt]) => {
+        const pct = Math.round(cnt / total * 100);
+        return `<div style="flex:0 0 ${pct}%;background:${acColor(ac)};"></div>`;
+      }).join('');
+      const breakdown = acEntries.map(([ac, cnt]) =>
+        `<span class="yr-b" style="color:${acColor(ac)}">${ac} — ${cnt} טיסות</span>`
+      ).join('');
+      const isCur = yr === nowYr;
+      return `<div class="yr-row">
+        <div class="yr-head">
+          <span class="yr-label">${yr}${isCur ? ' <span class="yr-now">עכשיו</span>' : ''}</span>
+          <span class="yr-meta">${d.flights} טיסות</span>
+        </div>
+        <div class="yr-track"><div class="yr-fill" style="width:100%">${barParts}</div></div>
+        <div class="yr-breakdown">${breakdown}</div>
+      </div>`;
+    }).join('');
+  }
+
+  el('yearlyBody').innerHTML = html || `<div class="stats-empty" style="padding:20px 0;"><div>אין נתונים</div></div>`;
 }
 
 function parseHM(str) {
@@ -3335,6 +3461,9 @@ function filterJournalRows(rows) {
   if (journalPeriod === 'last6') {
     return [...rows].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,6);
   }
+  if (journalPeriod === 'xc') {
+    return rows.filter(r => (r.xc || '').includes('כן'));
+  }
   const cutoff = journalPeriod === 'd30' ? daysAgo(30) : daysAgo(90);
   return rows.filter(r => (r.date||'').slice(0,10) >= cutoff);
 }
@@ -3403,6 +3532,7 @@ function searchJournal() {
     if (dualMin > 0) badges += '<span class="jc-badge dual">\uD83C\uDF93 Dual</span>';
     if (isXC)        badges += '<span class="jc-badge xc">\uD83D\uDDFA XC</span>';
     if (isNight)     badges += '<span class="jc-badge night">\uD83C\uDF19 \u05dc\u05d9\u05dc\u05d4</span>';
+    if ((r.levelCheck||'').includes('\u05db\u05df')) badges += '<span class="jc-badge level">\uD83D\uDCCB \u05de\u05d1\u05d7\u05df \u05e8\u05de\u05d4</span>';
     if (lands)       badges += '<span class="jc-badge land">\uD83D\uDEEC ' + lands + '</span>';
 
     var bodyContent =
@@ -3432,12 +3562,20 @@ function searchJournal() {
       bodyContent += '<div style="font-size:11px;color:var(--text3);padding:6px 0;">\u05d0\u05d9\u05df \u05ea\u05d9\u05d0\u05d5\u05e8 \u05d0\u05d5 \u05dc\u05e7\u05d7\u05d9\u05dd \u05dc\u05d8\u05d9\u05e1\u05d4 \u05d6\u05d5</div>';
     }
 
+    // ── inline classification tags for collapsed row ──
+    var inlineTags = '';
+    if (dualMin > 0) inlineTags += '<span class="jc-badge dual" style="font-size:9px;padding:1px 5px;">Dual</span>';
+    if (isXC)        inlineTags += '<span class="jc-badge xc" style="font-size:9px;padding:1px 5px;">XC</span>';
+    if (isNight)     inlineTags += '<span class="jc-badge night" style="font-size:9px;padding:1px 5px;">לילה</span>';
+    if ((r.levelCheck||'').includes('\u05db\u05df')) inlineTags += '<span class="jc-badge level" style="font-size:9px;padding:1px 5px;">מבחן רמה</span>';
+
     html2 +=
       '<div class="jc-card" id="jc-' + idx + '" data-ridx="' + idx + '">' +
         '<div class="jc-row" onclick="handleJcClick(event,' + idx + ')">' +
           '<div class="jc-meta">' +
             '<span class="jc-date">' + fmtDate(r.date) + '</span>' +
             '<span class="jc-ac">' + (r.aircraft||'') + '</span>' +
+            (inlineTags ? '<span style="display:flex;gap:3px;align-items:center;">' + inlineTags + '</span>' : '') +
           '</div>' +
           '<div class="jc-right">' +
             '<span class="jc-total">' + total + '</span>' +
@@ -3639,12 +3777,8 @@ function stampSync() {
   const hh  = now.getHours().toString().padStart(2,'0');
   const mm  = now.getMinutes().toString().padStart(2,'0');
   const txt = 'עודכן ' + hh + ':' + mm;
-  ['syncStamp','syncStampHist'].forEach(id => {
-    const s = el(id);
-    if (!s) return;
-    s.textContent = txt;
-    s.style.display = 'inline';
-  });
+  const s = el('syncStamp');
+  if (s) { s.textContent = txt; s.style.display = 'inline'; }
 }
 
 function refreshSettingsView() {
@@ -3668,8 +3802,6 @@ function clearRAM() {
   ['barXCVal','barLocalVal','barPicVal','barDualVal'].forEach(id => {
     if (el(id)) el(id).textContent = '—';
   });
-  if (el('acTypeBody')) el('acTypeBody').innerHTML =
-    '<div class="stats-empty" style="padding:10px 0;font-size:12px;"><div>לחץ רענן כדי לטעון</div></div>';
   if (el('yearlyBody')) el('yearlyBody').innerHTML =
     '<div class="stats-empty" style="padding:20px 0;"><div>לחץ רענן כדי לטעון</div></div>';
   if (el('monthlyChartBody')) el('monthlyChartBody').innerHTML =
