@@ -1755,7 +1755,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.99</span><span id="syncStamp" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);margin-right:6px;border-right:1px solid var(--border);padding-right:8px;">עודכן —</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.100</span>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -1963,9 +1963,12 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <div class="stats-header">
       <div class="stats-title">📊 סיכום שעות טיסה</div>
-      <button class="btn-refresh" id="btnRefresh" onclick="loadStats()">
-        <span class="refresh-icon">↻</span> רענן
-      </button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <button class="btn-refresh" id="btnRefresh" onclick="loadStats()">
+          <span class="refresh-icon">↻</span> רענן
+        </button>
+        <span id="syncStamp" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
+      </div>
     </div>
     <div class="load-bar-wrap" id="loadBarStats" style="display:none;">
       <div class="load-bar-icon">📊</div>
@@ -2083,9 +2086,12 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <div class="stats-header">
       <div class="stats-title">📅 מבט רב שנתי</div>
-      <button class="btn-refresh" id="btnRefreshHist" onclick="loadStats()">
-        <span class="refresh-icon">↻</span> רענן
-      </button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <button class="btn-refresh" id="btnRefreshHist" onclick="loadStats()">
+          <span class="refresh-icon">↻</span> רענן
+        </button>
+        <span id="syncStampHist" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
+      </div>
     </div>
     <div class="load-bar-wrap" id="loadBarHist" style="display:none;">
       <div class="load-bar-icon">📅</div>
@@ -3629,13 +3635,16 @@ async function archiveFlight(e, idx) {
 
 
 function stampSync() {
-  const stamp = el('syncStamp');
-  if (!stamp) return;
   const now = new Date();
   const hh  = now.getHours().toString().padStart(2,'0');
   const mm  = now.getMinutes().toString().padStart(2,'0');
-  stamp.textContent = 'עודכן ' + hh + ':' + mm;
-  stamp.style.display = 'inline';
+  const txt = 'עודכן ' + hh + ':' + mm;
+  ['syncStamp','syncStampHist'].forEach(id => {
+    const s = el(id);
+    if (!s) return;
+    s.textContent = txt;
+    s.style.display = 'inline';
+  });
 }
 
 function refreshSettingsView() {
