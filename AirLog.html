@@ -576,65 +576,112 @@ select {
 }
 
 /* ── Currency tab ── */
-.cur-progress-wrap { margin: 8px 0 4px; }
-.cur-progress-track {
-  height: 12px;
-  background: var(--raised);
-  border-radius: 6px;
-  overflow: hidden;
+.cur-sec-lbl {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--text3); text-transform: uppercase;
+  margin: 14px 0 8px;
+}
+.cur-sec-sub {
+  font-size: 11px; color: var(--text2);
+  margin: -4px 0 10px; line-height: 1.5;
+}
+.cur-big-card {
+  background: var(--bg2);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
   border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
-.cur-progress-fill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width .6s cubic-bezier(.4,0,.2,1);
+.cur-big-card::before {
+  content: ''; position: absolute;
+  top: 0; right: 0; width: 4px; height: 100%;
+  border-radius: 0 18px 18px 0;
+  background: var(--border);
 }
-.cur-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 6px;
-  direction: rtl;
+.cur-big-card.c-green::before { background: var(--emerald); }
+.cur-big-card.c-amber::before { background: var(--amber); }
+.cur-big-card.c-red::before   { background: #ef4444; }
+.cur-card-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.cur-card-title { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 0.3px; margin-bottom: 5px; }
+.cur-card-status { font-size: 20px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
+.cur-big-card.c-green .cur-card-status { color: var(--emerald); }
+.cur-big-card.c-amber .cur-card-status { color: var(--amber); }
+.cur-big-card.c-red   .cur-card-status { color: #ef4444; }
+.cur-card-sub { font-size: 11px; color: var(--text2); line-height: 1.6; }
+.cur-card-sub b { color: var(--text); font-weight: 600; }
+.cur-card-note {
+  font-size: 10px; color: var(--text3);
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border); line-height: 1.5;
 }
-.cur-status {
-  font-size: 13px;
-  font-weight: 700;
+.cur-card-note b { color: var(--text2); font-weight: 600; }
+/* Arc gauge */
+.cur-arc-wrap { position: relative; width: 78px; height: 78px; flex-shrink: 0; }
+.cur-arc-wrap svg { width: 78px; height: 78px; transform: rotate(-90deg); }
+.cur-arc-bg   { fill: none; stroke: var(--raised); stroke-width: 6; }
+.cur-arc-fill { fill: none; stroke-width: 6; stroke-linecap: round; }
+.c-green .cur-arc-fill { stroke: var(--emerald); }
+.c-amber .cur-arc-fill { stroke: var(--amber); }
+.c-red   .cur-arc-fill { stroke: #ef4444; }
+.cur-arc-inner {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
 }
-.cur-status.green  { color: var(--emerald); }
-.cur-status.amber  { color: var(--amber); }
-.cur-status.red    { color: #ef4444; }
-.cur-detail {
-  font-size: 11px;
-  color: var(--text3);
-  font-family: var(--mono);
+.cur-arc-num  { font-size: 19px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+.cur-arc-unit { font-size: 9px; color: var(--text3); font-weight: 600; margin-top: 2px; }
+.c-green .cur-arc-num { color: var(--emerald); }
+.c-amber .cur-arc-num { color: var(--amber); }
+.c-red   .cur-arc-num { color: #ef4444; }
+/* Pax stats row */
+.cur-pax-row { display: flex; gap: 8px; margin-top: 12px; }
+.cur-pax-stat {
+  flex: 1; text-align: center;
+  background: var(--bg1); border-radius: 10px; padding: 10px 4px;
 }
-.cur-ac-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  direction: rtl;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
+.cur-pax-num { font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+.cur-pax-lbl { font-size: 10px; color: var(--text2); margin-top: 3px; }
+.cur-pax-stat.ok   .cur-pax-num { color: var(--emerald); }
+.cur-pax-stat.bad  .cur-pax-num { color: #ef4444; }
+/* Aircraft grid */
+.cur-ac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.cur-ac-card {
+  background: var(--bg2); border-radius: 14px;
+  padding: 14px 12px 12px; border: 1px solid var(--border);
+  text-align: center; position: relative; overflow: hidden;
 }
-.cur-ac-row:last-child { border-bottom: none; }
-.cur-ac-name {
-  font-weight: 700;
-  font-size: 13px;
-  min-width: 80px;
+.cur-ac-card::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  border-radius: 0 0 14px 14px;
 }
-.cur-ac-days {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 600;
+.cur-ac-card.c-green::after { background: var(--emerald); }
+.cur-ac-card.c-amber::after { background: var(--amber); }
+.cur-ac-card.c-red::after   { background: #ef4444; }
+.cur-ac-badge {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px; margin-bottom: 6px;
 }
-.cur-ac-days.green { color: var(--emerald); }
-.cur-ac-days.amber { color: var(--amber); }
-.cur-ac-days.red   { color: #ef4444; }
-.cur-ac-date {
-  font-size: 11px;
-  color: var(--text3);
-  margin-right: auto;
+.cur-ac-card.c-green .cur-ac-badge { background: rgba(52,211,153,.15); color: var(--emerald); }
+.cur-ac-card.c-amber .cur-ac-badge { background: rgba(251,191,36,.15);  color: var(--amber); }
+.cur-ac-card.c-red   .cur-ac-badge { background: rgba(239,68,68,.15);   color: #ef4444; }
+.cur-ac-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.cur-ac-days { font-size: 34px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+.cur-ac-card.c-green .cur-ac-days { color: var(--emerald); }
+.cur-ac-card.c-amber .cur-ac-days { color: var(--amber); }
+.cur-ac-card.c-red   .cur-ac-days { color: #ef4444; }
+.cur-ac-days-lbl  { font-size: 10px; color: var(--text2); margin: 2px 0 8px; }
+.cur-ac-last-date { font-size: 10px; color: var(--text2); padding-top: 8px; border-top: 1px solid var(--border); }
+/* Tab alert dot */
+.tab-alert-dot {
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%; margin-right: 4px;
+  vertical-align: middle; margin-top: -2px;
 }
+.tab-alert-dot.red   { background: #ef4444; }
+.tab-alert-dot.amber { background: var(--amber); }
 .yr-b {
   font-size: 11px;
   font-weight: 600;
@@ -683,6 +730,7 @@ select {
   flex-shrink: 0;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeInOverlay { from { opacity:0; } to { opacity:1; } }
 
 .err-bar {
   display: none;
@@ -1192,6 +1240,7 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
   transition: border-color .2s;
 }
 .search-input:focus { border-color: var(--accent); }
+
 .search-icon {
   position: absolute;
   right: 10px;
@@ -1597,17 +1646,34 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 /* archive progress */
 .archive-progress {
-  background: #450a0a;
+  background: #1a0a0a;
   border: 1px solid #ef4444;
   border-radius: var(--r-sm);
-  padding: 10px 14px;
-  font-size: 12px;
+  padding: 11px 16px;
+  font-size: 13px;
   color: #fca5a5;
-  text-align: center;
   margin-bottom: 8px;
   display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  direction: rtl;
 }
-.archive-progress.show { display: block; }
+.archive-progress.show { display: flex; }
+.archive-progress.success {
+  background: #022c22;
+  border-color: #34d399;
+  color: #34d399;
+}
+.arc-spinner {
+  display: inline-block;
+  width: 15px; height: 15px; flex-shrink: 0;
+  border: 2px solid #ef4444;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+.archive-progress.success .arc-spinner { display: none; }
 
 
 .fl-card {
@@ -1841,7 +1907,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.119</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.129</span>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -2075,32 +2141,37 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <div class="stats-header">
       <div class="stats-title">✅ כשירות אווירית</div>
-    </div>
-
-    <!-- מבחן רמה countdown -->
-    <div class="card" style="margin-bottom:10px;" id="cur-levelcheck-card">
-      <div class="card-head"><span class="card-icon">📋</span><span class="card-title">מבחן רמה</span></div>
-      <div class="card-body" style="padding:14px 16px;" id="cur-levelcheck-body">
-        <div class="stats-empty" style="padding:12px 0;font-size:12px;"><div>טוען...</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <button class="btn-refresh" id="btnRefreshCurrency" onclick="refreshCurrency()">
+          <span class="refresh-icon">↻</span> רענן
+        </button>
+        <span id="syncStampCurrency" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
       </div>
     </div>
 
-    <!-- נוסע ביום -->
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">🛬</span><span class="card-title">נוסע ביום — 3 נחיתות ב-90 יום</span></div>
-      <div class="card-body" style="padding:14px 16px;" id="cur-pax-body">
-        <div class="stats-empty" style="padding:12px 0;font-size:12px;"><div>טוען...</div></div>
-      </div>
+    <div class="load-bar-wrap" id="loadBarCurrency" style="display:none;">
+      <div class="load-bar-icon">✅</div>
+      <div class="load-bar-title">טוען נתוני כשירות...</div>
+      <div class="load-bar-track" dir="ltr"><div class="load-bar-fill" id="loadBarCurrencyFill"></div></div>
+      <div class="load-bar-label" id="loadBarCurrencyLabel">מתחבר לשרת...</div>
     </div>
 
-    <!-- רעננות לפי מטוס -->
-    <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">✈</span><span class="card-title">רעננות לפי מטוס</span></div>
-      <div class="card-body" style="padding:14px 16px;gap:10px;" id="cur-ac-body">
-        <div class="stats-empty" style="padding:12px 0;font-size:12px;"><div>טוען...</div></div>
-      </div>
+    <div id="currencyContent">
+    <div class="cur-sec-lbl">מבחן רמה</div>
+    <div class="cur-big-card" id="cur-levelcheck-body">
+      <div class="stats-empty" style="padding:12px 0;font-size:12px;"><div>טוען...</div></div>
     </div>
 
+    <div class="cur-sec-lbl">נוסע ביום</div>
+    <div class="cur-big-card" id="cur-pax-body">
+      <div class="stats-empty" style="padding:12px 0;font-size:12px;"><div>טוען...</div></div>
+    </div>
+
+    <div class="cur-sec-lbl">רעננות על מטוס</div>
+    <div class="cur-sec-sub">מספר הימים שחלפו מאז הטיסה האחרונה שלך על כל מטוס</div>
+    <div class="cur-ac-grid" id="cur-ac-body"></div>
+
+    </div><!-- /currencyContent -->
   </div><!-- /view-currency -->
 
   <!-- ══════════ STATS VIEW (merged) ══════════ -->
@@ -2231,8 +2302,8 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <button class="pill"        data-jp="d90"   onclick="setJournalPeriod('d90')">90 יום</button>
           <button class="pill"        data-jp="xc"    onclick="setJournalPeriod('xc')">XC</button>
         </div>
-        <div id="journalAcDropWrap" style="display:none;margin-bottom:4px;">
-          <select id="journalAcSelect" class="search-input" style="padding:7px 10px;font-size:12px;height:auto;" onchange="setJournalAc(this.value)">
+        <div id="journalAcDropWrap" style="display:none;">
+          <select id="journalAcSelect" onchange="setJournalAc(this.value)">
             <option value="">כל המטוסים</option>
           </select>
         </div>
@@ -2364,6 +2435,21 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       </div>
     </div>
 
+    <!-- FEEDBACK -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-head"><span class="card-icon">✉️</span><span class="card-title">משוב למפתח</span></div>
+      <div class="card-body" style="gap:10px;">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;direction:rtl;">
+          מצאת באג? יש לך רעיון לשיפור? נשמח לשמוע.
+        </div>
+        <a href="mailto:eligrt@gmail.com?subject=AirLog%20Feedback" style="text-decoration:none;">
+          <button class="settings-action-btn secondary" style="width:100%;">
+            ✉️ שלח משוב למפתח
+          </button>
+        </a>
+      </div>
+    </div>
+
     <!-- DISCONNECT -->
     <div class="card" style="margin-bottom:10px;">
       <div class="card-head"><span class="card-icon">🔌</span><span class="card-title">ניתוק</span></div>
@@ -2487,13 +2573,15 @@ async function fetchConnectedName() {
 // ═══════════════════════════════════════════
 //  TABS
 // ═══════════════════════════════════════════
-function switchTab(t) {
+async function switchTab(t) {
   ['log','currency','stats','search','settings'].forEach(id => {
     el(`tab-${id}`).classList.toggle('active', id === t);
     el(`view-${id}`).classList.toggle('active', id === t);
   });
-  if ((t === 'stats' || t === 'currency') && allRows.length === 0) loadStats();
-  if (t === 'currency' && allRows.length > 0) renderCurrency();
+  if ((t === 'stats' || t === 'currency') && allRows.length === 0) {
+    await loadStats();
+  }
+  if (t === 'currency') renderCurrency();
   if (t === 'search') {
     if (allRows.length === 0 || journalRows.length === 0) loadStatsAndJournal();
     else searchJournal();
@@ -2919,12 +3007,19 @@ async function loadStats() {
     wrap.style.display = 'flex';
     if (fill) fill.style.width = Math.round(pct) + '%';
     if (lbl)  lbl.textContent  = label;
-    // hide content while loading to prevent flash/resize
     var sc = el('statsContent'); if (sc) sc.style.display = 'none';
+    // mirror to currency bar if that tab is active
+    var cWrap = el('loadBarCurrency'), cFill = el('loadBarCurrencyFill'), cLbl = el('loadBarCurrencyLabel');
+    if (cWrap) { cWrap.style.display = 'flex'; }
+    if (cFill) cFill.style.width = Math.round(pct) + '%';
+    if (cLbl)  cLbl.textContent  = label;
+    var cc = el('currencyContent'); if (cc) cc.style.display = 'none';
   }
   function hideLB() {
     var w = el('loadBarStats'); if(w) w.style.display='none';
     var sc = el('statsContent'); if (sc) sc.style.display = 'block';
+    var cw = el('loadBarCurrency'); if(cw) cw.style.display='none';
+    var cc = el('currencyContent'); if (cc) cc.style.display = 'block';
   }
 
   // Pre-fetch count for real progress
@@ -2973,6 +3068,10 @@ async function loadStats() {
     setLB(100, 'נטען! ' + allRows.length + ' טיסות');
     setTimeout(hideLB, 1000);
     stampSync();
+    if (el('tab-currency') && el('tab-currency').classList.contains('active')) {
+      const _s = el('syncStampCurrency');
+      if (_s) { _s.textContent = 'עודכן ' + new Date().getHours().toString().padStart(2,'0') + ':' + new Date().getMinutes().toString().padStart(2,'0'); _s.style.display = 'inline'; }
+    }
 
   } catch(err) {
     cancelAnimationFrame(_lbAnim);
@@ -3271,10 +3370,16 @@ let _yearlyView = 'picdual';
 function renderCurrency() {
   if (!allRows.length) return;
 
-  const now  = new Date();
-  const today = now.toISOString().slice(0,10);
-  const fmt   = d => { const [y,m,dy] = d.split('-'); return dy+'.'+m+'.'+y; };
+  const now     = new Date();
+  const today   = now.toISOString().slice(0,10);
+  const fmt     = d => { const [y,m,dy] = d.split('-'); return dy+'.'+m+'.'+y; };
   const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+  const circ    = 201.06; // 2π×32
+
+  let alertLevel = ''; // '' | 'amber' | 'red'
+  const raiseAlert = lvl => {
+    if (lvl === 'red' || (lvl === 'amber' && alertLevel !== 'red')) alertLevel = lvl;
+  };
 
   // ── A. מבחן רמה ──
   const levelRows = allRows.filter(r => (r.levelCheck||'').includes('כן') && r.date)
@@ -3282,55 +3387,91 @@ function renderCurrency() {
   const lcBody = el('cur-levelcheck-body');
   if (lcBody) {
     if (!levelRows.length) {
-      lcBody.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:4px 0;">לא נמצא מבחן רמה ברשומות</div>';
+      lcBody.className = 'cur-big-card';
+      lcBody.innerHTML = '<div style="font-size:12px;color:var(--text2);padding:4px 0;">לא נמצא מבחן רמה ברשומות</div>';
     } else {
-      const lastLC   = levelRows[0].date;
-      const expiry   = new Date(lastLC);
+      const lastLC    = levelRows[0].date;
+      const expiry    = new Date(lastLC);
       expiry.setDate(expiry.getDate() + 730);
       const expiryStr = expiry.toISOString().slice(0,10);
       const daysLeft  = daysBetween(today, expiryStr);
-      const daysTotal = 730;
-      const pct       = Math.max(0, Math.min(100, Math.round((daysTotal - daysLeft) / daysTotal * 100)));
-      const color     = daysLeft <= 0 ? 'red' : daysLeft <= 30 ? 'red' : daysLeft <= 90 ? 'amber' : 'green';
-      const fillColor = color === 'green' ? '#34d399' : color === 'amber' ? '#fbbf24' : '#ef4444';
-      const statusText = daysLeft <= 0 ? 'פג תוקף' : `נותרו ${daysLeft} ימים`;
+      const cls       = daysLeft <= 0 ? 'c-red' : daysLeft <= 30 ? 'c-red' : daysLeft <= 90 ? 'c-amber' : 'c-green';
+      const statusTxt = daysLeft <= 0 ? 'פג תוקף' : daysLeft <= 30 ? 'פג בקרוב' : daysLeft <= 90 ? 'מתקרב לפקיעה' : 'בתוקף';
+      if (daysLeft <= 30)  raiseAlert('red');
+      else if (daysLeft <= 90) raiseAlert('amber');
+      // Arc: filled = daysLeft / 730
+      const arcFilled  = Math.max(0, Math.min(circ, daysLeft / 730 * circ));
+      const arcOffset  = circ - arcFilled;
+      lcBody.className = `cur-big-card ${cls}`;
       lcBody.innerHTML = `
-        <div class="cur-label-row">
-          <span class="cur-status ${color}">${statusText}</span>
-          <span class="cur-detail">מבחן אחרון: ${fmt(lastLC)}</span>
-        </div>
-        <div class="cur-progress-wrap">
-          <div class="cur-progress-track">
-            <div class="cur-progress-fill" style="width:${pct}%;background:${fillColor};"></div>
+        <div class="cur-card-row">
+          <div>
+            <div class="cur-card-title">תוקף מבחן רמה</div>
+            <div class="cur-card-status">${statusTxt}</div>
+            <div class="cur-card-sub">
+              מבחן אחרון: <b>${fmt(lastLC)}</b><br>
+              פג תוקף: <b>${fmt(expiryStr)}</b>
+            </div>
           </div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text3);direction:ltr;">
-          <span>${fmt(lastLC)}</span>
-          <span>פקיעה: ${fmt(expiryStr)}</span>
+          <div class="cur-arc-wrap">
+            <svg viewBox="0 0 78 78">
+              <circle class="cur-arc-bg" cx="39" cy="39" r="32"/>
+              <circle class="cur-arc-fill" cx="39" cy="39" r="32"
+                stroke-dasharray="${circ.toFixed(1)}"
+                stroke-dashoffset="${arcOffset.toFixed(1)}"/>
+            </svg>
+            <div class="cur-arc-inner">
+              <div class="cur-arc-num">${Math.max(0, daysLeft)}</div>
+              <div class="cur-arc-unit">ימים</div>
+            </div>
+          </div>
         </div>`;
     }
   }
 
   // ── B. נוסע ביום ──
-  const cutoff90 = new Date(now); cutoff90.setDate(cutoff90.getDate() - 90);
+  const cutoff90    = new Date(now); cutoff90.setDate(cutoff90.getDate() - 90);
   const cutoff90str = cutoff90.toISOString().slice(0,10);
-  const paxRows   = allRows.filter(r => r.date && r.date >= cutoff90str);
-  const paxLands  = paxRows.reduce((s,r) => s + parseInt(r.landings||'0',10), 0);
-  const ok        = paxLands >= 3;
-  const paxBody   = el('cur-pax-body');
+  const paxRows     = allRows.filter(r => r.date && r.date >= cutoff90str);
+  const paxLands    = paxRows.reduce((s,r) => s + parseInt(r.landings||'0',10), 0);
+  const paxOk       = paxLands >= 3;
+  const paxBody     = el('cur-pax-body');
+  if (!paxOk) raiseAlert('red');
   if (paxBody) {
-    // find oldest qualifying landing date
-    const sorted90 = [...paxRows].sort((a,b) => a.date.localeCompare(b.date));
+    const sorted90   = [...paxRows].sort((a,b) => a.date.localeCompare(b.date));
     const oldestDate = sorted90.length ? sorted90[0].date : null;
+    const newestDate = sorted90.length ? sorted90[sorted90.length-1].date : null;
+    const cls        = paxOk ? 'c-green' : 'c-red';
+    const statusTxt  = paxOk ? 'כשיר' : 'לא כשיר';
+    const rangeStr   = oldestDate && newestDate
+      ? `${fmt(oldestDate)} — ${fmt(newestDate)}`
+      : fmt(today) + ' (חלון 90 יום)';
+    paxBody.className = `cur-big-card ${cls}`;
     paxBody.innerHTML = `
-      <div class="cur-label-row">
-        <span class="cur-status ${ok ? 'green' : 'red'}">${ok ? '✓ כשיר' : '✗ לא כשיר'}</span>
-        <span class="cur-detail">${paxLands} נחיתות ב-90 יום (${paxRows.length} טיסות)</span>
+      <div class="cur-card-row">
+        <div style="flex:1">
+          <div class="cur-card-title">כשירות להטסת נוסעים</div>
+          <div class="cur-card-status">${statusTxt}</div>
+          <div class="cur-card-sub">חלון 90 יום: <b style="direction:ltr;display:inline-block">${rangeStr}</b></div>
+        </div>
       </div>
-      ${oldestDate ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;direction:rtl;">טיסה ראשונה בחלון: ${fmt(oldestDate)}</div>` : ''}`;
+      <div class="cur-pax-row">
+        <div class="cur-pax-stat ${paxLands >= 3 ? 'ok' : 'bad'}">
+          <div class="cur-pax-num">${paxLands}</div>
+          <div class="cur-pax-lbl">נחיתות</div>
+        </div>
+        <div class="cur-pax-stat ok">
+          <div class="cur-pax-num">${paxRows.length}</div>
+          <div class="cur-pax-lbl">טיסות</div>
+        </div>
+      </div>
+      <div class="cur-card-note">
+        לצורך הטסת נוסעים ביום נדרשות <b>3 המראות ונחיתות</b> ב-90 הימים שקדמו למועד הטיסה.<br>
+        <span style="color:var(--text3)">הערה: האפליקציה אינה בודקת כשירות להטסת נוסעים בלילה — זו דרישה נפרדת.</span>
+      </div>`;
   }
 
-  // ── C. רעננות לפי מטוס ──
+  // ── C. רעננות על מטוס ──
   const byAc = {};
   allRows.forEach(r => {
     const ac = r.acType || r.aircraft || '?';
@@ -3338,19 +3479,36 @@ function renderCurrency() {
   });
   const acBody = el('cur-ac-body');
   if (acBody) {
-    const entries = Object.entries(byAc).sort((a,b) => a[1].localeCompare(b[1])); // oldest first
+    const entries = Object.entries(byAc).sort((a,b) => b[1].localeCompare(a[1]));
     if (!entries.length) {
-      acBody.innerHTML = '<div style="font-size:12px;color:var(--text3);">אין נתונים</div>';
+      acBody.innerHTML = '<div style="font-size:12px;color:var(--text2);">אין נתונים</div>';
     } else {
       acBody.innerHTML = entries.map(([ac, lastDate]) => {
         const days  = daysBetween(lastDate, today);
-        const color = days <= 14 ? 'green' : days <= 30 ? 'amber' : 'red';
-        return `<div class="cur-ac-row">
-          <span class="cur-ac-name">${ac}</span>
-          <span class="cur-ac-days ${color}">${days} ימים</span>
-          <span class="cur-ac-date">טיסה אחרונה: ${fmt(lastDate)}</span>
+        const cls   = days <= 14 ? 'c-green' : days <= 30 ? 'c-amber' : 'c-red';
+        const badge = days <= 14 ? 'מרוענן' : days <= 30 ? 'תשומת לב נדרשת' : 'נדרש רענון';
+        if (days > 30) raiseAlert('red');
+        else if (days > 14) raiseAlert('amber');
+        return `<div class="cur-ac-card ${cls}">
+          <div class="cur-ac-badge">${badge}</div>
+          <div class="cur-ac-name">${ac}</div>
+          <div class="cur-ac-days">${days}</div>
+          <div class="cur-ac-days-lbl">ימים</div>
+          <div class="cur-ac-last-date">טיסה אחרונה: ${fmt(lastDate)}</div>
         </div>`;
       }).join('');
+    }
+  }
+
+  // ── Tab alert dot ──
+  const tabEl = el('tab-currency');
+  if (tabEl) {
+    let dot = tabEl.querySelector('.tab-alert-dot');
+    if (alertLevel) {
+      if (!dot) { dot = document.createElement('span'); dot.className = 'tab-alert-dot'; tabEl.appendChild(dot); }
+      dot.className = `tab-alert-dot ${alertLevel}`;
+    } else {
+      if (dot) dot.remove();
     }
   }
 }
@@ -4004,8 +4162,18 @@ async function archiveFlight(e, idx) {
   const row = sorted[idx];
   if (!row) return;
 
-  // animate out
-  card.classList.add('archiving');
+  // ── immediate feedback: banner at top + dim card ──
+  const banner = el('archiveProgress');
+  if (banner) {
+    banner.className = 'archive-progress show';
+    banner.innerHTML = '<span class="arc-spinner"></span><span>מארכב טיסה... אנא המתן</span>';
+    banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  if (card) {
+    card.style.opacity = '0.4';
+    card.style.pointerEvents = 'none';
+    card.style.transition = 'opacity .2s ease';
+  }
 
   try {
     const res  = await fetch(gasUrl, {
@@ -4015,16 +4183,32 @@ async function archiveFlight(e, idx) {
     const text = await res.text();
     if (!text.includes('success') && !res.ok) throw new Error(text);
 
-    // remove from local data
+    // success: banner turns green, card slides out, then re-render
+    if (banner) {
+      banner.className = 'archive-progress show success';
+      banner.innerHTML = '<span>✓ הטיסה אורכבה בהצלחה</span>';
+    }
+    if (card) card.classList.add('archiving');
     setTimeout(() => {
-      journalRows  = journalRows.filter(r  => r !== row);
-      allRows      = allRows.filter(r      => r.date !== row.date || r.aircraft !== row.aircraft || r.timestamp !== row.timestamp);
-      searchJournal(); // re-render
-    }, 380);
+      journalRows = journalRows.filter(r => r !== row);
+      allRows     = allRows.filter(r => r.date !== row.date || r.aircraft !== row.aircraft || r.timestamp !== row.timestamp);
+      searchJournal();
+      setTimeout(() => {
+        if (banner) banner.className = 'archive-progress';
+      }, 1200);
+    }, 420);
 
   } catch(err) {
-    card.classList.remove('archiving');
-    alert('שגיאה בארכוב: ' + err.message);
+    // failure: clear banner, restore card
+    if (banner) banner.className = 'archive-progress';
+    if (card) { card.style.opacity = ''; card.style.pointerEvents = ''; }
+    const errProg = el('archiveProgress');
+    if (errProg) {
+      errProg.className = 'archive-progress show';
+      errProg.style.borderColor = '#ef4444';
+      errProg.innerHTML = '⚠ שגיאה בארכוב — ' + (err.message || 'נסה שוב');
+      setTimeout(() => { errProg.className = 'archive-progress'; }, 3000);
+    }
   }
 }
 
@@ -4038,6 +4222,21 @@ function refreshJournal() {
     const hh = now.getHours().toString().padStart(2,'0');
     const mm = now.getMinutes().toString().padStart(2,'0');
     const s = el('syncStampJournal');
+    if (s) { s.textContent = 'עודכן ' + hh + ':' + mm; s.style.display = 'inline'; }
+    if (btn) btn.classList.remove('loading');
+  });
+}
+
+function refreshCurrency() {
+  const btn = el('btnRefreshCurrency');
+  if (btn) btn.classList.add('loading');
+  allRows = []; journalRows = []; _journalLoading = false;
+  loadStats().then(function() {
+    renderCurrency();
+    const now = new Date();
+    const hh = now.getHours().toString().padStart(2,'0');
+    const mm = now.getMinutes().toString().padStart(2,'0');
+    const s = el('syncStampCurrency');
     if (s) { s.textContent = 'עודכן ' + hh + ':' + mm; s.style.display = 'inline'; }
     if (btn) btn.classList.remove('loading');
   });
