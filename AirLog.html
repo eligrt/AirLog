@@ -110,13 +110,11 @@ body::before {
 #splashOverlay.show { display: flex; }
 #splashOverlay.fade { opacity: 0; pointer-events: none; }
 .splash-icon {
-  width: 96px; height: 96px;
-  border-radius: 22px;
+  width: 220px; height: 220px;
+  border-radius: 0;
   margin-bottom: 22px;
   overflow: hidden;
-  box-shadow: 0 0 40px rgba(34,211,238,0.18);
 }
-.splash-icon svg { width: 96px; height: 96px; }
 .splash-title {
   font-family: var(--sans); font-size: 30px; font-weight: 700;
   color: var(--accent2); letter-spacing: 4px; margin-bottom: 18px;
@@ -629,6 +627,31 @@ select {
 }
 
 /* ── Currency tab ── */
+/* ── Year chart pill selector ── */
+.yr-sel-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--raised); color: var(--text3);
+  cursor: pointer; white-space: nowrap; transition: all .15s; user-select: none;
+}
+.yr-sel-pill.active { background: rgba(34,211,238,0.12); border-color: var(--accent); color: var(--accent2); }
+.yr-sel-pill:hover:not(.active) { color: var(--text2); border-color: var(--border2); }
+.yr-more-wrap { position: relative; }
+.yr-popover {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 6px; z-index: 50;
+  display: none; flex-direction: column; gap: 2px;
+  min-width: 90px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.yr-popover.open { display: flex; }
+.yr-popover-item {
+  padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  color: var(--text3); cursor: pointer; transition: all .15s; white-space: nowrap;
+  text-align: right;
+}
+.yr-popover-item:hover { background: var(--raised); color: var(--text); }
+.yr-popover-item.active { color: var(--accent2); background: rgba(34,211,238,0.08); }
+
 .cur-sec-lbl {
   font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
   color: var(--text3); text-transform: uppercase;
@@ -1294,7 +1317,7 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
   background: var(--raised);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  padding: 10px 36px 10px 12px;
+  padding: 10px 36px 10px 10px;
   color: var(--text);
   font-size: 14px;
   font-family: var(--sans);
@@ -1303,14 +1326,26 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 }
 .search-input:focus { border-color: var(--accent); }
 
-.search-icon {
+.search-icon { display: none; }
+.search-clear-btn {
   position: absolute;
-  right: 10px;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 16px;
-  pointer-events: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--text3);
+  border: none; cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: var(--bg2);
+  line-height: 1;
+  padding: 0;
+  transition: background .15s;
 }
+.search-clear-btn:hover { background: var(--text2); }
+.search-clear-btn.visible { display: flex; }
 .search-results { margin-top: 8px; }
 .journal-card {
   background: var(--raised);
@@ -2006,64 +2041,6 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <body>
 
 <!-- ── SETUP OVERLAY (shown on first run) ── -->
-<!-- ── STARTUP SPLASH ── -->
-<div id="splashOverlay">
-  <!-- Icon: propeller + shield inline SVG matching the app icon -->
-  <div class="splash-icon">
-    <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
-      <rect width="96" height="96" rx="22" fill="#060e18"/>
-      <!-- Propeller blades -->
-      <g fill="#22d3ee">
-        <!-- Top blade -->
-        <path d="M48,44 Q50,32 52,18 Q54,10 48,8 Q42,10 44,18 Q46,32 48,44Z"/>
-        <!-- Bottom-right blade -->
-        <path d="M52,50 Q63,55 75,62 Q82,66 83,60 Q84,54 77,52 Q65,48 52,50Z"/>
-        <!-- Bottom-left blade -->
-        <path d="M44,50 Q33,55 21,62 Q14,66 13,60 Q12,54 19,52 Q31,48 44,50Z"/>
-      </g>
-      <!-- Motion rings -->
-      <circle cx="48" cy="48" r="34" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.35"/>
-      <circle cx="48" cy="48" r="40" fill="none" stroke="#22d3ee" stroke-width="0.7" opacity="0.18"/>
-      <!-- Shield -->
-      <path d="M48,26 L64,33 L64,52 Q64,64 48,70 Q32,64 32,52 L32,33 Z"
-            fill="#0a1628" stroke="#22d3ee" stroke-width="1.8"/>
-      <!-- Grid inside shield -->
-      <rect x="36" y="34" width="24" height="20" rx="2" fill="#6366f1" opacity="0.25"/>
-      <rect x="36" y="34" width="24" height="20" rx="2" fill="none" stroke="#6366f1" stroke-width="1"/>
-      <line x1="36" y1="41" x2="60" y2="41" stroke="#6366f1" stroke-width="0.8"/>
-      <line x1="36" y1="47" x2="60" y2="47" stroke="#6366f1" stroke-width="0.8"/>
-      <line x1="44" y1="34" x2="44" y2="54" stroke="#6366f1" stroke-width="0.8"/>
-      <line x1="52" y1="34" x2="52" y2="54" stroke="#6366f1" stroke-width="0.8"/>
-      <!-- Hub -->
-      <circle cx="48" cy="48" r="6" fill="#060e18" stroke="#22d3ee" stroke-width="1.5"/>
-      <circle cx="48" cy="48" r="2.5" fill="#22d3ee"/>
-    </svg>
-  </div>
-  <div class="splash-title">AIRLOG</div>
-  <div class="splash-concept">Where aviation meets Google Sheets</div>
-  <div class="splash-tagline">Your flights. Your logbook. Your data.</div>
-  <div class="splash-bar-wrap" dir="ltr">
-    <div class="splash-bar-fill" id="splashBarFill"></div>
-  </div>
-  <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
-</div>
-
-<div id="setupOverlay">
-  <div class="setup-box">
-    <div class="setup-title">✈ הגדרה ראשונית</div>
-    <div class="setup-sub">
-      כדי לחבר את הטופס ל-Google Sheets שלך, הכנס את כתובת ה-<code>Web App</code> שיצרת ב-Google Apps Script.<br><br>
-      הכתובת נראית כך:<br>
-      <code>https://script.google.com/macros/s/.../exec</code>
-    </div>
-    <input type="text" class="setup-input" id="setupUrl"
-           placeholder="https://script.google.com/macros/s/.../exec"
-           dir="ltr" autocomplete="off" spellcheck="false">
-    <button class="setup-btn" onclick="saveSetup()">שמור והתחל →</button>
-    <div class="setup-note">הכתובת נשמרת רק במכשיר שלך (localStorage). אף אחד אחר לא רואה אותה.</div>
-  </div>
-</div>
-
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
@@ -2365,7 +2342,13 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <!-- ── CURRENT YEAR CHART ── -->
     <div class="card" style="margin-bottom:10px;">
-      <div class="card-head"><span class="card-icon">📆</span><span class="card-title" id="curYearTitle">שנה נוכחית</span></div>
+      <div class="card-head" style="padding:10px 14px;flex-wrap:wrap;gap:8px;">
+        <div class="yr-pill-row" id="yearPillRow" style="display:flex;gap:5px;flex-wrap:nowrap;align-items:center;"></div>
+        <span style="display:flex;align-items:center;gap:6px;margin-right:auto;">
+          <span class="card-icon">📆</span>
+          <span class="card-title" id="curYearTitle"></span>
+        </span>
+      </div>
       <div class="card-body" style="padding:14px 16px;" id="monthlyChartBody">
         <div class="stats-empty" style="padding:16px 0;font-size:12px;"><div>לחץ רענן כדי לטעון</div></div>
       </div>
@@ -2460,10 +2443,10 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           </select>
         </div>
         <div class="search-input-wrap">
-          <span class="search-icon" style="right:auto;left:10px;">🔍</span>
           <input type="text" id="journalSearch" class="search-input" placeholder="למשל: טל שחר, מגידו, הקפות, ניווט..." dir="rtl"
-            oninput="searchJournal()" autocomplete="off" spellcheck="false"
-            style="padding-right:12px;padding-left:32px;">
+            oninput="onJournalSearchInput()" autocomplete="off" spellcheck="false"
+            style="padding-right:12px;padding-left:34px;">
+          <button class="search-clear-btn" id="journalSearchClear" onclick="clearJournalSearch()" tabindex="-1">✕</button>
         </div>
         <!-- ── filtered stat strip ── -->
         <div id="journalStatStrip" style="display:none;">
@@ -2624,7 +2607,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
   </div><!-- /view-settings -->
 
-  <div class="app-footer" dir="ltr">built by eligrt · v1.14</div>
+  <div class="app-footer" dir="ltr">built by eligrt · v1.24</div>
 
 </div><!-- /page -->
 
@@ -2755,7 +2738,10 @@ function hideSplash() {
   el('splashLabel').textContent = 'מוכן!';
   setTimeout(() => {
     splash.classList.add('fade');
-    setTimeout(() => { splash.classList.remove('show','fade'); }, 420);
+    setTimeout(() => {
+      splash.classList.remove('show', 'fade');
+      splash.style.display = 'none';
+    }, 420);
   }, 300);
 }
 
@@ -3313,6 +3299,7 @@ async function loadStats() {
     applyFilters();
     populateJournalAcPills();
     populateLogFormAcDropdowns();
+    buildYearPills();
     applyDefaultAcToForm();
     try { renderYearly(); } catch(e) { console.error('renderYearly:', e); }
     try { renderMonthly(); } catch(e) { console.error('renderMonthly:', e); }
@@ -3983,9 +3970,60 @@ function parseHM(str) {
 }
 
 // ── render monthly chart for current year ──
+let _selectedChartYear = new Date().getFullYear();
+
+function buildYearPills() {
+  const row = el('yearPillRow');
+  if (!row || !allRows.length) return;
+
+  const nowYear = new Date().getFullYear();
+  const years = [...new Set(allRows.map(r => r.date ? r.date.slice(0,4) : null).filter(Boolean))]
+    .map(Number).sort((a,b) => b-a);
+
+  const PILL_COUNT = 3;
+  const recent = years.filter(y => y >= nowYear - PILL_COUNT + 1);
+  const older  = years.filter(y => y < nowYear - PILL_COUNT + 1);
+
+  let html = recent.map(y => {
+    const isActive = y === _selectedChartYear;
+    const isCur = y === nowYear;
+    return `<div class="yr-sel-pill${isActive?' active':''}" onclick="selectChartYear(${y})">${y}${isCur?' ✦':''}</div>`;
+  }).join('');
+
+  if (older.length) {
+    const activeOld = older.includes(_selectedChartYear);
+    html += `<div class="yr-more-wrap">
+      <div class="yr-sel-pill${activeOld?' active':''}" id="yrMoreBtn" onclick="toggleYrPopover(event)">${activeOld?_selectedChartYear+' ›':'עוד ›'}</div>
+      <div class="yr-popover" id="yrPopover">
+        ${older.map(y=>`<div class="yr-popover-item${y===_selectedChartYear?' active':''}" onclick="selectChartYear(${y})">${y}</div>`).join('')}
+      </div>
+    </div>`;
+  }
+  row.innerHTML = html;
+}
+
+function toggleYrPopover(e) {
+  e.stopPropagation();
+  el('yrPopover').classList.toggle('open');
+}
+
+function selectChartYear(year) {
+  _selectedChartYear = year;
+  const pop = el('yrPopover');
+  if (pop) pop.classList.remove('open');
+  buildYearPills();
+  renderMonthly();
+}
+
+document.addEventListener('click', () => {
+  const pop = el('yrPopover');
+  if (pop) pop.classList.remove('open');
+});
+
 function renderMonthly() {
-  const curYear  = new Date().getFullYear();
-  const curMonth = new Date().getMonth();
+  const curYear  = _selectedChartYear;
+  const nowYear  = new Date().getFullYear();
+  const curMonth = curYear === nowYear ? new Date().getMonth() : 11;
   const MONTHS   = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
   const byMonth = Array(12).fill(null).map(() => ({ pic: 0, dual: 0 }));
@@ -4000,16 +4038,14 @@ function renderMonthly() {
   const totals    = byMonth.map(m => m.pic + m.dual);
   const yearTotal = totals.reduce((a,b)=>a+b,0);
 
-  // ── Weighted average: completed months count as 1.0, current month weighted by % of days elapsed ──
+  // ── Weighted average: only apply month weighting for current year ──
   const today        = new Date();
-  const daysInCurMo  = new Date(curYear, curMonth + 1, 0).getDate(); // total days in current month
-  const dayOfCurMo   = today.getDate();                               // today's day number
-  const curMonthWeight = dayOfCurMo / daysInCurMo;                   // e.g. 10/31 = 0.32
-
-  // Sum: completed months (0..curMonth-1) + current month weighted
+  const daysInCurMo  = new Date(curYear, curMonth + 1, 0).getDate();
+  const dayOfCurMo   = today.getDate();
+  const curMonthWeight = (curYear === nowYear) ? dayOfCurMo / daysInCurMo : 1;
   const completedSum = totals.slice(0, curMonth).reduce((a,b)=>a+b,0);
   const totalSum     = completedSum + totals[curMonth];
-  const divisor      = curMonth + curMonthWeight; // e.g. 2 + 0.32 = 2.32
+  const divisor      = (curYear === nowYear) ? curMonth + curMonthWeight : 12;
   const avgMin       = divisor > 0 ? Math.round(totalSum / divisor) : 0;
   const estimateMin  = avgMin * 12;
 
@@ -4027,7 +4063,7 @@ function renderMonthly() {
   const barW   = colW * 0.62;
   const barX   = i => i * colW + (colW - barW) / 2;
 
-  el('curYearTitle').textContent = `${curYear} — שנה נוכחית`;
+  el('curYearTitle').textContent = '';
 
   let grid = '', bars = '', lines = '', labels = '';
 
@@ -4120,7 +4156,9 @@ function renderMonthly() {
       <span style="color:#fbbf24">– –</span>
       ממוצע חודשי <span style="color:#fbbf24;font-family:var(--mono)">${toHM(avgMin)}</span> שעות/חודש
       <span style="color:var(--text3);margin:0 4px;">·</span>
-      תחזית שנתית <span style="color:#f97316;font-family:var(--mono)">${toHM(estimateMin)}</span> שעות/שנה
+      ${curYear === nowYear
+        ? `תחזית שנתית <span style="color:#f97316;font-family:var(--mono)">${toHM(estimateMin)}</span> שעות/שנה`
+        : `סה״כ שנתי <span style="color:#f97316;font-family:var(--mono)">${toHM(yearTotal)}</span> שעות`}
     </div>
   </div>`;
 
@@ -4257,6 +4295,21 @@ function filterJournalRows(rows) {
 }
 
 // ── journal search ──
+function onJournalSearchInput() {
+  const q = el('journalSearch').value;
+  const btn = el('journalSearchClear');
+  if (btn) btn.classList.toggle('visible', q.length > 0);
+  searchJournal();
+}
+
+function clearJournalSearch() {
+  const inp = el('journalSearch');
+  if (inp) { inp.value = ''; inp.focus(); }
+  const btn = el('journalSearchClear');
+  if (btn) btn.classList.remove('visible');
+  searchJournal();
+}
+
 function searchJournal() {
   const q = (el('journalSearch').value || '').trim().toLowerCase();
   const out = el('searchResults');
@@ -4975,5 +5028,34 @@ function closeGasInfo() {
 }
 
 </script>
+<!-- ── OVERLAYS (outside page wrapper for correct fixed positioning) ── -->
+<div id="splashOverlay">
+  <div class="splash-icon">
+    <img src="./icon-512.png" width="220" height="220" style="display:block;border-radius:0;">
+  </div>
+  <div class="splash-concept">Where aviation meets Google Sheets</div>
+  <div class="splash-tagline">Your flights. Your logbook. Your data.</div>
+  <div class="splash-bar-wrap" dir="ltr">
+    <div class="splash-bar-fill" id="splashBarFill"></div>
+  </div>
+  <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
+</div>
+
+<div id="setupOverlay">
+  <div class="setup-box">
+    <div class="setup-title">✈ הגדרה ראשונית</div>
+    <div class="setup-sub">
+      כדי לחבר את הטופס ל-Google Sheets שלך, הכנס את כתובת ה-<code>Web App</code> שיצרת ב-Google Apps Script.<br><br>
+      הכתובת נראית כך:<br>
+      <code>https://script.google.com/macros/s/.../exec</code>
+    </div>
+    <input type="text" class="setup-input" id="setupUrl"
+           placeholder="https://script.google.com/macros/s/.../exec"
+           dir="ltr" autocomplete="off" spellcheck="false">
+    <button class="setup-btn" onclick="saveSetup()">שמור והתחל →</button>
+    <div class="setup-note">הכתובת נשמרת רק במכשיר שלך (localStorage). אף אחד אחר לא רואה אותה.</div>
+  </div>
+</div>
+
 </body>
 </html>
