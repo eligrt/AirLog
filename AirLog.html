@@ -676,12 +676,22 @@ select {
 .cur-ac-last-date { font-size: 10px; color: var(--text2); padding-top: 8px; border-top: 1px solid var(--border); }
 /* Tab alert dot */
 .tab-alert-dot {
-  display: inline-block; width: 7px; height: 7px;
-  border-radius: 50%; margin-right: 4px;
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 3px;
   vertical-align: middle; margin-top: -2px;
+  flex-shrink: 0;
 }
 .tab-alert-dot.red   { background: #ef4444; }
 .tab-alert-dot.amber { background: var(--amber); }
+.cur-banner {
+  display: flex; align-items: center; gap: 8px;
+  border-radius: 10px; padding: 11px 14px;
+  font-size: 12px; font-weight: 600;
+  margin-bottom: 14px;
+}
+.cur-banner.green { background: rgba(52,211,153,.1);  border: 1px solid rgba(52,211,153,.3); color: var(--emerald); }
+.cur-banner.amber { background: rgba(251,191,36,.1);  border: 1px solid rgba(251,191,36,.3); color: var(--amber); }
+.cur-banner.red   { background: rgba(239,68,68,.1);   border: 1px solid rgba(239,68,68,.3);  color: #ef4444; }
 .yr-b {
   font-size: 11px;
   font-weight: 600;
@@ -1907,7 +1917,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.131</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.132</span>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -2157,6 +2167,11 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
     </div>
 
     <div id="currencyContent">
+    <!-- Summary banner -->
+    <div id="cur-summary-banner" style="display:none;" class="cur-banner">
+      <span id="cur-banner-icon" style="font-size:15px;flex-shrink:0;"></span>
+      <span id="cur-banner-text"></span>
+    </div>
     <div class="cur-sec-lbl">מבחן רמה</div>
     <div class="cur-big-card" id="cur-levelcheck-body">
       <div class="stats-empty" style="padding:12px 0;font-size:12px;"><div>טוען...</div></div>
@@ -3490,12 +3505,18 @@ function renderCurrency() {
     if (!entries.length) {
       acBody.innerHTML = '<div style="font-size:12px;color:var(--text2);">אין נתונים</div>';
     } else {
-      acBody.innerHTML = entries.map(([ac, lastDate]) => {
-        const days  = daysBetween(lastDate, today);
+      // Compute days for each aircraft — only alert if ALL are stale
+      const acDays = entries.map(([ac, lastDate]) => ({
+        ac, lastDate, days: daysBetween(lastDate, today)
+      }));
+      const allRed   = acDays.every(a => a.days > 30);
+      const allAmber = acDays.every(a => a.days > 14);
+      if      (allRed)   raiseAlert('red');
+      else if (allAmber) raiseAlert('amber');
+
+      acBody.innerHTML = acDays.map(({ ac, lastDate, days }) => {
         const cls   = days <= 14 ? 'c-green' : days <= 30 ? 'c-amber' : 'c-red';
         const badge = days <= 14 ? 'מרוענן' : days <= 30 ? 'תשומת לב נדרשת' : 'נדרש רענון';
-        if (days > 30) raiseAlert('red');
-        else if (days > 14) raiseAlert('amber');
         return `<div class="cur-ac-card ${cls}">
           <div class="cur-ac-badge">${badge}</div>
           <div class="cur-ac-name">${ac}</div>
@@ -3507,12 +3528,55 @@ function renderCurrency() {
     }
   }
 
+  // ── Summary banner ──
+  const banner = el('cur-summary-banner');
+  const bannerIcon = el('cur-banner-icon');
+  const bannerText = el('cur-banner-text');
+  if (banner) {
+    if (alertLevel === 'red') {
+      // Find the most urgent red issue for the message
+      const lcRows2 = allRows.filter(r => (r.levelCheck||'').includes('כן') && r.date).sort((a,b)=>b.date.localeCompare(a.date));
+      let msg = '';
+      if (lcRows2.length) {
+        const exp = new Date(lcRows2[0].date); exp.setDate(exp.getDate()+730);
+        const dl = daysBetween(today, exp.toISOString().slice(0,10));
+        if (dl <= 30) msg = dl <= 0 ? 'מבחן רמה פג תוקף' : `מבחן רמה פג בעוד ${dl} ימים`;
+      }
+      if (!paxOk) msg = msg ? msg + ' · לא כשיר להטסת נוסעים' : 'לא כשיר להטסת נוסעים';
+      banner.className = 'cur-banner red';
+      bannerIcon.textContent = '✗';
+      bannerText.textContent = msg || 'נדרשת תשומת לב';
+      banner.style.display = 'flex';
+    } else if (alertLevel === 'amber') {
+      const lcRows2 = allRows.filter(r => (r.levelCheck||'').includes('כן') && r.date).sort((a,b)=>b.date.localeCompare(a.date));
+      let msg = '';
+      if (lcRows2.length) {
+        const exp = new Date(lcRows2[0].date); exp.setDate(exp.getDate()+730);
+        const dl = daysBetween(today, exp.toISOString().slice(0,10));
+        if (dl <= 90) msg = `מבחן רמה פג תוקף בעוד ${dl} ימים`;
+      }
+      banner.className = 'cur-banner amber';
+      bannerIcon.textContent = '⚠';
+      bannerText.textContent = msg || 'שים לב — נדרשת תשומת לב בקרוב';
+      banner.style.display = 'flex';
+    } else {
+      banner.className = 'cur-banner green';
+      bannerIcon.textContent = '✓';
+      bannerText.textContent = 'כל הכשירויות תקינות';
+      banner.style.display = 'flex';
+    }
+  }
+
   // ── Tab alert dot ──
   const tabEl = el('tab-currency');
   if (tabEl) {
     let dot = tabEl.querySelector('.tab-alert-dot');
     if (alertLevel) {
-      if (!dot) { dot = document.createElement('span'); dot.className = 'tab-alert-dot'; tabEl.appendChild(dot); }
+      if (!dot) {
+        dot = document.createElement('span');
+        dot.className = 'tab-alert-dot';
+        tabEl.insertBefore(dot, tabEl.firstChild);
+      }
       dot.className = `tab-alert-dot ${alertLevel}`;
     } else {
       if (dot) dot.remove();
