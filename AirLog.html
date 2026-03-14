@@ -857,21 +857,17 @@ select {
 
 /* ── STATS VIEW ── */
 .stats-header {
-  margin-bottom: 18px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  justify-content: flex-start;
   gap: 10px;
+  padding: 5px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  min-height: 36px;
+  margin-bottom: 12px;
 }
-.stats-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
+.stats-title { display: none; }
 .btn-refresh {
   padding: 7px 14px;
   background: var(--raised);
@@ -887,6 +883,9 @@ select {
 }
 .btn-refresh:hover { border-color: var(--accent); color: var(--accent2); }
 .btn-refresh.loading .refresh-icon { animation: spin .6s linear infinite; display: inline-block; }
+.btn-refresh-global {
+  padding: 4px 10px; font-size: 11px;
+}
 
 /* stat summary cards */
 .stat-cards {
@@ -2011,7 +2010,13 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.136</span>
+  <span class="top-date" id="headerDate"></span>
+  <div style="display:flex;align-items:center;gap:8px;margin-right:auto;flex-shrink:0;">
+    <span id="syncStampGlobal" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
+    <button class="btn-refresh btn-refresh-global" id="btnRefreshGlobal" onclick="globalRefresh()">
+      <span class="refresh-icon">↻</span> רענן
+    </button>
+  </div>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -2243,15 +2248,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <!-- ══════════ CURRENCY VIEW ══════════ -->
   <div class="view" id="view-currency">
 
-    <div class="stats-header">
-      <div class="stats-title">✅ כשירות אווירית</div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <button class="btn-refresh" id="btnRefreshCurrency" onclick="refreshCurrency()">
-          <span class="refresh-icon">↻</span> רענן
-        </button>
-        <span id="syncStampCurrency" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
-      </div>
-    </div>
+
 
     <div class="load-bar-wrap" id="loadBarCurrency" style="display:none;">
       <div class="load-bar-icon">✅</div>
@@ -2286,15 +2283,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <!-- ══════════ STATS VIEW (merged) ══════════ -->
   <div class="view" id="view-stats">
 
-    <div class="stats-header">
-      <div class="stats-title">📊 סטטיסטיקה</div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <button class="btn-refresh" id="btnRefresh" onclick="loadStats()">
-          <span class="refresh-icon">↻</span> רענן
-        </button>
-        <span id="syncStamp" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
-      </div>
-    </div>
+
 
     <div class="load-bar-wrap" id="loadBarStats" style="display:none;">
       <div class="load-bar-icon">📊</div>
@@ -2349,6 +2338,12 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <!-- hidden compat stubs -->
     <span id="s-flights"   style="display:none"></span>
+    <span id="syncStamp"          style="display:none"></span>
+    <span id="btnRefresh"         style="display:none"></span>
+    <span id="btnRefreshCurrency" style="display:none"></span>
+    <span id="btnRefreshJournal"  style="display:none"></span>
+    <span id="syncStampCurrency"  style="display:none"></span>
+    <span id="syncStampJournal"   style="display:none"></span>
     <span id="s-landings"  style="display:none"></span>
     <span id="s-pic"       style="display:none"></span>
     <span id="s-dual"      style="display:none"></span>
@@ -2374,15 +2369,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <!-- ══════════ SEARCH / JOURNAL VIEW ══════════ -->
   <div class="view" id="view-search">
 
-    <div class="stats-header">
-      <div class="stats-title">🔎 יומן טיסות</div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <button class="btn-refresh" id="btnRefreshJournal" onclick="refreshJournal()">
-          <span class="refresh-icon">↻</span> רענן
-        </button>
-        <span id="syncStampJournal" style="display:none;font-size:10px;color:var(--text3);font-family:var(--mono);">עודכן —</span>
-      </div>
-    </div>
+
 
     <!-- Edit mode warning banner -->
     <div id="editModeBanner" style="display:none;">
@@ -2451,9 +2438,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <!-- ══════════ SETTINGS VIEW ══════════ -->
   <div class="view" id="view-settings">
 
-    <div class="stats-header">
-      <div class="stats-title">⚙️ הגדרות</div>
-    </div>
+
 
     <!-- INSTALL PWA -->
     <div class="card" style="margin-bottom:10px;">
@@ -2575,7 +2560,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
   </div><!-- /view-settings -->
 
-  <div class="app-footer" dir="ltr">built by eligrt</div>
+  <div class="app-footer" dir="ltr">built by eligrt · v1.01</div>
 
 </div><!-- /page -->
 
@@ -3954,7 +3939,7 @@ function renderMonthly() {
 
   // (secondary line axis removed — estimate shown in legend only)
 
-  const W = 360, H = 175, BPAD = 22;
+  const W = 360, H = 140, BPAD = 22;
   const chartH = H - BPAD;
   const colW   = W / 12;
   const barW   = colW * 0.62;
@@ -4483,11 +4468,43 @@ function refreshCurrency() {
   });
 }
 
+function globalRefresh() {
+  const btn = el('btnRefreshGlobal');
+  if (btn) btn.classList.add('loading');
+
+  // Always reload lean data
+  allRows = []; _journalLoading = false;
+
+  // Smart: also reload journal only if on journal tab
+  const onJournal = el('tab-search') && el('tab-search').classList.contains('active');
+  if (onJournal) journalRows = [];
+
+  loadStats().then(function() {
+    renderCurrency();
+    if (onJournal) loadJournal();
+    const now = new Date();
+    const hh = now.getHours().toString().padStart(2,'0');
+    const mm = now.getMinutes().toString().padStart(2,'0');
+    const stamp = el('syncStampGlobal');
+    if (stamp) { stamp.textContent = 'עודכן ' + hh + ':' + mm; stamp.style.display = 'inline'; }
+    if (btn) btn.classList.remove('loading');
+    // Re-render current tab content
+    const active = ['log','currency','stats','search','settings'].find(id =>
+      el('tab-' + id) && el('tab-' + id).classList.contains('active'));
+    if (active === 'stats') { try { renderYearly(); } catch(e){} try { renderMonthly(); } catch(e){} }
+    if (active === 'search' && !onJournal) searchJournal();
+  });
+}
+
 function stampSync() {
   const now = new Date();
   const hh  = now.getHours().toString().padStart(2,'0');
   const mm  = now.getMinutes().toString().padStart(2,'0');
   const txt = 'עודכן ' + hh + ':' + mm;
+  // Update global stamp in top bar
+  const sg = el('syncStampGlobal');
+  if (sg) { sg.textContent = txt; sg.style.display = 'inline'; }
+  // Keep legacy stamp stubs working silently
   const s = el('syncStamp');
   if (s) { s.textContent = txt; s.style.display = 'inline'; }
 }
