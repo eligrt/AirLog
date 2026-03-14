@@ -1,12 +1,12 @@
 {
-  "name": "AeroLog",
-  "short_name": "AeroLog",
-  "description": "Your Smart Pilot Logbook",
-  "start_url": "./AeroLog.html",
+  "name": "AirLog",
+  "short_name": "AirLog",
+  "description": "Your Smart Pilot Logbook — Where aviation meets Google Sheets",
+  "start_url": "./AirLog.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a1520",
-  "theme_color": "#0a1520",
+  "background_color": "#060e18",
+  "theme_color": "#0a1628",
   "lang": "he",
   "dir": "rtl",
   "icons": [
