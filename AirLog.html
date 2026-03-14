@@ -93,6 +93,58 @@ body::before {
 }
 #setupOverlay.show { display: flex; }
 
+/* ── Startup splash ── */
+#splashOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #060e18;
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  transition: opacity .5s ease;
+  padding: 32px;
+}
+#splashOverlay.show { display: flex; }
+#splashOverlay.fade { opacity: 0; pointer-events: none; }
+.splash-icon {
+  width: 96px; height: 96px;
+  border-radius: 22px;
+  margin-bottom: 22px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(34,211,238,0.18);
+}
+.splash-icon svg { width: 96px; height: 96px; }
+.splash-title {
+  font-family: var(--sans); font-size: 30px; font-weight: 700;
+  color: var(--accent2); letter-spacing: 4px; margin-bottom: 18px;
+}
+.splash-concept {
+  font-size: 13px; color: var(--text2); font-weight: 500;
+  margin-bottom: 6px; text-align: center; letter-spacing: 0.3px;
+}
+.splash-tagline {
+  font-size: 11px; color: var(--text3);
+  margin-bottom: 40px; text-align: center; letter-spacing: 0.2px;
+}
+.splash-bar-wrap {
+  width: 240px; height: 6px; background: #1a3554;
+  border-radius: 10px; overflow: hidden;
+  border: 1px solid #1e3a54;
+  margin-bottom: 12px;
+}
+.splash-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--emerald) 100%);
+  border-radius: 10px; transition: width .35s ease;
+}
+.splash-label {
+  font-size: 11px; color: var(--text3); font-family: var(--mono);
+  min-height: 16px; text-align: center;
+}
+
 .setup-box {
   background: var(--surface);
   border: 1px solid var(--border2);
@@ -579,17 +631,17 @@ select {
 .cur-sec-lbl {
   font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
   color: var(--text3); text-transform: uppercase;
-  margin: 14px 0 8px;
+  margin: 10px 0 6px;
 }
 .cur-sec-sub {
   font-size: 11px; color: var(--text2);
-  margin: -4px 0 10px; line-height: 1.5;
+  margin: -2px 0 6px; line-height: 1.5;
 }
 .cur-big-card {
   background: var(--bg2);
   border-radius: 18px;
-  padding: 18px;
-  margin-bottom: 14px;
+  padding: 13px 14px;
+  margin-bottom: 10px;
   border: 1px solid var(--border);
   position: relative;
   overflow: hidden;
@@ -604,8 +656,8 @@ select {
 .cur-big-card.c-amber::before { background: var(--amber); }
 .cur-big-card.c-red::before   { background: #ef4444; }
 .cur-card-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-.cur-card-title { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 0.3px; margin-bottom: 5px; }
-.cur-card-status { font-size: 20px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
+.cur-card-title { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 0.3px; margin-bottom: 3px; }
+.cur-card-status { font-size: 18px; font-weight: 700; line-height: 1.1; margin-bottom: 3px; }
 .cur-big-card.c-green .cur-card-status { color: var(--emerald); }
 .cur-big-card.c-amber .cur-card-status { color: var(--amber); }
 .cur-big-card.c-red   .cur-card-status { color: #ef4444; }
@@ -613,13 +665,13 @@ select {
 .cur-card-sub b { color: var(--text); font-weight: 600; }
 .cur-card-note {
   font-size: 10px; color: var(--text3);
-  margin-top: 12px; padding-top: 12px;
+  margin-top: 8px; padding-top: 8px;
   border-top: 1px solid var(--border); line-height: 1.5;
 }
 .cur-card-note b { color: var(--text2); font-weight: 600; }
 /* Arc gauge */
-.cur-arc-wrap { position: relative; width: 78px; height: 78px; flex-shrink: 0; }
-.cur-arc-wrap svg { width: 78px; height: 78px; transform: rotate(-90deg); }
+.cur-arc-wrap { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.cur-arc-wrap svg { width: 64px; height: 64px; transform: rotate(-90deg); }
 .cur-arc-bg   { fill: none; stroke: var(--raised); stroke-width: 6; }
 .cur-arc-fill { fill: none; stroke-width: 6; stroke-linecap: round; }
 .c-green .cur-arc-fill { stroke: var(--emerald); }
@@ -636,12 +688,12 @@ select {
 .c-amber .cur-arc-num { color: var(--amber); }
 .c-red   .cur-arc-num { color: #ef4444; }
 /* Pax stats row */
-.cur-pax-row { display: flex; gap: 8px; margin-top: 12px; }
+.cur-pax-row { display: flex; gap: 8px; margin-top: 8px; }
 .cur-pax-stat {
   flex: 1; text-align: center;
-  background: var(--bg1); border-radius: 10px; padding: 10px 4px;
+  background: var(--bg1); border-radius: 10px; padding: 7px 4px;
 }
-.cur-pax-num { font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+.cur-pax-num { font-size: 22px; font-weight: 700; font-family: var(--mono); line-height: 1; }
 .cur-pax-lbl { font-size: 10px; color: var(--text2); margin-top: 3px; }
 .cur-pax-stat.ok   .cur-pax-num { color: var(--emerald); }
 .cur-pax-stat.bad  .cur-pax-num { color: #ef4444; }
@@ -649,7 +701,7 @@ select {
 .cur-ac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
 .cur-ac-card {
   background: var(--bg2); border-radius: 14px;
-  padding: 14px 12px 12px; border: 1px solid var(--border);
+  padding: 10px 10px 10px; border: 1px solid var(--border);
   text-align: center; position: relative; overflow: hidden;
 }
 .cur-ac-card::after {
@@ -1898,6 +1950,48 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <body>
 
 <!-- ── SETUP OVERLAY (shown on first run) ── -->
+<!-- ── STARTUP SPLASH ── -->
+<div id="splashOverlay">
+  <!-- Icon: propeller + shield inline SVG matching the app icon -->
+  <div class="splash-icon">
+    <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+      <rect width="96" height="96" rx="22" fill="#060e18"/>
+      <!-- Propeller blades -->
+      <g fill="#22d3ee">
+        <!-- Top blade -->
+        <path d="M48,44 Q50,32 52,18 Q54,10 48,8 Q42,10 44,18 Q46,32 48,44Z"/>
+        <!-- Bottom-right blade -->
+        <path d="M52,50 Q63,55 75,62 Q82,66 83,60 Q84,54 77,52 Q65,48 52,50Z"/>
+        <!-- Bottom-left blade -->
+        <path d="M44,50 Q33,55 21,62 Q14,66 13,60 Q12,54 19,52 Q31,48 44,50Z"/>
+      </g>
+      <!-- Motion rings -->
+      <circle cx="48" cy="48" r="34" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.35"/>
+      <circle cx="48" cy="48" r="40" fill="none" stroke="#22d3ee" stroke-width="0.7" opacity="0.18"/>
+      <!-- Shield -->
+      <path d="M48,26 L64,33 L64,52 Q64,64 48,70 Q32,64 32,52 L32,33 Z"
+            fill="#0a1628" stroke="#22d3ee" stroke-width="1.8"/>
+      <!-- Grid inside shield -->
+      <rect x="36" y="34" width="24" height="20" rx="2" fill="#6366f1" opacity="0.25"/>
+      <rect x="36" y="34" width="24" height="20" rx="2" fill="none" stroke="#6366f1" stroke-width="1"/>
+      <line x1="36" y1="41" x2="60" y2="41" stroke="#6366f1" stroke-width="0.8"/>
+      <line x1="36" y1="47" x2="60" y2="47" stroke="#6366f1" stroke-width="0.8"/>
+      <line x1="44" y1="34" x2="44" y2="54" stroke="#6366f1" stroke-width="0.8"/>
+      <line x1="52" y1="34" x2="52" y2="54" stroke="#6366f1" stroke-width="0.8"/>
+      <!-- Hub -->
+      <circle cx="48" cy="48" r="6" fill="#060e18" stroke="#22d3ee" stroke-width="1.5"/>
+      <circle cx="48" cy="48" r="2.5" fill="#22d3ee"/>
+    </svg>
+  </div>
+  <div class="splash-title">AIRLOG</div>
+  <div class="splash-concept">Where aviation meets Google Sheets</div>
+  <div class="splash-tagline">Your flights. Your logbook. Your data.</div>
+  <div class="splash-bar-wrap" dir="ltr">
+    <div class="splash-bar-fill" id="splashBarFill"></div>
+  </div>
+  <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
+</div>
+
 <div id="setupOverlay">
   <div class="setup-box">
     <div class="setup-title">✈ הגדרה ראשונית</div>
@@ -1917,7 +2011,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 <!-- ── TOP HEADER ── -->
 <div class="top-header">
   <span class="conn-badge" id="connBadge"></span>
-  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.132</span>
+  <span class="top-date" id="headerDate"></span><span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-right:8px;">v0.136</span>
 </div>
 
 <!-- ── TAB BAR ── -->
@@ -2552,19 +2646,69 @@ function saveSetup() {
   el('setupOverlay').classList.remove('show');
   refreshSettingsView();
   fetchConnectedName();
+  startupLoad();
 }
 
-// show setup on first run
+// ── Startup: show splash and load all data, or show setup if no URL ──
 window.addEventListener('DOMContentLoaded', () => {
-  if (!getUrl()) openSetup();
   initDate();
   initDropdowns();
   initSpinners();
   initManual();
   setLandings(0);
-  fetchConnectedName();
   refreshSettingsView();
+
+  if (!getUrl()) {
+    openSetup();
+    return;
+  }
+
+  // Show splash and start loading
+  fetchConnectedName();
+  startupLoad();
 });
+
+async function startupLoad() {
+  const splash = el('splashOverlay');
+  const fill   = el('splashBarFill');
+  const label  = el('splashLabel');
+
+  function setSplash(pct, txt) {
+    if (fill)  fill.style.width = pct + '%';
+    if (label) label.textContent = txt;
+  }
+
+  splash.classList.add('show');
+  setSplash(5, 'מתחבר לשרת...');
+
+  // Step 1: load lean data (stats + currency)
+  try {
+    await loadStats();
+    setSplash(70, 'טוען יומן טיסות...');
+  } catch(e) {
+    setSplash(100, 'שגיאה בטעינה — בדוק חיבור');
+    setTimeout(() => hideSplash(), 2000);
+    return;
+  }
+
+  // Render currency immediately after lean load
+  renderCurrency();
+
+  // Step 2: load journal in background (don't block splash)
+  hideSplash();
+  if (!_journalLoading) loadJournal();
+}
+
+function hideSplash() {
+  const splash = el('splashOverlay');
+  if (!splash) return;
+  el('splashBarFill').style.width = '100%';
+  el('splashLabel').textContent = 'מוכן!';
+  setTimeout(() => {
+    splash.classList.add('fade');
+    setTimeout(() => { splash.classList.remove('show','fade'); }, 420);
+  }, 300);
+}
 
 async function fetchConnectedName() {
   const url = getUrl();
@@ -2593,13 +2737,33 @@ async function switchTab(t) {
     el(`tab-${id}`).classList.toggle('active', id === t);
     el(`view-${id}`).classList.toggle('active', id === t);
   });
+  // Data is loaded on startup — these are fallbacks only
   if ((t === 'stats' || t === 'currency') && allRows.length === 0) {
     await loadStats();
   }
   if (t === 'currency') renderCurrency();
   if (t === 'search') {
-    if (allRows.length === 0 || journalRows.length === 0) loadStatsAndJournal();
-    else searchJournal();
+    if (journalRows.length === 0) {
+      if (allRows.length === 0) await loadStats();
+      if (_journalLoading) {
+        // Already loading in background — show progress indicator so user knows
+        const out = el('searchResults');
+        if (out && !out.querySelector('.jload-wrap')) {
+          out.innerHTML =
+            '<div class="jload-wrap">' +
+              '<div class="jload-icon">📖</div>' +
+              '<div class="jload-label">טוען יומן... עוד רגע</div>' +
+              '<div class="jload-track" dir="ltr">' +
+                '<div class="jload-fill" style="width:60%;animation:grow 1.5s ease-in-out infinite alternate;"></div>' +
+              '</div>' +
+            '</div>';
+        }
+      } else {
+        loadJournal();
+      }
+    } else {
+      searchJournal();
+    }
   }
   if (t === 'settings') { refreshSettingsView(); updateInstallUI(); }
 }
@@ -3029,6 +3193,12 @@ async function loadStats() {
     if (cFill) cFill.style.width = Math.round(pct) + '%';
     if (cLbl)  cLbl.textContent  = label;
     var cc = el('currencyContent'); if (cc) cc.style.display = 'none';
+    // mirror to splash bar if visible
+    var sf = el('splashBarFill'), sl = el('splashLabel');
+    if (sf && el('splashOverlay') && el('splashOverlay').classList.contains('show')) {
+      sf.style.width = Math.min(65, Math.round(pct * 0.65)) + '%';
+      if (sl) sl.textContent = label;
+    }
   }
   function hideLB() {
     var w = el('loadBarStats'); if(w) w.style.display='none';
