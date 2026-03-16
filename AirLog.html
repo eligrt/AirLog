@@ -93,6 +93,65 @@ body::before {
 }
 #setupOverlay.show { display: flex; }
 
+/* ── Onboarding overlay ── */
+#onboardingOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 110;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+#onboardingOverlay.show { display: flex; }
+.ob-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin: 0 auto 16px;
+}
+.ob-ic-g { background: rgba(52,211,153,.1); border: 1.5px solid rgba(52,211,153,.25); }
+.ob-ic-b { background: rgba(59,130,246,.1);  border: 1.5px solid rgba(59,130,246,.25); }
+.ob-step-num { font-size: 11px; font-weight: 700; color: var(--text3); margin-bottom: 4px; font-family: var(--mono); }
+.ob-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; text-align: center; }
+.ob-sub { font-size: 13px; color: var(--text2); text-align: center; line-height: 1.6; margin-bottom: 24px; }
+.ob-btn {
+  width: 100%; max-width: 300px;
+  padding: 14px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; color: #fff;
+  border: none; cursor: pointer; margin-bottom: 10px;
+}
+.ob-btn-primary { background: linear-gradient(135deg,#1d4ed8,#3b82f6); }
+.ob-btn-emerald { background: linear-gradient(135deg,#059669,#34d399); }
+.ob-btn-ghost {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text2); font-size: 13px;
+}
+.ob-sheet-confirm {
+  width: 100%; max-width: 300px;
+  background: rgba(52,211,153,.06); border: 1px solid rgba(52,211,153,.2);
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.ob-paste-field {
+  width: 100%; max-width: 300px;
+  background: var(--raised); border: 1.5px solid var(--cyan);
+  border-radius: 10px; padding: 12px 14px;
+  font-size: 12px; color: var(--text); font-family: var(--mono);
+  margin-bottom: 10px; outline: none;
+}
+.ob-connect-msg {
+  font-size: 11px; color: var(--text3);
+  text-align: center; margin-top: 6px;
+}
+.ob-prog { height: 5px; background: #1a3554; border-radius: 10px; overflow: hidden; width: 100%; max-width: 300px; margin-bottom: 8px; }
+.ob-prog-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg,var(--accent),var(--cyan),var(--emerald)); transition: width .3s; }
+.ob-check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 11px; color: var(--text2); }
+.ob-features { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 24px; max-width: 300px; }
+.ob-feat { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: rgba(34,211,238,.08); border: 1px solid rgba(34,211,238,.2); color: var(--cyan); }
+
 /* ── Startup splash ── */
 #splashOverlay {
   display: none;
@@ -752,9 +811,10 @@ select {
 .cur-ac-last-date { font-size: 10px; color: var(--text2); padding-top: 8px; border-top: 1px solid var(--border); }
 /* Tab alert dot */
 .tab-alert-dot {
-  display: inline-block; width: 8px; height: 8px;
-  border-radius: 50%; margin-right: 3px;
-  vertical-align: middle; margin-top: -2px;
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%;
+  position: relative; top: -5px; right: -2px;
+  margin-right: -5px;
   flex-shrink: 0;
 }
 .tab-alert-dot.red   { background: #ef4444; }
@@ -1645,10 +1705,12 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 .app-footer {
-  text-align: center; font-size: 11px; color: var(--text2);
+  text-align: center; font-size: 11px;
   padding: 10px 0 4px; letter-spacing: .04em;
   font-family: var(--mono);
 }
+.app-footer .footer-credit { color: var(--text2); }
+.app-footer .footer-meta   { color: var(--text3); font-size: 10px; margin-top: 2px; }
 
 @media (max-width: 380px) {
   .grid2 { grid-template-columns: 1fr; }
@@ -2558,7 +2620,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <div class="set-row-icon blue">✉️</div>
           <div>
             <div class="set-row-title">משוב למפתח</div>
-            <div class="set-row-sub">eligrt@gmail.com</div>
+            <div class="set-row-sub"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e2878e8b859096a2858f838b8ecc818d8f">[email&#160;protected]</a></div>
           </div>
         </div>
         <div class="set-row-right"><span style="font-size:12px;color:var(--text3);">↗</span></div>
@@ -2607,7 +2669,10 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
   </div><!-- /view-settings -->
 
-  <div class="app-footer" dir="ltr">built by eligrt · v1.24</div>
+  <div class="app-footer">
+    <div class="footer-meta" dir="ltr">v1.43<span id="footerStamp"></span></div>
+    <div class="footer-credit">built by eligrt</div>
+  </div>
 
 </div><!-- /page -->
 
@@ -2646,7 +2711,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ═══════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════
@@ -2690,15 +2755,159 @@ window.addEventListener('DOMContentLoaded', () => {
   setLandings(0);
   refreshSettingsView();
 
+  // Clean up any stale ?setup param
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('setup') === '1') {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
   if (!getUrl()) {
     openSetup();
     return;
   }
 
-  // Show splash and start loading
+  // Normal launch — show splash and start loading
   fetchConnectedName();
   startupLoad();
 });
+
+// ═══════════════════════════════════════════
+//  ONBOARDING
+// ═══════════════════════════════════════════
+
+function obShow(screenId) {
+  ['obWelcome','obConnecting','obSuccess'].forEach(id => {
+    const el2 = document.getElementById(id);
+    if (el2) el2.style.display = 'none';
+  });
+  const target = document.getElementById(screenId);
+  if (target) target.style.display = 'flex';
+  document.getElementById('onboardingOverlay').classList.add('show');
+}
+
+function obHide() {
+  document.getElementById('onboardingOverlay').classList.remove('show');
+}
+
+function obShowWelcome() {
+  obShow('obWelcome');
+}
+
+function obStartSetup() {
+  // Open the template sheet — user will make a copy and run setup
+  window.open('https://docs.google.com/spreadsheets/d/YOUR_TEMPLATE_ID/copy', '_blank');
+}
+
+function obShowPasteOnly() {
+  // User already has a sheet — show paste field directly
+  obShow('obConnecting');
+  // Skip auto-clipboard, just show paste field
+  document.getElementById('obPasteFallback').style.display = 'block';
+  document.getElementById('obCheck1').innerHTML =
+    '<span style="font-size:12px;color:var(--text3);">הדבק את הקישור של הגיליון שלך</span>';
+}
+
+async function obShowConnecting() {
+  obShow('obConnecting');
+
+  // Step 1: try to read clipboard
+  let url = '';
+  try {
+    url = await navigator.clipboard.readText();
+  } catch(e) {
+    // Clipboard read failed — show paste field
+    obShowPasteFallback();
+    return;
+  }
+
+  // Validate it looks like a GAS URL
+  if (!url || !url.includes('script.google.com')) {
+    obShowPasteFallback();
+    return;
+  }
+
+  // Connect with the URL
+  await obConnectWithUrl(url);
+}
+
+function obShowPasteFallback() {
+  // Update check 1 to ask for paste
+  const c1 = document.getElementById('obCheck1');
+  c1.innerHTML = '<span style="font-size:11px;color:var(--text2);">לחץ על השדה והדבק את הקישור</span>';
+  document.getElementById('obPasteFallback').style.display = 'block';
+  document.getElementById('obProgFill').style.width = '15%';
+}
+
+function obOnPasteInput(val) {
+  if (val && val.includes('script.google.com')) {
+    obConnectWithUrl(val.trim());
+  }
+}
+
+async function obConnectWithUrl(url) {
+  // Update UI: step 1 done
+  const c1 = document.getElementById('obCheck1');
+  c1.innerHTML = '<span style="color:var(--emerald);font-size:14px;">✓</span><span>קישור נמצא</span>';
+  document.getElementById('obProgFill').style.width = '50%';
+
+  // Step 2: activate check 2
+  const c2 = document.getElementById('obCheck2');
+  c2.style.opacity = '1';
+  c2.innerHTML = '<div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div><span>מאמת חיבור לגיליון</span>';
+
+  try {
+    // Validate URL by calling ?action=name
+    const res = await fetch(url + '?action=name');
+    const data = await res.json();
+
+    if (!data || !data.name) throw new Error('Invalid response');
+
+    const sheetName = data.name;
+
+    // Save URL
+    saveUrl(url);
+
+    // Update sheet name display
+    document.getElementById('obSheetName').textContent = sheetName;
+    document.getElementById('obSheetSpinner').style.display = 'none';
+    document.getElementById('obSheetCheck').style.display = 'block';
+    document.getElementById('obSuccessName').textContent = sheetName;
+
+    // Check 2 done
+    c2.innerHTML = '<span style="color:var(--emerald);font-size:14px;">✓</span><span>גיליון נמצא</span>';
+    document.getElementById('obProgFill').style.width = '80%';
+
+    // Step 3: load data
+    const c3 = document.getElementById('obCheck3');
+    c3.style.opacity = '1';
+    c3.innerHTML = '<div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div><span>טוען נתונים</span>';
+
+    // Small delay for UX feel
+    await new Promise(r => setTimeout(r, 600));
+
+    c3.innerHTML = '<span style="color:var(--emerald);font-size:14px;">✓</span><span>הכל מוכן</span>';
+    document.getElementById('obProgFill').style.width = '100%';
+
+    await new Promise(r => setTimeout(r, 400));
+
+    // Show success screen
+    obShow('obSuccess');
+
+  } catch(e) {
+    // Connection failed
+    const c2el = document.getElementById('obCheck2');
+    c2el.innerHTML = '<span style="color:var(--red);font-size:14px;">✗</span><span style="color:var(--red);">לא הצלחנו להתחבר לגיליון</span>';
+    document.getElementById('obProgFill').style.width = '30%';
+    obShowPasteFallback();
+  }
+}
+
+function obEnterApp() {
+  obHide();
+  // Load app normally
+  fetchConnectedName();
+  startupLoad();
+}
 
 async function startupLoad() {
   const splash = el('splashOverlay');
@@ -3307,10 +3516,7 @@ async function loadStats() {
     setLB(100, 'נטען! ' + allRows.length + ' טיסות');
     setTimeout(hideLB, 1000);
     stampSync();
-    if (el('tab-currency') && el('tab-currency').classList.contains('active')) {
-      const _s = el('syncStampCurrency');
-      if (_s) { _s.textContent = 'עודכן ' + new Date().getHours().toString().padStart(2,'0') + ':' + new Date().getMinutes().toString().padStart(2,'0'); _s.style.display = 'inline'; }
-    }
+    // stamp shown in footer only
 
   } catch(err) {
     cancelAnimationFrame(_lbAnim);
@@ -3379,8 +3585,8 @@ async function loadJournal() {
       const now = new Date();
       const hh = now.getHours().toString().padStart(2,'0');
       const mm = now.getMinutes().toString().padStart(2,'0');
-      const s = el('syncStampJournal');
-      if (s) { s.textContent = 'עודכן ' + hh + ':' + mm; s.style.display = 'inline'; }
+      const fs1 = el('footerStamp');
+      if (fs1) fs1.textContent = ' · updated ' + hh + ':' + mm;
       const btn = el('btnRefreshJournal');
       if (btn) btn.classList.remove('loading');
     }, 400);
@@ -4670,8 +4876,8 @@ function refreshJournal() {
     const now = new Date();
     const hh = now.getHours().toString().padStart(2,'0');
     const mm = now.getMinutes().toString().padStart(2,'0');
-    const s = el('syncStampJournal');
-    if (s) { s.textContent = 'עודכן ' + hh + ':' + mm; s.style.display = 'inline'; }
+    const fs2 = el('footerStamp');
+    if (fs2) fs2.textContent = ' · updated ' + hh + ':' + mm;
     if (btn) btn.classList.remove('loading');
   });
 }
@@ -4682,12 +4888,14 @@ function refreshCurrency() {
   allRows = []; journalRows = []; _journalLoading = false;
   loadStats().then(function() {
     renderCurrency();
-    const now = new Date();
-    const hh = now.getHours().toString().padStart(2,'0');
-    const mm = now.getMinutes().toString().padStart(2,'0');
-    const s = el('syncStampCurrency');
-    if (s) { s.textContent = 'עודכן ' + hh + ':' + mm; s.style.display = 'inline'; }
-    if (btn) btn.classList.remove('loading');
+    setTimeout(function() {
+      const now = new Date();
+      const hh = now.getHours().toString().padStart(2,'0');
+      const mm = now.getMinutes().toString().padStart(2,'0');
+      const fs = el('footerStamp');
+      if (fs) fs.textContent = ' · updated ' + hh + ':' + mm;
+      if (btn) btn.classList.remove('loading');
+    }, 1100);
   });
 }
 
@@ -4708,8 +4916,8 @@ function globalRefresh() {
     const now = new Date();
     const hh = now.getHours().toString().padStart(2,'0');
     const mm = now.getMinutes().toString().padStart(2,'0');
-    const stamp = el('syncStampGlobal');
-    if (stamp) { stamp.textContent = 'עודכן ' + hh + ':' + mm; stamp.style.display = 'inline'; }
+    const fs3 = el('footerStamp');
+    if (fs3) fs3.textContent = ' · updated ' + hh + ':' + mm;
     if (btn) btn.classList.remove('loading');
     // Re-render current tab content
     const active = ['log','currency','stats','search','settings'].find(id =>
@@ -4719,16 +4927,7 @@ function globalRefresh() {
   });
 }
 
-function stampSync() {
-  const now = new Date();
-  const hh  = now.getHours().toString().padStart(2,'0');
-  const mm  = now.getMinutes().toString().padStart(2,'0');
-  const txt = 'עודכן ' + hh + ':' + mm;
-  // syncStampGlobal removed from UI — no-op
-  // Keep legacy stamp stubs working silently
-  const s = el('syncStamp');
-  if (s) { s.textContent = txt; s.style.display = 'inline'; }
-}
+function stampSync() { /* no-op — stamp shown in footer only */ }
 
 function refreshSettingsView() {
   const url = getUrl();
@@ -5055,7 +5254,6 @@ function closeGasInfo() {
     <button class="setup-btn" onclick="saveSetup()">שמור והתחל →</button>
     <div class="setup-note">הכתובת נשמרת רק במכשיר שלך (localStorage). אף אחד אחר לא רואה אותה.</div>
   </div>
-</div>
 
 </body>
 </html>
