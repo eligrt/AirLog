@@ -2539,6 +2539,30 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <!-- ══════════ SETTINGS VIEW ══════════ -->
   <div class="view" id="view-settings">
 
+    <!-- ── SETUP RETURN BANNER (shown after returning from GAS setup) ── -->
+    <div id="setupReturnBanner" style="display:none;margin-bottom:14px;background:linear-gradient(135deg,#0d2a1a,#0a2218);border:1.5px solid rgba(52,211,153,.3);border-radius:12px;padding:16px 14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="font-size:22px;">✈️</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--emerald);">הגיליון שלך מוכן!</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">לחץ כדי לחבר אותו לאפליקציה</div>
+        </div>
+      </div>
+      <button onclick="setupReturnConnect()" id="setupReturnBtn"
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#059669,#34d399);border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;">
+        חבר את הגיליון ←
+      </button>
+      <div id="setupReturnPasteFallback" style="display:none;margin-top:10px;">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-align:center;">לא הצלחנו לקרוא את הלוח — הדבק את הכתובת ידנית:</div>
+        <input type="text" id="setupReturnPasteInput" dir="ltr"
+          placeholder="https://script.google.com/macros/s/.../exec"
+          style="width:100%;background:var(--raised);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:11px;padding:10px 12px;outline:none;"
+          oninput="setupReturnOnPaste(this.value)">
+      </div>
+      <div id="setupReturnMsg" style="display:none;margin-top:10px;font-size:13px;font-weight:700;text-align:center;color:var(--emerald);">✓ מחובר בהצלחה!</div>
+      <div id="setupReturnErr" style="display:none;margin-top:10px;font-size:12px;text-align:center;color:var(--red);">לא הצלחנו להתחבר — בדוק שהכתובת נכונה</div>
+    </div>
+
     <!-- ── MAIN SETTINGS ── -->
     <div style="margin-bottom:6px;" class="set-section-title">הגדרות</div>
     <div class="set-group" style="margin-bottom:14px;">
@@ -2591,10 +2615,21 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
         <div class="set-row-right"><span class="set-row-arrow">▶</span></div>
       </div>
       <div class="set-expand" id="setExpandGas">
-        <div class="set-expand-desc">כתובת ה-Apps Script המחוברת כרגע:</div>
-        <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;direction:ltr;word-break:break-all;line-height:1.6;min-height:38px;"></div>
-        <button class="settings-action-btn secondary" onclick="openSetup()">✏️ שנה כתובת Apps Script</button>
-        <button onclick="showGasInfo()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-align:center;padding:4px;">מה זה Apps Script? ›</button>
+        <!-- Current URL (only when connected) -->
+        <div id="gasConnectedState" style="display:none;">
+          <div class="set-expand-desc">כתובת ה-Apps Script המחוברת כרגע:</div>
+          <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;direction:ltr;word-break:break-all;line-height:1.6;min-height:38px;margin-bottom:8px;"></div>
+        </div>
+        <!-- Always visible options -->
+        <div class="set-expand-desc" style="margin-bottom:8px;">חבר גיליון קיים או צור גיליון חדש ב-Google Drive שלך</div>
+        <button class="settings-action-btn secondary" onclick="openSetup()" style="margin-bottom:8px;">🔗 חיבור גיליון קיים</button>
+        <div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:11px;color:var(--text3);">או</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <button class="settings-action-btn" onclick="createNewSheet()" style="background:linear-gradient(135deg,#0891b2,#22d3ee);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">יצירת גיליון טיסות חדש <span style="display:inline-block;transform:scaleX(-1);">✈</span></button>
+        <button onclick="showGasInfo()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-align:center;padding:4px;width:100%;">מה זה Apps Script? ›</button>
       </div>
 
       <!-- Install row — direct action (no expand) -->
@@ -2670,7 +2705,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.43<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.44<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2755,10 +2790,18 @@ window.addEventListener('DOMContentLoaded', () => {
   setLandings(0);
   refreshSettingsView();
 
-  // Clean up any stale ?setup param
+  // Handle return from GAS setup (?setup=1)
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('setup') === '1') {
     window.history.replaceState({}, '', window.location.pathname);
+    // Switch to settings tab and show the return banner
+    ['log','currency','stats','search','settings'].forEach(id => {
+      el(`tab-${id}`).classList.toggle('active', id === 'settings');
+      el(`view-${id}`).classList.toggle('active', id === 'settings');
+    });
+    el('setupReturnBanner').style.display = 'block';
+    refreshSettingsView();
+    return;
   }
 
   if (!getUrl()) {
@@ -4935,9 +4978,11 @@ function refreshSettingsView() {
   if (display) display.textContent = url || 'לא מוגדר';
   if (el('ramClearedMsg')) el('ramClearedMsg').style.display = 'none';
 
-  // GAS subtitle
+  // GAS subtitle + show URL only when connected
   const gasSub = el('setGasSubtitle');
-  if (gasSub) gasSub.textContent = url ? '🟢 מחובר' : 'לא מוגדר';
+  if (gasSub) gasSub.textContent = url ? '🟢 מחובר' : '🔴 לא מחובר';
+  if (el('gasConnectedState')) el('gasConnectedState').style.display = url ? 'block' : 'none';
+  if (el('gasNotConnectedState')) el('gasNotConnectedState').style.display = 'none'; // no longer used
 
   // Aircraft default subtitle
   const savedType = localStorage.getItem('airlog_def_ac_type') || '';
@@ -5224,6 +5269,108 @@ function showGasInfo() {
 }
 function closeGasInfo() {
   el('gasInfoModal').style.display = 'none';
+}
+
+// ── NEW SHEET CREATION ──────────────────────────────────────────
+function createNewSheet() {
+  window.open('https://docs.google.com/spreadsheets/d/1KUTmYeUzlhQZBpdxtaaGfBr_i55SqZxumgAQo3Qs3MM/copy', '_blank');
+  // Show instruction banner so user knows what to do next
+  const banner = el('setupReturnBanner');
+  if (banner) {
+    banner.style.display = 'block';
+    banner.style.opacity = '1';
+    // Update banner to show "waiting" state with instructions
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="font-size:22px;">📋</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--cyan);">צור עותק של הגיליון</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">בטאב שנפתח — לחץ "צור עותק"</div>
+        </div>
+      </div>
+      <div style="background:var(--raised);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+          <div>1️⃣ לחץ <b style="color:var(--text);">צור עותק</b> בטאב שנפתח</div>
+          <div>2️⃣ בגיליון החדש — לחץ תפריט <b style="color:var(--cyan);">✈ AirLog Setup</b></div>
+          <div>3️⃣ בחר <b style="color:var(--text);">חבר את הגיליון ל-AirLog</b></div>
+          <div>4️⃣ אשר הרשאות — תועבר חזרה לכאן אוטומטית</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;">ממתין לחזרה מ-Google Sheets...</div>
+    `;
+  }
+}
+
+// ── SETUP RETURN: connect via clipboard ────────────────────────
+async function setupReturnConnect() {
+  const btn = el('setupReturnBtn');
+  btn.textContent = 'מחפש את הכתובת...';
+  btn.disabled = true;
+
+  let url = '';
+  try {
+    url = await navigator.clipboard.readText();
+  } catch(e) {
+    // Clipboard read failed — show paste fallback
+    btn.style.display = 'none';
+    el('setupReturnPasteFallback').style.display = 'block';
+    return;
+  }
+
+  if (!url || !url.includes('script.google.com')) {
+    btn.textContent = 'חבר את הגיליון ←';
+    btn.disabled = false;
+    el('setupReturnPasteFallback').style.display = 'block';
+    return;
+  }
+
+  await setupReturnConnectWithUrl(url);
+}
+
+function setupReturnOnPaste(val) {
+  if (val && val.includes('script.google.com')) {
+    setupReturnConnectWithUrl(val.trim());
+  }
+}
+
+async function setupReturnConnectWithUrl(url) {
+  const btn = el('setupReturnBtn');
+  if (btn) { btn.textContent = 'מתחבר...'; btn.disabled = true; }
+
+  try {
+    const res  = await fetch(url + '?action=name');
+    const data = await res.json();
+    if (!data || !data.name) throw new Error('invalid');
+
+    // Save URL and refresh
+    saveUrl(url);
+    refreshSettingsView();
+    fetchConnectedName();
+    startupLoad();
+
+    // Show success, hide button and fallback
+    if (btn) btn.style.display = 'none';
+    if (el('setupReturnPasteFallback')) el('setupReturnPasteFallback').style.display = 'none';
+    if (el('setupReturnErr')) el('setupReturnErr').style.display = 'none';
+
+    const msg = el('setupReturnMsg');
+    if (msg) {
+      msg.textContent = `✓ מחובר ל-${data.name}!`;
+      msg.style.display = 'block';
+    }
+
+    // Fade out banner after 3 seconds
+    setTimeout(() => {
+      const banner = el('setupReturnBanner');
+      if (banner) { banner.style.transition = 'opacity .5s'; banner.style.opacity = '0'; }
+      setTimeout(() => { if (banner) banner.style.display = 'none'; }, 500);
+    }, 3000);
+
+  } catch(e) {
+    if (btn) { btn.textContent = 'חבר את הגיליון ←'; btn.disabled = false; }
+    if (el('setupReturnErr')) el('setupReturnErr').style.display = 'block';
+    if (el('setupReturnPasteFallback')) el('setupReturnPasteFallback').style.display = 'block';
+  }
 }
 
 </script>
