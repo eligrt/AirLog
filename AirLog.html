@@ -1733,7 +1733,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   -webkit-tap-highlight-color: transparent;
   outline: none;
 }
-.btn-edit-toggle:hover { border-color: var(--accent); color: var(--accent2); }
+.btn-edit-toggle:hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
 .btn-edit-toggle:focus { outline: none; }
 .btn-edit-toggle.active {
   background: #7f1d1d;
@@ -2486,7 +2486,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <span class="card-icon">🔍</span>
           <span class="card-title">חיפוש בטיסות</span>
         </span>
-        <button class="btn-edit-toggle" id="btnEditMode" onclick="toggleEditMode()">✏️ עריכה</button>
+        <button class="btn-edit-toggle" id="btnEditMode" onclick="toggleEditMode()" style="transition:background .2s,color .2s;">✏️ עריכה</button>
       </div>
       <div class="card-body" style="padding:14px 16px;gap:10px;">
         <div class="search-hint" style="font-size:11px;">חפש לפי מקום, תרגיל או נושא · <span style="color:var(--text3);">מגידו, רוח צד, נחיתה...</span></div>
@@ -2621,14 +2621,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;direction:ltr;word-break:break-all;line-height:1.6;min-height:38px;margin-bottom:8px;"></div>
         </div>
         <!-- Always visible options -->
-        <div class="set-expand-desc" style="margin-bottom:8px;">חבר גיליון קיים או צור גיליון חדש ב-Google Drive שלך</div>
-        <button class="settings-action-btn secondary" onclick="openSetup()" style="margin-bottom:8px;">🔗 חיבור גיליון קיים</button>
-        <div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px;">
-          <div style="flex:1;height:1px;background:var(--border);"></div>
-          <span style="font-size:11px;color:var(--text3);">או</span>
-          <div style="flex:1;height:1px;background:var(--border);"></div>
-        </div>
-        <button class="settings-action-btn" onclick="createNewSheet()" style="background:linear-gradient(135deg,#0891b2,#22d3ee);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">יצירת גיליון טיסות חדש <span style="display:inline-block;transform:scaleX(-1);">✈</span></button>
+        <button class="settings-action-btn secondary" onclick="openSetup()" style="margin-bottom:8px;">🔗 חיבור / שינוי גיליון</button>
         <button onclick="showGasInfo()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-align:center;padding:4px;width:100%;">מה זה Apps Script? ›</button>
       </div>
 
@@ -2705,7 +2698,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.44<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.49<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2746,7 +2739,8 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
 // ═══════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════
@@ -2765,20 +2759,85 @@ function saveUrl(u){ localStorage.setItem(LS_KEY, u.trim()); }
 function openSetup() {
   el('setupUrl').value = getUrl();
   el('setupUrl').classList.remove('err');
+  el('setupChecks').style.display = 'none';
+  el('setupErrMsg').style.display = 'none';
+  const btn = el('setupSaveBtn');
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  // Show close button only if already connected (not first-time setup)
+  const closeBtn = el('setupCloseBtn');
+  if (closeBtn) closeBtn.style.display = getUrl() ? 'block' : 'none';
   el('setupOverlay').classList.add('show');
 }
 
-function saveSetup() {
+function closeSetup() {
+  el('setupOverlay').classList.remove('show');
+}
+
+async function saveSetup() {
   const u = el('setupUrl').value.trim();
   if (!u.startsWith('https://script.google.com')) {
     el('setupUrl').classList.add('err');
     return;
   }
-  saveUrl(u);
-  el('setupOverlay').classList.remove('show');
-  refreshSettingsView();
-  fetchConnectedName();
-  startupLoad();
+  el('setupUrl').classList.remove('err');
+
+  // Disable button, show checks
+  const btn = el('setupSaveBtn');
+  btn.disabled = true;
+  btn.style.opacity = '.6';
+  el('setupChecks').style.display = 'block';
+  el('setupErrMsg').style.display = 'none';
+
+  const setCheck = (id, state, text) => {
+    const row = el(id);
+    if (!row) return;
+    row.style.opacity = '1';
+    const icons = {
+      spin: `<div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div>`,
+      ok:   `<span style="color:var(--emerald);font-size:14px;flex-shrink:0;">✓</span>`,
+      err:  `<span style="color:var(--red);font-size:14px;flex-shrink:0;">✗</span>`,
+      idle: `<div style="width:14px;height:14px;border:1px solid var(--border);border-radius:50%;flex-shrink:0;"></div>`
+    };
+    row.innerHTML = (icons[state] || icons.idle) + `<span>${text}</span>`;
+  };
+
+  // Check 1 — validate URL format
+  setCheck('setupCheck1', 'spin', 'בודק כתובת...');
+  await new Promise(r => setTimeout(r, 400));
+  setCheck('setupCheck1', 'ok', 'כתובת תקינה');
+
+  // Check 2 — connect to sheet
+  setCheck('setupCheck2', 'spin', 'מתחבר לגיליון...');
+  try {
+    const res  = await fetch(u + '?action=name');
+    const data = await res.json();
+    if (!data || !data.name) throw new Error('invalid response');
+    setCheck('setupCheck2', 'ok', `גיליון נמצא — ${data.name}`);
+
+    // Check 3 — actually load data
+    setCheck('setupCheck3', 'spin', 'טוען נתונים...');
+    saveUrl(u);
+    await loadStats();
+    setCheck('setupCheck3', 'ok', 'הכל מוכן!');
+    await new Promise(r => setTimeout(r, 600));
+
+    // All good — enter app
+    el('setupOverlay').classList.remove('show');
+    el('setupChecks').style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    refreshSettingsView();
+    fetchConnectedName();
+    renderCurrency();
+    if (!_journalLoading) loadJournal();
+
+  } catch(e) {
+    setCheck('setupCheck2', 'err', 'לא הצלחנו להתחבר לגיליון');
+    el('setupErrMsg').textContent = 'בדוק שהכתובת נכונה ושה-Script פורס כ-Web App';
+    el('setupErrMsg').style.display = 'block';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
 }
 
 // ── Startup: show splash and load all data, or show setup if no URL ──
@@ -4813,13 +4872,20 @@ self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => n
 //  EDIT MODE
 // ═══════════════════════════════════════════
 
-function toggleEditMode() {
+async function toggleEditMode() {
   // Blur immediately to prevent mobile sticky focus/amber state
   const btn = el('btnEditMode');
   if (btn) btn.blur();
   if (!_editMode) {
     // Turning ON — confirm first
-    if (!confirm('⚠️ מצב עריכה\n\nבמצב זה תוכל לארכב טיסות מהרשימה.\nהטיסה לא תימחק — היא תועבר לטאב "Archive" בגיליון.\n\nלהמשיך למצב עריכה?')) return;
+    const ok = await showConfirm({
+      icon: '✏️',
+      title: 'מצב עריכה',
+      text: 'במצב זה תוכל לארכב טיסות מהרשימה.\nהטיסה לא תימחק — היא תועבר לגיליון ה-Google Sheets שלך, לטאב "Archive" (לא נמחק, שמור לחלוטין).',
+      okLabel: 'המשך',
+      danger: false
+    });
+    if (!ok) return;
     _editMode = true;
     el('btnEditMode').classList.add('active');
     el('btnEditMode').textContent = '✕ צא ממצב עריכה';
@@ -4845,7 +4911,14 @@ async function archiveFlight(e, idx) {
   const date   = dateEl ? dateEl.textContent : '';
   const ac     = acEl   ? acEl.textContent   : '';
 
-  if (!confirm(`🗑 ארכוב טיסה\n\n${date}  ·  ${ac}\n\nהטיסה תועבר לטאב "Archive" בגיליון ולא תופיע ביומן.\nהנתונים שמורים לחלוטין.\n\nלארכב?`)) return;
+  const ok = await showConfirm({
+    icon: '🗑',
+    title: 'ארכוב טיסה',
+    text: `${date}  ·  ${ac}\n\nהטיסה תועבר לגיליון ה-Google Sheets שלך, לטאב "Archive".\nהיא לא תופיע ביומן אך הנתונים שמורים לחלוטין.`,
+    okLabel: 'ארכב',
+    danger: true
+  });
+  if (!ok) return;
 
   const gasUrl = getUrl();
   if (!gasUrl) { openSetup(); return; }
@@ -5165,8 +5238,15 @@ function handleInstallClick() {
   }
 }
 
-function clearRAM() {
-  if (!confirm('לנקות את הנתונים מהזיכרון?\nהנתונים ב-Google Sheets לא יימחקו, רק הטעינה המקומית תתאפס.')) return;
+async function clearRAM() {
+  const ok = await showConfirm({
+    icon: '🧹',
+    title: 'ניקוי זיכרון זמני',
+    text: 'האפליקציה שומרת את נתוני הטיסות זמנית בזיכרון המכשיר כדי לעבוד מהר יותר.\n\nניקוי הזיכרון מאלץ טעינה מחדש מ-Google Sheets בפעם הבאה. הנתונים בגיליון לא נפגעים.',
+    okLabel: 'נקה',
+    danger: false
+  });
+  if (!ok) return;
   allRows = []; journalRows = []; _journalLoading = false;
   // Clear rendered values in stats/history tabs
   ['s-flights','s-landings','s-pic','s-dual','s-total',
@@ -5189,10 +5269,23 @@ function clearRAM() {
     '<div style="font-size:13px;color:var(--text2);">הזן מילת חיפוש</div></div>';
   const msg = el('ramClearedMsg');
   if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display='none', 3000); }
+  // Reset currency tab alert dot
+  const tabEl = el('tab-currency');
+  if (tabEl) { const dot = tabEl.querySelector('.tab-alert-dot'); if (dot) dot.remove(); }
+  // Reset currency banner
+  const banner = el('cur-summary-banner');
+  if (banner) banner.style.display = 'none';
 }
 
-function disconnectApp() {
-  if (!confirm('לנתק את האפליקציה? הכתובת תימחק מהמכשיר. הנתונים ב-Sheets בטוחים לחלוטין.')) return;
+async function disconnectApp() {
+  const ok = await showConfirm({
+    icon: '🔌',
+    title: 'ניתוק האפליקציה',
+    text: 'הכתובת תימחק מהמכשיר.\nהנתונים ב-Sheets בטוחים לחלוטין.',
+    okLabel: 'נתק',
+    danger: true
+  });
+  if (!ok) return;
   localStorage.removeItem(LS_KEY);
   allRows = []; journalRows = []; _journalLoading = false;
   const badge = el('connBadge');
@@ -5262,6 +5355,28 @@ async function triggerInstall() {
 }
 
 
+// ── CUSTOM CONFIRM MODAL ────────────────────────────────────────
+let _confirmResolve = null;
+
+function showConfirm({ icon = '⚠️', title, text, okLabel = 'אישור', okColor = 'var(--accent)', danger = false }) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    el('confirmIcon').textContent  = icon;
+    el('confirmTitle').textContent = title;
+    el('confirmText').textContent  = text;
+    el('confirmOkBtn').textContent = okLabel;
+    el('confirmOkBtn').style.background = danger
+      ? 'linear-gradient(135deg,#b91c1c,#ef4444)'
+      : 'linear-gradient(135deg,#1d4ed8,#3b82f6)';
+    el('confirmModal').style.display = 'flex';
+  });
+}
+
+function confirmResolve(val) {
+  el('confirmModal').style.display = 'none';
+  if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
+}
+
 function showGasInfo() {
   const m = el('gasInfoModal');
   m.style.display = 'flex';
@@ -5272,105 +5387,9 @@ function closeGasInfo() {
 }
 
 // ── NEW SHEET CREATION ──────────────────────────────────────────
+// ── NEW SHEET CREATION ──────────────────────────────────────────
 function createNewSheet() {
   window.open('https://docs.google.com/spreadsheets/d/1KUTmYeUzlhQZBpdxtaaGfBr_i55SqZxumgAQo3Qs3MM/copy', '_blank');
-  // Show instruction banner so user knows what to do next
-  const banner = el('setupReturnBanner');
-  if (banner) {
-    banner.style.display = 'block';
-    banner.style.opacity = '1';
-    // Update banner to show "waiting" state with instructions
-    banner.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-        <div style="font-size:22px;">📋</div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:var(--cyan);">צור עותק של הגיליון</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:2px;">בטאב שנפתח — לחץ "צור עותק"</div>
-        </div>
-      </div>
-      <div style="background:var(--raised);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
-        <div style="font-size:12px;color:var(--text2);line-height:1.8;">
-          <div>1️⃣ לחץ <b style="color:var(--text);">צור עותק</b> בטאב שנפתח</div>
-          <div>2️⃣ בגיליון החדש — לחץ תפריט <b style="color:var(--cyan);">✈ AirLog Setup</b></div>
-          <div>3️⃣ בחר <b style="color:var(--text);">חבר את הגיליון ל-AirLog</b></div>
-          <div>4️⃣ אשר הרשאות — תועבר חזרה לכאן אוטומטית</div>
-        </div>
-      </div>
-      <div style="font-size:11px;color:var(--text3);text-align:center;">ממתין לחזרה מ-Google Sheets...</div>
-    `;
-  }
-}
-
-// ── SETUP RETURN: connect via clipboard ────────────────────────
-async function setupReturnConnect() {
-  const btn = el('setupReturnBtn');
-  btn.textContent = 'מחפש את הכתובת...';
-  btn.disabled = true;
-
-  let url = '';
-  try {
-    url = await navigator.clipboard.readText();
-  } catch(e) {
-    // Clipboard read failed — show paste fallback
-    btn.style.display = 'none';
-    el('setupReturnPasteFallback').style.display = 'block';
-    return;
-  }
-
-  if (!url || !url.includes('script.google.com')) {
-    btn.textContent = 'חבר את הגיליון ←';
-    btn.disabled = false;
-    el('setupReturnPasteFallback').style.display = 'block';
-    return;
-  }
-
-  await setupReturnConnectWithUrl(url);
-}
-
-function setupReturnOnPaste(val) {
-  if (val && val.includes('script.google.com')) {
-    setupReturnConnectWithUrl(val.trim());
-  }
-}
-
-async function setupReturnConnectWithUrl(url) {
-  const btn = el('setupReturnBtn');
-  if (btn) { btn.textContent = 'מתחבר...'; btn.disabled = true; }
-
-  try {
-    const res  = await fetch(url + '?action=name');
-    const data = await res.json();
-    if (!data || !data.name) throw new Error('invalid');
-
-    // Save URL and refresh
-    saveUrl(url);
-    refreshSettingsView();
-    fetchConnectedName();
-    startupLoad();
-
-    // Show success, hide button and fallback
-    if (btn) btn.style.display = 'none';
-    if (el('setupReturnPasteFallback')) el('setupReturnPasteFallback').style.display = 'none';
-    if (el('setupReturnErr')) el('setupReturnErr').style.display = 'none';
-
-    const msg = el('setupReturnMsg');
-    if (msg) {
-      msg.textContent = `✓ מחובר ל-${data.name}!`;
-      msg.style.display = 'block';
-    }
-
-    // Fade out banner after 3 seconds
-    setTimeout(() => {
-      const banner = el('setupReturnBanner');
-      if (banner) { banner.style.transition = 'opacity .5s'; banner.style.opacity = '0'; }
-      setTimeout(() => { if (banner) banner.style.display = 'none'; }, 500);
-    }, 3000);
-
-  } catch(e) {
-    if (btn) { btn.textContent = 'חבר את הגיליון ←'; btn.disabled = false; }
-    if (el('setupReturnErr')) el('setupReturnErr').style.display = 'block';
-    if (el('setupReturnPasteFallback')) el('setupReturnPasteFallback').style.display = 'block';
-  }
 }
 
 </script>
@@ -5389,18 +5408,61 @@ async function setupReturnConnectWithUrl(url) {
 
 <div id="setupOverlay">
   <div class="setup-box">
-    <div class="setup-title">✈ הגדרה ראשונית</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="setup-title" style="margin-bottom:0;">✈ הגדרה ראשונית</div>
+      <button id="setupCloseBtn" onclick="closeSetup()" style="display:none;background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+    </div>
     <div class="setup-sub">
-      כדי לחבר את הטופס ל-Google Sheets שלך, הכנס את כתובת ה-<code>Web App</code> שיצרת ב-Google Apps Script.<br><br>
+      הדבק את כתובת ה-Apps Script שקיבלת מגיליון ה-AirLog שלך.<br><br>
       הכתובת נראית כך:<br>
       <code>https://script.google.com/macros/s/.../exec</code>
     </div>
     <input type="text" class="setup-input" id="setupUrl"
            placeholder="https://script.google.com/macros/s/.../exec"
            dir="ltr" autocomplete="off" spellcheck="false">
-    <button class="setup-btn" onclick="saveSetup()">שמור והתחל →</button>
+
+    <!-- Validation checks (hidden until save clicked) -->
+    <div id="setupChecks" style="display:none;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+      <div class="ob-check-row" id="setupCheck1">
+        <div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div>
+        <span>בודק כתובת...</span>
+      </div>
+      <div class="ob-check-row" id="setupCheck2" style="opacity:.3;">
+        <div style="width:14px;height:14px;border:1px solid var(--border);border-radius:50%;flex-shrink:0;"></div>
+        <span>מתחבר לגיליון</span>
+      </div>
+      <div class="ob-check-row" id="setupCheck3" style="opacity:.3;">
+        <div style="width:14px;height:14px;border:1px solid var(--border);border-radius:50%;flex-shrink:0;"></div>
+        <span>טוען נתונים</span>
+      </div>
+    </div>
+    <div id="setupErrMsg" style="display:none;font-size:12px;color:var(--red);text-align:center;margin-bottom:10px;"></div>
+
+    <button class="setup-btn" id="setupSaveBtn" onclick="saveSetup()" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+      שמור והתחל <span style="display:inline-block;transform:scaleX(-1);">✈</span>
+    </button>
     <div class="setup-note">הכתובת נשמרת רק במכשיר שלך (localStorage). אף אחד אחר לא רואה אותה.</div>
   </div>
+</div>
+
+<!-- ── CUSTOM CONFIRM MODAL ── -->
+<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;
+  align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;
+    padding:24px;max-width:340px;width:100%;box-shadow:0 20px 60px #000a;direction:rtl;">
+    <div id="confirmIcon" style="font-size:28px;text-align:center;margin-bottom:12px;"></div>
+    <div id="confirmTitle" style="font-size:16px;font-weight:700;color:var(--text);text-align:center;margin-bottom:8px;"></div>
+    <div id="confirmText" style="font-size:13px;color:var(--text2);text-align:center;line-height:1.7;margin-bottom:20px;white-space:pre-line;"></div>
+    <div style="display:flex;gap:10px;">
+      <button id="confirmCancelBtn" onclick="confirmResolve(false)"
+        style="flex:1;padding:12px;background:var(--raised);border:1px solid var(--border);
+        border-radius:10px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;">ביטול</button>
+      <button id="confirmOkBtn" onclick="confirmResolve(true)"
+        style="flex:1;padding:12px;border:none;
+        border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">אישור</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
