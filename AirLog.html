@@ -403,7 +403,7 @@ body::before {
 .lbl {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text3);
+  color: var(--text2);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   display: flex; align-items: center; gap: 3px;
@@ -417,7 +417,7 @@ select {
   font-family: var(--sans);
   font-size: 14px;
   font-weight: 500;
-  color: var(--text);
+  color: var(--text2);
   background: var(--raised);
   border: 1.5px solid var(--border);
   border-radius: var(--r-sm);
@@ -427,6 +427,8 @@ select {
   transition: border-color .15s, box-shadow .15s, background .15s;
   -webkit-appearance: none;
   appearance: none;
+  direction: rtl;
+  text-align: right;
 }
 input[type="date"] {
   font-family: var(--mono);
@@ -455,6 +457,168 @@ select {
   PIC is first → LEFT. DUAL is second → RIGHT.
   On mobile (<= 480px) we stack them vertically.
 */
+.field-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px -14px;
+}
+.form-section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px; }
+
+/* ── DATE STRIP ── */
+.date-strip {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+}
+.date-strip-left { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.date-strip-right { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
+.flight-num-lbl { font-size: 10px; color: var(--text3); font-weight: 600; }
+.flight-num-val { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); line-height: 1; }
+.date-strip-day  { font-size: 10px; color: var(--text3); font-weight: 600; text-align: right; }
+.date-strip-right-val { display: flex; align-items: center; gap: 6px; direction: ltr; }
+.date-strip-icon { font-size: 16px; cursor: pointer; flex-shrink: 0; }
+.date-strip-input {
+  font-family: var(--mono) !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: auto !important;
+  direction: ltr;
+  line-height: 1;
+}
+.date-strip-input:focus { outline: none; box-shadow: none !important; border: none !important; }
+
+/* ── LANDINGS ── */
+.land-unified {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  direction: ltr;
+  margin-bottom: 10px;
+}
+.land-chips-h {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.land-chip {
+  width: 44px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--raised);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.land-chip:hover  { border-color: var(--accent2); color: var(--accent2); background: #60a5fa18; }
+.land-chip.active { background: #34d39920; border-color: var(--emerald); color: var(--emerald); }
+.land-chip.active:hover { border-color: var(--emerald); color: var(--emerald); background: #34d39920; }
+.land-divider { width: 1px; height: 28px; background: var(--border); margin: 0 16px; flex-shrink: 0; }
+.land-thermo-inline {
+  display: flex;
+  align-items: center;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  overflow: hidden;
+  height: 42px;
+  flex-shrink: 0;
+  flex: 1;
+  max-width: 160px;
+}
+.land-thermo-btn {
+  width: 48px; height: 42px;
+  border: none; background: none;
+  font-size: 22px; font-weight: 300;
+  cursor: pointer; color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  transition: color .1s, background .1s;
+  flex-shrink: 0;
+}
+.land-thermo-btn.minus:hover { background: #34d39918; color: var(--emerald); }
+.land-thermo-btn.plus:hover  { background: #34d39918; color: var(--emerald); }
+.land-thermo-btn:active { transform: scale(.88); }
+.land-thermo-num {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text3);
+  min-width: 36px;
+  flex: 1;
+  text-align: center;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .15s;
+}
+.land-thermo-num.active { color: var(--emerald); }
+.land-card-wide { }
+.land-wide-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  direction: ltr;
+}
+.land-wide-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  direction: rtl;
+}
+.land-chips-h {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.land-chips-h .land-chip {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 36px;
+  aspect-ratio: unset;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--raised);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.land-chips-h .land-chip:hover  { border-color: var(--accent2); color: var(--accent2); background: #60a5fa18; }
+.land-chips-h .land-chip.active { background: #34d39920; border-color: var(--emerald); color: var(--emerald); }
+.land-chips-h .land-chip.active:hover { border-color: var(--emerald); color: var(--emerald); background: #34d39920; }
+
 /* ── TWO SIDE-BY-SIDE CARDS: time + landings ── */
 .cards-row {
   display: flex;
@@ -491,8 +655,9 @@ select {
   cursor: pointer; transition: all .12s;
   display: flex; align-items: center; justify-content: center;
 }
-.land-chip:hover  { border-color: var(--emerald); color: var(--emerald); }
+.land-chip:hover  { border-color: var(--accent2); color: var(--accent2); background: #60a5fa18; }
 .land-chip.active { background: #34d39922; border-color: var(--emerald); color: var(--emerald); }
+.land-chip.active:hover { border-color: var(--emerald); color: var(--emerald); background: #34d39922; }
 .land-thermo {
   display: flex; align-items: center;
   background: var(--raised); border: 1px solid var(--border);
@@ -521,124 +686,45 @@ select {
 }
 .land-thermo-num.active { color: var(--emerald); }
 
-/* time card interior */
-.time-card-body {
-  padding: 10px 10px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-.tp-mode-toggle {
-  display: flex;
-  background: var(--bg);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  overflow: hidden;
-  width: 100%;
-  margin-bottom: 10px;
-}
-.tp-mode-btn {
-  flex: 1;
-  padding: 7px 4px;
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  color: var(--text3);
-  cursor: pointer;
-  transition: background .15s, color .15s;
-  user-select: none;
-}
-.tp-mode-btn.active-pic  { background: linear-gradient(135deg, var(--blue-700), var(--accent)); color: #fff; }
-.tp-mode-btn.active-dual { background: linear-gradient(135deg, #0891b2, var(--cyan)); color: #fff; }
+.sec-lbl { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0; }
 
-.tp-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  direction: ltr;
-  width: 100%;
-}
-.tp-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  flex: 0 0 auto;
-}
-.tp-unit {
-  font-family: var(--mono);
-  font-size: 8px;
-  color: var(--text3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 1px;
-}
-.tp-colon {
-  font-family: var(--mono);
-  font-size: 20px;
-  color: var(--border2);
-  padding-bottom: 4px;
-  user-select: none;
-  flex-shrink: 0;
-}
-.tp-val {
-  font-family: var(--mono);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--accent2);
-  width: 34px;
-  text-align: center;
-  line-height: 1;
-  transition: color .2s;
-}
-.time-card-body.dual-mode .tp-val { color: var(--cyan); }
-.tp-btn {
-  width: 40px;
-  height: 32px;
-  background: var(--hover);
-  border: 1px solid var(--border2);
-  border-radius: 6px;
-  color: var(--text2);
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background .1s, color .1s, border-color .1s, transform .08s;
-  user-select: none;
-  flex-shrink: 0;
-}
-.tp-btn:hover  { background: var(--blue-700); border-color: var(--accent); color: var(--text); }
-.tp-btn:active { transform: scale(0.85); }
-.time-card-body.dual-mode .tp-btn:hover { background: #0891b2; border-color: var(--cyan); }
-
-.tp-manual {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  direction: ltr;
-}
+/* ── TIME CARD — exact from mockup ── */
+.time-card-body{padding:10px 10px;overflow:hidden;}
+.time-inner{display:flex;align-items:center;gap:16px;direction:ltr;width:100%;min-width:0;}
+.tp-mode-toggle{display:flex;flex-direction:row;flex-shrink:0;background:var(--bg);border:1.5px solid var(--accent);border-radius:9px;overflow:hidden;transition:border-color .2s;width:110px;}
+.time-card-body.dual-mode .tp-mode-toggle{border-color:var(--cyan);}
+.tp-mode-btn{flex:1;padding:6px 0;font-family:var(--sans);font-size:11px;font-weight:700;text-align:center;color:var(--text2);cursor:pointer;transition:background .15s,color .15s;user-select:none;border:none;white-space:nowrap;}
+.tp-mode-btn + .tp-mode-btn{border-top:none;border-left:1px solid var(--border);}
+.tp-mode-btn.active-pic{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;}
+.tp-mode-btn.active-dual{background:linear-gradient(135deg,#0891b2,#22d3ee);color:#fff;}
+.tp-group{display:flex;align-items:center;flex:1;justify-content:center;direction:ltr;min-width:0;}
+.tp-unit-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;}
+.tp-unit-col:first-child{margin-right:4px;}
+.tp-unit{font-size:7px;color:var(--text3);font-family:var(--mono);}
+.tp-val{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--accent2);width:46px;text-align:center;line-height:1;transition:color .2s;}
+.time-card-body.dual-mode .tp-val{color:var(--cyan);}
+.tp-btns{display:flex;gap:5px;}
+.tp-btn{width:40px;height:34px;background:var(--raised);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s,color .1s,transform .08s;user-select:none;flex-shrink:0;}
+.tp-btn:hover{background:var(--blue-700);border-color:var(--accent);color:var(--text);}
+.tp-btn:active{transform:scale(0.85);}
+.time-card-body.dual-mode .tp-btn:hover{background:#0891b2;border-color:var(--cyan);}
+.tp-colon{font-family:var(--mono);font-size:36px;color:var(--border2);padding-bottom:26px;flex-shrink:0;margin:0 6px;user-select:none;}
+.tp-manual{display:flex;align-items:center;gap:8px;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;direction:ltr;justify-content:flex-start;}
+.tp-manual.open{display:flex;}
 .tp-mlbl {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text3);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--text2);
+  letter-spacing: 0.04em;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .tp-minput {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 auto;
   font-family: var(--mono) !important;
   font-size: 13px !important;
   font-weight: 600 !important;
-  padding: 7px 8px !important;
+  padding: 6px 8px !important;
   text-align: center !important;
   background: var(--bg) !important;
   border: 1px solid var(--border) !important;
@@ -646,7 +732,7 @@ select {
   color: var(--text2) !important;
   direction: ltr;
   transition: border-color .15s, box-shadow .15s, color .15s !important;
-  width: auto !important;
+  width: 58px !important;
 }
 .tp-minput:focus {
   border-color: var(--accent) !important;
@@ -874,10 +960,7 @@ select {
 .yr-b.dual { color: var(--cyan); }
 
 @media (max-width: 480px) {
-  .tp-val      { font-size: 22px; width: 38px; }
-  .tp-btn      { width: 44px; height: 34px; font-size: 13px; }
-  .tp-colon    { font-size: 18px; }
-  .tp-mlbl     { display: none; }
+  .tp-mlbl { font-size: 10px; }
 }
 
 /* ── SUBMIT ── */
@@ -900,6 +983,9 @@ select {
 .btn-submit:hover   { opacity: .9; box-shadow: 0 6px 24px #3b82f650; }
 .btn-submit:active  { transform: scale(0.99); }
 .btn-submit:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-submit.dual-mode { background: linear-gradient(135deg, #0891b2, var(--cyan)); box-shadow: 0 4px 18px #22d3ee30; }
+.btn-submit.dual-mode:hover { box-shadow: 0 6px 24px #22d3ee50; }
+.dual-mode-textarea:focus { border-color: var(--cyan) !important; box-shadow: 0 0 0 3px #22d3ee22 !important; }
 
 .spinner {
   display: none;
@@ -1631,6 +1717,8 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 .accord-head {
   cursor: pointer; user-select: none;
   display: flex; align-items: center; gap: 8px;
+  padding-top: 18px !important;
+  padding-bottom: 18px !important;
 }
 .accord-hint {
   margin-right: auto; font-size: 11px;
@@ -2115,128 +2203,116 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <form id="form" autocomplete="off" novalidate>
 
-      <!-- 📋 DETAILS + AIRCRAFT (merged) -->
-      <div class="card">
-        <div class="card-head"><span class="card-icon">📋</span><span class="card-title">פרטי טיסה</span></div>
-        <div class="card-body">
-          <!-- Row 1: תאריך -->
+      <!-- 📅 DATE STRIP + FLIGHT NUMBER -->
+      <div class="date-strip">
+        <div class="date-strip-left">
+          <div class="date-strip-day" id="dateStripDay"></div>
+          <div class="date-strip-right-val">
+            <input type="date" id="fDate" required class="date-strip-input">
+          </div>
+        </div>
+        <div class="date-strip-right">
+          <div class="flight-num-lbl">טיסה</div>
+          <div class="flight-num-val" id="flightNumDisplay">#—</div>
+        </div>
+      </div>
+
+      <!-- ✈ AIRCRAFT + 🏷 CLASSIFICATION — no card, floating fields -->
+      <div class="form-section">
+        <div class="grid2" style="grid-template-columns: 2fr 1fr;">
           <div class="field">
-            <label class="lbl"><span class="req">*</span> תאריך</label>
-            <input type="date" id="fDate" required>
+            <label class="lbl"><span class="req">*</span> סוג מטוס</label>
+            <select id="fAcType">
+              <option value="">— בחר —</option>
+              <option value="__other__">אחר...</option>
+            </select>
+            <input type="text" id="fAcTypeCustom" placeholder="הזן סוג מטוס" style="display:none;margin-top:6px;">
           </div>
-          <!-- Row 2: סוג מטוס + זיהוי מטוס -->
-          <div class="grid2" style="grid-template-columns: 2fr 1fr;">
-            <div class="field">
-              <label class="lbl"><span class="req">*</span> סוג מטוס</label>
-              <select id="fAcType">
-                <option value="">— בחר —</option>
-                <option value="__other__">אחר...</option>
-              </select>
-              <input type="text" id="fAcTypeCustom" placeholder="הזן סוג מטוס" style="display:none;margin-top:6px;">
-            </div>
-            <div class="field">
-              <label class="lbl"><span class="req">*</span> זיהוי מטוס</label>
-              <select id="fAcReg">
-                <option value="">— בחר —</option>
-                <option value="__other__">אחר...</option>
-              </select>
-              <input type="text" id="fAcRegCustom" placeholder="הזן זיהוי" style="display:none;margin-top:6px;">
-            </div>
+          <div class="field">
+            <label class="lbl"><span class="req">*</span> זיהוי / או"ק</label>
+            <select id="fAcReg">
+              <option value="">— בחר —</option>
+              <option value="__other__">אחר...</option>
+            </select>
+            <input type="text" id="fAcRegCustom" placeholder="הזן זיהוי" style="display:none;margin-top:6px;">
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">מאפייני טיסה</label>
+          <div class="char-grid">
+            <label class="char-tile">
+              <input type="checkbox" id="fXC">
+              <span class="char-icon">🗺</span>
+              <span class="char-label">XC</span>
+            </label>
+            <label class="char-tile">
+              <input type="checkbox" id="fNight">
+              <span class="char-icon">🌙</span>
+              <span class="char-label">לילה</span>
+            </label>
+            <label class="char-tile">
+              <input type="checkbox" id="fLevelCheck">
+              <span class="char-icon">📋</span>
+              <span class="char-label">מבחן רמה</span>
+            </label>
           </div>
         </div>
       </div>
 
-      <!-- 🏷 סיווג טיסה ACCORDION -->
-      <div class="card accord-card" id="charCard">
-        <div class="card-head accord-head" onclick="toggleChar()">
-          <span class="card-icon">🏷</span>
-          <span class="card-title">סיווג טיסה</span>
-          <span class="accord-hint" id="charHint">לא סווגה</span>
-          <span class="accord-chevron" id="charChevron">▶</span>
-        </div>
-        <div class="accord-body" id="charBody" style="display:none;">
-          <div class="card-body" style="padding-top:10px;padding-bottom:14px;">
-            <div class="char-grid">
-              <label class="char-tile">
-                <input type="checkbox" id="fXC" onchange="updateCharHint()">
-                <span class="char-icon">🗺</span>
-                <span class="char-label">XC</span>
-              </label>
-              <label class="char-tile">
-                <input type="checkbox" id="fNight" onchange="updateCharHint()">
-                <span class="char-icon">🌙</span>
-                <span class="char-label">לילה</span>
-              </label>
-              <label class="char-tile">
-                <input type="checkbox" id="fLevelCheck" onchange="updateCharHint()">
-                <span class="char-icon">📋</span>
-                <span class="char-label">מבחן רמה</span>
-              </label>
+      <!-- ⏱ משך טיסה — full width -->
+      <div class="sec-lbl">⏱ משך טיסה</div>
+      <div class="card" id="splitHeadTime" style="margin-top:4px;">
+        <div class="time-card-body" id="tpSingle">
+          <div class="time-inner" style="align-items:center;">
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;align-self:center;width:110px;">
+              <div class="tp-mode-toggle">
+                <div class="tp-mode-btn active-pic" id="tpModePic" onclick="setFlightMode('pic')">✈ PIC</div>
+                <div class="tp-mode-btn" id="tpModeDual" onclick="setFlightMode('dual')">🎓 Dual</div>
+              </div>
+              <div class="tp-manual" id="tpManual" style="margin-top:0;border-top:none;padding-top:0;flex-direction:column;align-items:flex-end;gap:2px;">
+                <span class="tp-mlbl" style="font-size:10px;color:var(--text2);">או הזן ידנית</span>
+                <input type="text" class="tp-minput" id="active-raw" placeholder="0:00" maxlength="5" inputmode="numeric" dir="ltr" autocomplete="off" style="width:100% !important;">
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ⏱🛬 TWO SIDE-BY-SIDE CARDS -->
-      <div class="cards-row">
-
-        <!-- זמן טיסה -->
-        <div class="card time-card">
-          <div class="card-head" id="splitHeadTime">
-            <span class="card-icon">⏱</span>
-            <span class="card-title" id="splitTimeTitle">זמן טיסה</span>
-          </div>
-          <div class="time-card-body" id="tpSingle">
-            <div class="tp-mode-toggle">
-              <div class="tp-mode-btn active-pic" id="tpModePic" onclick="setFlightMode('pic')">✈ PIC</div>
-              <div class="tp-mode-btn" id="tpModeDual" onclick="setFlightMode('dual')">🎓 Dual</div>
-            </div>
-            <div class="tp-controls">
-              <div class="tp-col">
+            <div class="tp-group">
+              <div class="tp-unit-col">
                 <div class="tp-unit">שע׳</div>
-                <button type="button" class="tp-btn" data-f="active" data-u="h" data-d="1">▲</button>
                 <span class="tp-val" id="active-h">0</span>
-                <button type="button" class="tp-btn" data-f="active" data-u="h" data-d="-1">▼</button>
+                <div class="tp-btns">
+                  <button type="button" class="tp-btn" data-f="active" data-u="h" data-d="1">▲</button>
+                  <button type="button" class="tp-btn" data-f="active" data-u="h" data-d="-1">▼</button>
+                </div>
               </div>
               <div class="tp-colon">:</div>
-              <div class="tp-col">
+              <div class="tp-unit-col">
                 <div class="tp-unit">דק׳</div>
-                <button type="button" class="tp-btn" data-f="active" data-u="m" data-d="6">▲</button>
                 <span class="tp-val" id="active-m">00</span>
-                <button type="button" class="tp-btn" data-f="active" data-u="m" data-d="-6">▼</button>
+                <div class="tp-btns">
+                  <button type="button" class="tp-btn" data-f="active" data-u="m" data-d="6">▲</button>
+                  <button type="button" class="tp-btn" data-f="active" data-u="m" data-d="-6">▼</button>
+                </div>
               </div>
-            </div>
-            <div class="tp-manual">
-              <span class="tp-mlbl">ידני</span>
-              <input type="text" class="tp-minput" id="active-raw" placeholder="0:00" maxlength="5" inputmode="numeric" dir="ltr" autocomplete="off">
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- נחיתות -->
-        <div class="card land-card">
-          <div class="card-head">
-            <span class="card-icon">🛬</span>
-            <span class="card-title">נחיתות</span>
-          </div>
-          <div class="land-card-body">
-            <div class="land-chips-grid">
-              <button type="button" class="land-chip" onclick="setLandings(2)">2</button>
-              <button type="button" class="land-chip" onclick="setLandings(4)">4</button>
-              <button type="button" class="land-chip" onclick="setLandings(8)">8</button>
-              <button type="button" class="land-chip" onclick="setLandings(12)">12</button>
-            </div>
-            <div class="land-thermo">
-              <button type="button" class="land-thermo-btn minus" onclick="setLandings(_landVal-1)">−</button>
-              <div class="land-thermo-display">
-                <span class="land-thermo-num" id="landDisplay">0</span>
-              </div>
-              <button type="button" class="land-thermo-btn plus" onclick="setLandings(_landVal+1)">+</button>
-            </div>
-            <input type="number" id="fLandings" value="0" min="0" max="99" style="display:none">
-          </div>
+      <!-- 🛬 נחיתות — full width, single compact row -->
+      <div class="sec-lbl" style="margin-bottom:4px;">🛬 מס' נחיתות</div>
+      <div class="land-unified">
+        <div class="land-chips-h">
+          <button type="button" class="land-chip" onclick="setLandings(2)">2</button>
+          <button type="button" class="land-chip" onclick="setLandings(4)">4</button>
+          <button type="button" class="land-chip" onclick="setLandings(8)">8</button>
+          <button type="button" class="land-chip" onclick="setLandings(12)">12</button>
         </div>
-
+        <div class="land-divider"></div>
+        <div class="land-thermo-inline">
+          <button type="button" class="land-thermo-btn minus" onclick="setLandings(_landVal-1)">−</button>
+          <span class="land-thermo-num" id="landDisplay">0</span>
+          <button type="button" class="land-thermo-btn plus" onclick="setLandings(_landVal+1)">+</button>
+        </div>
+        <input type="number" id="fLandings" value="0" min="0" max="99" style="display:none">
       </div>
 
       <!-- 📝 DESCRIPTION -->
@@ -2249,7 +2325,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <span class="accord-chevron" id="notesChevron">▶</span>
         </div>
         <div class="accord-body" id="notesBody" style="display:none;">
-          <div class="card-body" style="padding-top:0;">
+          <div class="card-body" style="padding-top:12px;">
             <div class="field">
               <label class="lbl">📝 תיאור הטיסה</label>
               <textarea id="fDesc" rows="2" oninput="updateNotesHint();autoExpand(this)" placeholder="תיאר את מהלך הטיסה, אזורים, תרגילים..."></textarea>
@@ -2264,7 +2340,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
       <div class="submit-area">
         <button type="submit" class="btn-submit" id="btnSubmit">
-          <span id="btnLabel">שלח רישום טיסה</span>
+          <span id="btnLabel">שלח רישום טיסה <span style="display:inline-block;transform:scaleX(-1);font-size:15px;">✈</span></span>
           <div class="spinner" id="btnSpinner"></div>
         </button>
         <div class="err-bar" id="errBar"></div>
@@ -2641,7 +2717,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.62<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.88<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -3069,6 +3145,26 @@ function initDate() {
   el('headerDate').innerHTML =
     `<span style="font-family:var(--sans)">${days[t.getDay()]}</span>` +
     `<span style="font-family:var(--mono)"> · ${t.getDate()}.${t.getMonth()+1}.${t.getFullYear()}</span>`;
+  // update date strip day name
+  const dayEl = el('dateStripDay');
+  if (dayEl) dayEl.textContent = days[t.getDay()];
+  // listen for date changes to update day name
+  const fDate = el('fDate');
+  if (fDate) fDate.addEventListener('change', function() {
+    const d = new Date(this.value + 'T12:00:00');
+    if (dayEl && !isNaN(d)) dayEl.textContent = days[d.getDay()];
+  });
+  updateFlightNum();
+}
+
+function updateFlightNum() {
+  const el2 = el('flightNumDisplay');
+  if (!el2) return;
+  if (allRows.length > 0) {
+    el2.textContent = '#' + (allRows.length + 1);
+  } else {
+    el2.textContent = '';
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -3113,19 +3209,20 @@ function setFlightMode(mode) {
   const modePic   = el('tpModePic');
   const modeDual  = el('tpModeDual');
   const timeTitle = el('splitTimeTitle');
-  const timeHead  = el('splitHeadTime');
   if (mode === 'dual') {
     timeBody.classList.add('dual-mode');
-    if (timeHead) timeHead.style.borderColor = 'var(--cyan)';
     modePic.classList.remove('active-pic');
     modeDual.classList.add('active-dual');
     if (timeTitle) timeTitle.style.color = 'var(--cyan)';
+    const btn = el('btnSubmit'); if (btn) btn.classList.add('dual-mode');
+    [el('fDesc'), el('fLessons')].forEach(t => { if (t) t.classList.add('dual-mode-textarea'); });
   } else {
     timeBody.classList.remove('dual-mode');
-    if (timeHead) timeHead.style.borderColor = '';
     modePic.classList.add('active-pic');
     modeDual.classList.remove('active-dual');
     if (timeTitle) timeTitle.style.color = '';
+    const btn = el('btnSubmit'); if (btn) btn.classList.remove('dual-mode');
+    [el('fDesc'), el('fLessons')].forEach(t => { if (t) t.classList.remove('dual-mode-textarea'); });
   }
   renderActive();
 }
@@ -3146,6 +3243,14 @@ function renderActive() {
 function renderField(f) {
   // kept for backwards compat — just re-renders active if f matches mode
   if (f === _flightMode) renderActive();
+}
+
+function toggleManual() {
+  const m = el('tpManual');
+  const t = m.previousElementSibling;
+  const open = m.classList.toggle('open');
+  t.textContent = open ? '✕ סגור' : '✏ הזן ידנית';
+  if (open) el('active-raw').focus();
 }
 
 // ═══════════════════════════════════════════
@@ -3312,6 +3417,8 @@ function resetForm() {
   _flightMode = 'pic';
   setFlightMode('pic');
   renderActive();
+  const tpManual = el('tpManual');
+  if (tpManual) { tpManual.classList.remove('open'); const t = tpManual.previousElementSibling; if(t) t.textContent='✏ הזן ידנית'; }
   initDate();
   populateLogFormAcDropdowns();
   applyDefaultAcToForm();
@@ -3324,10 +3431,7 @@ function resetForm() {
   el('fNight').checked = false;
   el('fXC').checked = false;
   el('fLevelCheck').checked = false;
-  // close char accordion
-  var cb = el('charBody'); if(cb) cb.style.display='none';
-  var cc = el('charChevron'); if(cc) cc.textContent='▶';
-  updateCharHint();
+  updateFlightNum();
   setLandings(0);
   el('errBar').classList.remove('show');
   // close notes accordion
@@ -3566,6 +3670,7 @@ async function loadStats() {
     setLB(95, 'מעבד נתונים...' + (_totalCount ? ' · ' + _totalCount + '/' + _totalCount : ''));
     const json = await res.json();
     allRows    = (json.rows || json.flights || []).filter(r => r.date);
+    updateFlightNum();
     journalRows = [];
 
     const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
