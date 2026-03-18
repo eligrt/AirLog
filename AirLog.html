@@ -432,6 +432,8 @@ input[type="date"] {
   font-family: var(--mono);
   font-size: 13px;
   color-scheme: dark;
+  text-align: right;
+  direction: rtl;
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--accent);
@@ -453,56 +455,104 @@ select {
   PIC is first → LEFT. DUAL is second → RIGHT.
   On mobile (<= 480px) we stack them vertically.
 */
-.time-pickers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* ── TWO SIDE-BY-SIDE CARDS: time + landings ── */
+.cards-row {
+  display: flex;
+  gap: 8px;
   direction: ltr;
-  width: 100%;
 }
+.cards-row .card { flex: 1; min-width: 0; }
+.cards-row .card.time-card { flex: 1.15; }
+.cards-row .card.land-card { flex: 1; display: flex; flex-direction: column; }
+.land-card-body { flex: 1; }
 
-.tp {
-  direction: rtl;
-  background: var(--raised);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 10px 8px;
+/* landings card interior */
+.land-card-body {
+  padding: 20px 10px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 0;
-  transition: border-color .15s, box-shadow .15s;
+  justify-content: center;
+  gap: 18px;
+  flex: 1;
 }
-.tp:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--glow);
-}
-
-.tp-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-  margin-bottom: 8px;
-  text-align: center;
-  direction: rtl;
+.land-chips-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   width: 100%;
+  direction: ltr;
 }
+.land-chip {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid var(--border); background: var(--raised);
+  color: var(--text3); font-family: var(--mono); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .12s;
+  display: flex; align-items: center; justify-content: center;
+}
+.land-chip:hover  { border-color: var(--emerald); color: var(--emerald); }
+.land-chip.active { background: #34d39922; border-color: var(--emerald); color: var(--emerald); }
+.land-thermo {
+  display: flex; align-items: center;
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 50px; overflow: hidden; height: 40px; width: 100%;
+}
+.land-thermo-btn {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border: none; background: none;
+  font-size: 22px; font-weight: 300; line-height: 1;
+  cursor: pointer; color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .1s, color .1s;
+}
+.land-thermo-btn.minus:hover { background: #34d39918; color: var(--emerald); }
+.land-thermo-btn.plus:hover  { background: #34d39918; color: var(--emerald); }
+.land-thermo-btn:active      { transform: scale(.88); }
+.land-thermo-display {
+  flex: 1; text-align: center;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  height: 100%; display: flex; align-items: center; justify-content: center;
+}
+.land-thermo-num {
+  font-family: var(--mono); font-size: 20px; font-weight: 700;
+  color: var(--text3); transition: color .15s;
+}
+.land-thermo-num.active { color: var(--emerald); }
 
-.tp-display {
-  font-family: var(--mono);
-  font-size: clamp(22px, 6vw, 28px);
-  font-weight: 600;
-  color: var(--accent2);
-  text-align: center;
-  letter-spacing: 0.04em;
-  line-height: 1;
+/* time card interior */
+.time-card-body {
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.tp-mode-toggle {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
   margin-bottom: 10px;
-  width: 100%;
 }
+.tp-mode-btn {
+  flex: 1;
+  padding: 7px 4px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text3);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  user-select: none;
+}
+.tp-mode-btn.active-pic  { background: linear-gradient(135deg, var(--blue-700), var(--accent)); color: #fff; }
+.tp-mode-btn.active-dual { background: linear-gradient(135deg, #0891b2, var(--cyan)); color: #fff; }
 
-/* H left, M right — always LTR */
 .tp-controls {
   display: flex;
   align-items: center;
@@ -528,7 +578,7 @@ select {
 }
 .tp-colon {
   font-family: var(--mono);
-  font-size: 18px;
+  font-size: 20px;
   color: var(--border2);
   padding-bottom: 4px;
   user-select: none;
@@ -536,21 +586,23 @@ select {
 }
 .tp-val {
   font-family: var(--mono);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text);
-  width: 32px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent2);
+  width: 34px;
   text-align: center;
   line-height: 1;
+  transition: color .2s;
 }
+.time-card-body.dual-mode .tp-val { color: var(--cyan); }
 .tp-btn {
-  width: 30px;
-  height: 24px;
+  width: 40px;
+  height: 32px;
   background: var(--hover);
   border: 1px solid var(--border2);
   border-radius: 6px;
   color: var(--text2);
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -561,8 +613,8 @@ select {
 }
 .tp-btn:hover  { background: var(--blue-700); border-color: var(--accent); color: var(--text); }
 .tp-btn:active { transform: scale(0.85); }
+.time-card-body.dual-mode .tp-btn:hover { background: #0891b2; border-color: var(--cyan); }
 
-/* manual row */
 .tp-manual {
   margin-top: 10px;
   display: flex;
@@ -584,9 +636,9 @@ select {
   flex: 1;
   min-width: 0;
   font-family: var(--mono) !important;
-  font-size: 12px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
-  padding: 6px 8px !important;
+  padding: 7px 8px !important;
   text-align: center !important;
   background: var(--bg) !important;
   border: 1px solid var(--border) !important;
@@ -603,20 +655,6 @@ select {
 }
 .tp-minput.err { border-color: var(--red) !important; color: var(--red) !important; }
 
-/* total bar */
-.time-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 11px 14px;
-  background: linear-gradient(135deg, var(--blue-950), #0d1a2e);
-  border: 1px solid var(--border2);
-  border-radius: var(--r-sm);
-  margin-top: 2px;
-  direction: rtl;
-}
-.time-total-label { font-size: 12px; font-weight: 600; color: var(--text3); }
-.time-total-val   { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--emerald); }
 
 /* mobile: stack pickers */
 
@@ -836,13 +874,10 @@ select {
 .yr-b.dual { color: var(--cyan); }
 
 @media (max-width: 480px) {
-  .tp-display  { font-size: 22px; }
-  .tp-btn      { width: 44px; height: 38px; font-size: 16px; }
-  .tp-val      { font-size: 15px; width: 28px; }
-  .tp-colon    { font-size: 16px; }
-  .tp          { padding: 10px 4px; }
+  .tp-val      { font-size: 22px; width: 38px; }
+  .tp-btn      { width: 44px; height: 34px; font-size: 13px; }
+  .tp-colon    { font-size: 18px; }
   .tp-mlbl     { display: none; }
-  .tp-controls { gap: 2px; }
 }
 
 /* ── SUBMIT ── */
@@ -1517,60 +1552,8 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 }
 
 /* ── Landings quick-chips + thermostat ── */
-.land-row {
-  margin-top: 14px; padding-top: 14px;
-  border-top: 1px solid var(--border); direction: rtl;
-}
-.land-header {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-}
-.land-icon  { font-size: 16px; }
-.land-title { font-size: 13px; font-weight: 600; color: var(--text2); }
-.land-ui {
-  display: flex; align-items: flex-end; gap: 10px; direction: ltr;
-}
-/* quick chips */
-.land-chips { display: flex; gap: 6px; }
-.land-chip {
-  width: 36px; height: 40px; border-radius: 10px;
-  border: 1px solid var(--border); background: var(--raised);
-  color: var(--text3); font-family: var(--mono); font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: all .12s;
-}
-.land-chip:hover        { border-color: var(--emerald); color: var(--emerald); }
-.land-chip.active       { background: #34d39922; border-color: var(--emerald); color: var(--emerald); }
-/* divider */
-.land-chips::after {
-  content: ''; display: block; width: 1px;
-  background: var(--border); margin: 4px 2px; align-self: stretch;
-}
-/* thermostat */
-.land-thermo {
-  display: flex; align-items: center;
-  background: var(--raised); border: 1px solid var(--border);
-  border-radius: 50px; overflow: hidden; height: 40px;
-}
-.land-thermo-btn {
-  width: 40px; height: 40px; border: none; background: none;
-  font-size: 22px; font-weight: 300; line-height: 1;
-  cursor: pointer; color: var(--text3);
-  display: flex; align-items: center; justify-content: center;
-  transition: background .1s, color .1s;
-}
-.land-thermo-btn.minus:hover { background: #34d39918; color: var(--emerald); }
-.land-thermo-btn.plus:hover  { background: #34d39918; color: var(--emerald); }
-.land-thermo-btn:active      { transform: scale(.88); }
-.land-thermo-display {
-  min-width: 42px; text-align: center;
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  height: 100%; display: flex; align-items: center; justify-content: center;
-}
-.land-thermo-num {
-  font-family: var(--mono); font-size: 20px; font-weight: 700;
-  color: var(--text3); transition: color .15s;
-}
-.land-thermo-num.active { color: var(--emerald); }
+.land-chips-wrap { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.land-hint-center { font-size: 11px; color: var(--text3); }
 
 .jc-copy {
   background: none;
@@ -2132,16 +2115,34 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     <form id="form" autocomplete="off" novalidate>
 
-      <!-- 📋 DETAILS -->
+      <!-- 📋 DETAILS + AIRCRAFT (merged) -->
       <div class="card">
-        <div class="card-head"><span class="card-icon">📋</span><span class="card-title">פרטי משימה</span></div>
+        <div class="card-head"><span class="card-icon">📋</span><span class="card-title">פרטי טיסה</span></div>
         <div class="card-body">
           <!-- Row 1: תאריך -->
           <div class="field">
             <label class="lbl"><span class="req">*</span> תאריך</label>
             <input type="date" id="fDate" required>
           </div>
-          <!-- Row 2: סיווג טיסה accordion -->
+          <!-- Row 2: סוג מטוס + זיהוי מטוס -->
+          <div class="grid2" style="grid-template-columns: 2fr 1fr;">
+            <div class="field">
+              <label class="lbl"><span class="req">*</span> סוג מטוס</label>
+              <select id="fAcType">
+                <option value="">— בחר —</option>
+                <option value="__other__">אחר...</option>
+              </select>
+              <input type="text" id="fAcTypeCustom" placeholder="הזן סוג מטוס" style="display:none;margin-top:6px;">
+            </div>
+            <div class="field">
+              <label class="lbl"><span class="req">*</span> זיהוי מטוס</label>
+              <select id="fAcReg">
+                <option value="">— בחר —</option>
+                <option value="__other__">אחר...</option>
+              </select>
+              <input type="text" id="fAcRegCustom" placeholder="הזן זיהוי" style="display:none;margin-top:6px;">
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2176,124 +2177,66 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
         </div>
       </div>
 
-      <!-- ✈ AIRCRAFT -->
-      <div class="card">
-        <div class="card-head"><span class="card-icon">✈</span><span class="card-title">מטוס</span></div>
-        <div class="card-body">
-          <!-- סוג מטוס + זיהוי מטוס -->
-          <div class="grid2" style="grid-template-columns: 2fr 1fr;">
-            <div class="field">
-              <label class="lbl"><span class="req">*</span> סוג מטוס</label>
-              <select id="fAcType">
-                <option value="">— בחר —</option>
-                <option value="__other__">אחר...</option>
-              </select>
-              <input type="text" id="fAcTypeCustom" placeholder="הזן סוג מטוס" style="display:none;margin-top:6px;">
+      <!-- ⏱🛬 TWO SIDE-BY-SIDE CARDS -->
+      <div class="cards-row">
+
+        <!-- זמן טיסה -->
+        <div class="card time-card">
+          <div class="card-head" id="splitHeadTime">
+            <span class="card-icon">⏱</span>
+            <span class="card-title" id="splitTimeTitle">זמן טיסה</span>
+          </div>
+          <div class="time-card-body" id="tpSingle">
+            <div class="tp-mode-toggle">
+              <div class="tp-mode-btn active-pic" id="tpModePic" onclick="setFlightMode('pic')">✈ PIC</div>
+              <div class="tp-mode-btn" id="tpModeDual" onclick="setFlightMode('dual')">🎓 Dual</div>
             </div>
-            <div class="field">
-              <label class="lbl"><span class="req">*</span> זיהוי מטוס</label>
-              <select id="fAcReg">
-                <option value="">— בחר —</option>
-                <option value="__other__">אחר...</option>
-              </select>
-              <input type="text" id="fAcRegCustom" placeholder="הזן זיהוי" style="display:none;margin-top:6px;">
+            <div class="tp-controls">
+              <div class="tp-col">
+                <div class="tp-unit">שע׳</div>
+                <button type="button" class="tp-btn" data-f="active" data-u="h" data-d="1">▲</button>
+                <span class="tp-val" id="active-h">0</span>
+                <button type="button" class="tp-btn" data-f="active" data-u="h" data-d="-1">▼</button>
+              </div>
+              <div class="tp-colon">:</div>
+              <div class="tp-col">
+                <div class="tp-unit">דק׳</div>
+                <button type="button" class="tp-btn" data-f="active" data-u="m" data-d="6">▲</button>
+                <span class="tp-val" id="active-m">00</span>
+                <button type="button" class="tp-btn" data-f="active" data-u="m" data-d="-6">▼</button>
+              </div>
+            </div>
+            <div class="tp-manual">
+              <span class="tp-mlbl">ידני</span>
+              <input type="text" class="tp-minput" id="active-raw" placeholder="0:00" maxlength="5" inputmode="numeric" dir="ltr" autocomplete="off">
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ⏱ TIMES -->
-      <div class="card">
-        <div class="card-head"><span class="card-icon">⏱</span><span class="card-title">זמני טיסה</span></div>
-        <div class="card-body">
-
-          <div class="time-pickers">
-
-            <!-- PIC — first in DOM = LEFT visually (direction:ltr on parent) -->
-            <div class="tp">
-              <div class="tp-label">✈ PIC — טייס מפקד</div>
-              <div class="tp-display" id="pic-disp">0:00</div>
-              <div class="tp-controls">
-                <div class="tp-col">
-                  <div class="tp-unit">שע׳</div>
-                  <button type="button" class="tp-btn" data-f="pic" data-u="h" data-d="1">▲</button>
-                  <span class="tp-val" id="pic-h">0</span>
-                  <button type="button" class="tp-btn" data-f="pic" data-u="h" data-d="-1">▼</button>
-                </div>
-                <div class="tp-colon">:</div>
-                <div class="tp-col">
-                  <div class="tp-unit">דק׳</div>
-                  <button type="button" class="tp-btn" data-f="pic" data-u="m" data-d="6">▲</button>
-                  <span class="tp-val" id="pic-m">00</span>
-                  <button type="button" class="tp-btn" data-f="pic" data-u="m" data-d="-6">▼</button>
-                </div>
-              </div>
-              <div class="tp-manual">
-                <span class="tp-mlbl">ידני</span>
-                <input type="text" class="tp-minput" id="pic-raw" placeholder="0000" maxlength="5" inputmode="numeric" dir="ltr" autocomplete="off">
-              </div>
-            </div>
-
-            <!-- DUAL — second in DOM = RIGHT visually -->
-            <div class="tp">
-              <div class="tp-label">🎓 DUAL — עם מדריך</div>
-              <div class="tp-display" id="dual-disp">0:00</div>
-              <div class="tp-controls">
-                <div class="tp-col">
-                  <div class="tp-unit">שע׳</div>
-                  <button type="button" class="tp-btn" data-f="dual" data-u="h" data-d="1">▲</button>
-                  <span class="tp-val" id="dual-h">0</span>
-                  <button type="button" class="tp-btn" data-f="dual" data-u="h" data-d="-1">▼</button>
-                </div>
-                <div class="tp-colon">:</div>
-                <div class="tp-col">
-                  <div class="tp-unit">דק׳</div>
-                  <button type="button" class="tp-btn" data-f="dual" data-u="m" data-d="6">▲</button>
-                  <span class="tp-val" id="dual-m">00</span>
-                  <button type="button" class="tp-btn" data-f="dual" data-u="m" data-d="-6">▼</button>
-                </div>
-              </div>
-              <div class="tp-manual">
-                <span class="tp-mlbl">ידני</span>
-                <input type="text" class="tp-minput" id="dual-raw" placeholder="0000" maxlength="5" inputmode="numeric" dir="ltr" autocomplete="off">
-              </div>
-            </div>
-
+        <!-- נחיתות -->
+        <div class="card land-card">
+          <div class="card-head">
+            <span class="card-icon">🛬</span>
+            <span class="card-title">נחיתות</span>
           </div>
-
-          <div class="time-total">
-            <span class="time-total-label">סה״כ זמן טיסה</span>
-            <span class="time-total-val" id="total-disp">0:00</span>
-          </div>
-
-          <!-- LANDINGS — quick chips + thermostat -->
-          <div class="land-row">
-            <div class="land-header">
-              <span class="land-icon">🛬</span>
-              <span class="land-title">נחיתות</span>
+          <div class="land-card-body">
+            <div class="land-chips-grid">
+              <button type="button" class="land-chip" onclick="setLandings(2)">2</button>
+              <button type="button" class="land-chip" onclick="setLandings(4)">4</button>
+              <button type="button" class="land-chip" onclick="setLandings(8)">8</button>
+              <button type="button" class="land-chip" onclick="setLandings(12)">12</button>
             </div>
-            <div class="land-ui">
-              <div class="land-chips-wrap">
-                <div class="land-hint-center">בחר מספר נחיתות או הזן ידנית</div>
-                <div class="land-chips">
-                <button type="button" class="land-chip" onclick="setLandings(2)">2</button>
-                <button type="button" class="land-chip" onclick="setLandings(4)">4</button>
-                <button type="button" class="land-chip" onclick="setLandings(8)">8</button>
-                <button type="button" class="land-chip" onclick="setLandings(12)">12</button>
-                </div>
-              </div><!-- /land-chips-wrap -->
-              <div class="land-thermo">
-                <button type="button" class="land-thermo-btn minus" onclick="setLandings(_landVal-1)">−</button>
-                <div class="land-thermo-display">
-                  <span class="land-thermo-num" id="landDisplay">0</span>
-                </div>
-                <button type="button" class="land-thermo-btn plus" onclick="setLandings(_landVal+1)">+</button>
+            <div class="land-thermo">
+              <button type="button" class="land-thermo-btn minus" onclick="setLandings(_landVal-1)">−</button>
+              <div class="land-thermo-display">
+                <span class="land-thermo-num" id="landDisplay">0</span>
               </div>
+              <button type="button" class="land-thermo-btn plus" onclick="setLandings(_landVal+1)">+</button>
             </div>
             <input type="number" id="fLandings" value="0" min="0" max="99" style="display:none">
           </div>
-
         </div>
+
       </div>
 
       <!-- 📝 DESCRIPTION -->
@@ -2301,7 +2244,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       <div class="card accord-card" id="notesCard">
         <div class="card-head accord-head" onclick="toggleNotes()">
           <span class="card-icon">📝</span>
-          <span class="card-title">תיאור ולקחים</span>
+          <span class="card-title">תובנות, דגשים ולקחים (תד"ל)</span>
           <span class="accord-hint" id="notesHint">אופציונלי</span>
           <span class="accord-chevron" id="notesChevron">▶</span>
         </div>
@@ -2698,7 +2641,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.49<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.62<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -3162,19 +3105,47 @@ function getSelect(selId, otherId) {
 //  TIME STATE
 // ═══════════════════════════════════════════
 const state = { pic: 0, dual: 0 };
+let _flightMode = 'pic'; // 'pic' or 'dual'
+
+function setFlightMode(mode) {
+  _flightMode = mode;
+  const timeBody  = el('tpSingle');
+  const modePic   = el('tpModePic');
+  const modeDual  = el('tpModeDual');
+  const timeTitle = el('splitTimeTitle');
+  const timeHead  = el('splitHeadTime');
+  if (mode === 'dual') {
+    timeBody.classList.add('dual-mode');
+    if (timeHead) timeHead.style.borderColor = 'var(--cyan)';
+    modePic.classList.remove('active-pic');
+    modeDual.classList.add('active-dual');
+    if (timeTitle) timeTitle.style.color = 'var(--cyan)';
+  } else {
+    timeBody.classList.remove('dual-mode');
+    if (timeHead) timeHead.style.borderColor = '';
+    modePic.classList.add('active-pic');
+    modeDual.classList.remove('active-dual');
+    if (timeTitle) timeTitle.style.color = '';
+  }
+  renderActive();
+}
+
+function renderActive() {
+  const val = state[_flightMode];
+  const h = Math.floor(val / 60);
+  const m = val % 60;
+  el('active-h').textContent = h;
+  el('active-m').textContent = pad(m);
+  const raw = el('active-raw');
+  if (document.activeElement !== raw && !raw.value) {
+    raw.placeholder = `${h}:${pad(m)}`;
+    raw.classList.remove('err');
+  }
+}
 
 function renderField(f) {
-  const h = Math.floor(state[f] / 60);
-  const m = state[f] % 60;
-  el(`${f}-disp`).textContent = `${h}:${pad(m)}`;
-  el(`${f}-h`).textContent    = h;
-  el(`${f}-m`).textContent    = pad(m);
-  const raw = el(`${f}-raw`);
-  // Only sync placeholder/clear if user hasn't typed something in manual field
-  if (document.activeElement !== raw && !raw.value) {
-    raw.placeholder = `${h}:${pad(m)}`; raw.classList.remove('err');
-  }
-  el('total-disp').textContent = toHM(state.pic + state.dual);
+  // kept for backwards compat — just re-renders active if f matches mode
+  if (f === _flightMode) renderActive();
 }
 
 // ═══════════════════════════════════════════
@@ -3183,13 +3154,12 @@ function renderField(f) {
 function initSpinners() {
   document.querySelectorAll('.tp-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const f = btn.dataset.f;
       const u = btn.dataset.u;
       const d = parseInt(btn.dataset.d, 10);
-      // block spinner if manual input has an error or unsaved text
-      const rawInp = el(f + '-raw');
+      const f = _flightMode; // always operate on active mode
+      const rawInp = el('active-raw');
       if (rawInp && (rawInp.classList.contains('err') || rawInp.value)) return;
-      const MAX_MIN = 18 * 60; // 18:00
+      const MAX_MIN = 18 * 60;
       if (u === 'h') {
         const h = Math.floor(state[f] / 60);
         const m = state[f] % 60;
@@ -3202,8 +3172,8 @@ function initSpinners() {
         else if (nm < 0) { state[f] = h > 0 ? (h - 1) * 60 + 60 + nm : 0; }
         else { state[f] = h * 60 + nm; }
       }
-      state[f] = Math.min(state[f], MAX_MIN); // hard cap 18:00
-      renderField(f);
+      state[f] = Math.min(state[f], MAX_MIN);
+      renderActive();
     });
   });
 }
@@ -3212,33 +3182,29 @@ function initSpinners() {
 //  MANUAL TIME INPUT
 // ═══════════════════════════════════════════
 function initManual() {
-  ['pic','dual'].forEach(f => {
-    const inp = el(f + '-raw');
-    inp.addEventListener('beforeinput', e => {
-      if (e.inputType === 'insertText' && !/^\d$/.test(e.data)) e.preventDefault();
-      const cur = inp.value.replace(/[^0-9]/g,'');
-      if (e.inputType === 'insertText' && cur.length >= 4) e.preventDefault();
-    });
-    inp.addEventListener('input', () => {
-      let v = inp.value.replace(/[^0-9]/g,'');
-      if (v.length > 4) v = v.slice(0,4);
-      if (v.length > 2) v = v.slice(0,2) + ':' + v.slice(2);
-      inp.value = v;
-    });
-    inp.addEventListener('blur', () => {
-      const raw = inp.value.replace(/[^0-9]/g,'');
-      if (!raw) { inp.value = ''; return; }
-      const h = parseInt(raw.slice(0,-2) || '0', 10);
-      const m = parseInt(raw.slice(-2), 10);
-      if (m >= 60) { inp.classList.add('err'); return; }
-      inp.classList.remove('err');
-      if (h > 18 || (h === 18 && m > 0)) {
-        inp.classList.add('err'); return;
-      }
-      state[f] = h * 60 + m;
-      renderField(f);
-      inp.value = '';
-    });
+  const inp = el('active-raw');
+  inp.addEventListener('beforeinput', e => {
+    if (e.inputType === 'insertText' && !/^\d$/.test(e.data)) e.preventDefault();
+    const cur = inp.value.replace(/[^0-9]/g,'');
+    if (e.inputType === 'insertText' && cur.length >= 4) e.preventDefault();
+  });
+  inp.addEventListener('input', () => {
+    let v = inp.value.replace(/[^0-9]/g,'');
+    if (v.length > 4) v = v.slice(0,4);
+    if (v.length > 2) v = v.slice(0,2) + ':' + v.slice(2);
+    inp.value = v;
+  });
+  inp.addEventListener('blur', () => {
+    const raw = inp.value.replace(/[^0-9]/g,'');
+    if (!raw) { inp.value = ''; return; }
+    const h = parseInt(raw.slice(0,-2) || '0', 10);
+    const m = parseInt(raw.slice(-2), 10);
+    if (m >= 60) { inp.classList.add('err'); return; }
+    inp.classList.remove('err');
+    if (h > 18 || (h === 18 && m > 0)) { inp.classList.add('err'); return; }
+    state[_flightMode] = h * 60 + m;
+    renderActive();
+    inp.value = '';
   });
 }
 
@@ -3343,7 +3309,9 @@ function resetForm() {
   form.style.display = '';
   el('successScreen').classList.remove('show');
   state.pic = 0; state.dual = 0;
-  renderField('pic'); renderField('dual');
+  _flightMode = 'pic';
+  setFlightMode('pic');
+  renderActive();
   initDate();
   populateLogFormAcDropdowns();
   applyDefaultAcToForm();
