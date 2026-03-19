@@ -1808,6 +1808,9 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 .btn-edit-toggle:not(.active):focus,
 .btn-edit-toggle:not(.active):focus-visible { border-color: var(--accent); color: var(--accent2); background: var(--raised); box-shadow: none; }
 .btn-edit-toggle:not(.active):hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
+@media (hover: none) {
+  .btn-edit-toggle:not(.active):hover { border-color: var(--accent); color: var(--accent2); background: var(--raised); }
+}
 .btn-edit-toggle.active {
   background: #7f1d1d;
   border-color: #ef4444;
@@ -2719,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.993<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.994<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -4973,20 +4976,14 @@ async function toggleEditMode() {
     el('editModeBanner').style.display = 'block';
     el('searchResults').classList.add('edit-mode');
   } else {
-    // Turning OFF — clone button to fully reset all browser hover/focus/active states
+    // Turning OFF — remove edit-mode class FIRST to prevent card clicks intercepting
     _editMode = false;
-    el('editModeBanner').style.display = 'none';
     el('searchResults').classList.remove('edit-mode');
-    setTimeout(() => {
-      const btn2 = el('btnEditMode');
-      btn2.classList.remove('active');
-      btn2.textContent = '✏️ מצב עריכה';
-      btn2.style.cssText = '';
-      // Clone & replace to kill sticky hover on mobile
-      const clone = btn2.cloneNode(true);
-      clone.addEventListener('click', toggleEditMode);
-      btn2.parentNode.replaceChild(clone, btn2);
-    }, 50);
+    el('editModeBanner').style.display = 'none';
+    const btn2 = el('btnEditMode');
+    btn2.classList.remove('active');
+    btn2.textContent = '✏️ מצב עריכה';
+    btn2.blur();
   }
 }
 
