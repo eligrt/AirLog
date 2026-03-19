@@ -1804,16 +1804,16 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   -webkit-tap-highlight-color: transparent;
   outline: none;
 }
-.btn-edit-toggle:hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
-.btn-edit-toggle:focus { outline: none; }
-.btn-edit-toggle:not(.active):focus { border-color: var(--accent); color: var(--accent2); background: var(--raised); box-shadow: none; }
+.btn-edit-toggle:focus { outline: none; box-shadow: none; }
+.btn-edit-toggle:not(.active):focus,
+.btn-edit-toggle:not(.active):focus-visible { border-color: var(--accent); color: var(--accent2); background: var(--raised); box-shadow: none; }
+.btn-edit-toggle:not(.active):hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
 .btn-edit-toggle.active {
   background: #7f1d1d;
   border-color: #ef4444;
   color: #fca5a5;
   box-shadow: 0 0 0 2px #ef444430;
 }
-.btn-edit-toggle:not(.active):hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
 
 .edit-banner {
   background: #450a0a;
@@ -2719,7 +2719,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.991<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.992<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -4973,18 +4973,20 @@ async function toggleEditMode() {
     el('editModeBanner').style.display = 'block';
     el('searchResults').classList.add('edit-mode');
   } else {
-    // Turning OFF
+    // Turning OFF — defer style reset until after browser tap state clears
     _editMode = false;
-    const btn2 = el('btnEditMode');
-    btn2.classList.remove('active');
-    btn2.textContent = '✏️ מצב עריכה';
-    btn2.style.background = '';
-    btn2.style.borderColor = '';
-    btn2.style.color = '';
-    btn2.style.boxShadow = '';
     el('editModeBanner').style.display = 'none';
     el('searchResults').classList.remove('edit-mode');
-    btn2.blur();
+    setTimeout(() => {
+      const btn2 = el('btnEditMode');
+      btn2.classList.remove('active');
+      btn2.textContent = '✏️ מצב עריכה';
+      btn2.style.background = '';
+      btn2.style.borderColor = '';
+      btn2.style.color = '';
+      btn2.style.boxShadow = '';
+      btn2.blur();
+    }, 50);
   }
 }
 
