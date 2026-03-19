@@ -2510,7 +2510,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <span class="card-icon">🔍</span>
           <span class="card-title">חיפוש בטיסות</span>
         </span>
-        <button class="btn-edit-toggle" id="btnEditMode" onclick="toggleEditMode()" style="transition:background .2s,color .2s;">✏️ עריכה</button>
+        <button class="btn-edit-toggle" id="btnEditMode" onclick="toggleEditMode()">✏️ עריכה</button>
       </div>
       <div class="card-body" style="padding:14px 16px;gap:10px;">
         <div class="search-hint" style="font-size:11px;">חפש לפי מקום, תרגיל או נושא · <span style="color:var(--text3);">מגידו, רוח צד, נחיתה...</span></div>
@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.994<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.995<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -4976,14 +4976,16 @@ async function toggleEditMode() {
     el('editModeBanner').style.display = 'block';
     el('searchResults').classList.add('edit-mode');
   } else {
-    // Turning OFF — remove edit-mode class FIRST to prevent card clicks intercepting
+    // Turning OFF
     _editMode = false;
     el('searchResults').classList.remove('edit-mode');
     el('editModeBanner').style.display = 'none';
     const btn2 = el('btnEditMode');
     btn2.classList.remove('active');
     btn2.textContent = '✏️ מצב עריכה';
-    btn2.blur();
+    // Break sticky hover on mobile by briefly disabling pointer events
+    btn2.style.pointerEvents = 'none';
+    setTimeout(() => { btn2.style.pointerEvents = ''; }, 300);
   }
 }
 
