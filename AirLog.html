@@ -2717,7 +2717,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.98<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.99<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -4977,6 +4977,7 @@ async function toggleEditMode() {
     el('btnEditMode').textContent = '✏️ מצב עריכה';
     el('editModeBanner').style.display = 'none';
     el('searchResults').classList.remove('edit-mode');
+    el('btnEditMode').blur();
   }
 }
 
