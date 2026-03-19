@@ -2719,7 +2719,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.992<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.993<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -4973,7 +4973,7 @@ async function toggleEditMode() {
     el('editModeBanner').style.display = 'block';
     el('searchResults').classList.add('edit-mode');
   } else {
-    // Turning OFF — defer style reset until after browser tap state clears
+    // Turning OFF — clone button to fully reset all browser hover/focus/active states
     _editMode = false;
     el('editModeBanner').style.display = 'none';
     el('searchResults').classList.remove('edit-mode');
@@ -4981,11 +4981,11 @@ async function toggleEditMode() {
       const btn2 = el('btnEditMode');
       btn2.classList.remove('active');
       btn2.textContent = '✏️ מצב עריכה';
-      btn2.style.background = '';
-      btn2.style.borderColor = '';
-      btn2.style.color = '';
-      btn2.style.boxShadow = '';
-      btn2.blur();
+      btn2.style.cssText = '';
+      // Clone & replace to kill sticky hover on mobile
+      const clone = btn2.cloneNode(true);
+      clone.addEventListener('click', toggleEditMode);
+      btn2.parentNode.replaceChild(clone, btn2);
     }, 50);
   }
 }
