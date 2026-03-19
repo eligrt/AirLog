@@ -1807,9 +1807,9 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 .btn-edit-toggle:focus { outline: none; box-shadow: none; }
 .btn-edit-toggle:not(.active):focus,
 .btn-edit-toggle:not(.active):focus-visible { border-color: var(--accent); color: var(--accent2); background: var(--raised); box-shadow: none; }
-.btn-edit-toggle:not(.active):hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
-@media (hover: none) {
-  .btn-edit-toggle:not(.active):hover { border-color: var(--accent); color: var(--accent2); background: var(--raised); }
+.btn-edit-toggle:not(.active):active { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
+@media (hover: hover) {
+  .btn-edit-toggle:not(.active):hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.08); }
 }
 .btn-edit-toggle.active {
   background: #7f1d1d;
@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.995<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.996<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
