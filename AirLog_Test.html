@@ -2721,7 +2721,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.997.2<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.997.3<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2775,6 +2775,22 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 const el  = id => document.getElementById(id);
 const pad = n  => String(n).padStart(2, '0');
 const toHM = m => `${Math.floor(m/60)}:${pad(m%60)}`;
+
+// iOS-safe GET — uses XHR which handles GAS redirects better than fetch on Safari
+function xhrGet(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.timeout = 15000;
+    xhr.onload = () => {
+      try { resolve(JSON.parse(xhr.responseText)); }
+      catch(e) { reject(new Error('parse error: ' + xhr.responseText)); }
+    };
+    xhr.onerror   = () => reject(new Error('network error'));
+    xhr.ontimeout = () => reject(new Error('timeout'));
+    xhr.send();
+  });
+}
 
 // ═══════════════════════════════════════════
 //  SETUP / URL MANAGEMENT
@@ -2838,8 +2854,7 @@ async function saveSetup() {
   // Check 2 — connect to sheet
   setCheck('setupCheck2', 'spin', 'מתחבר לגיליון...');
   try {
-    const res  = await fetch(u + '?action=name', { redirect: 'follow' });
-    const data = await res.json();
+    const data = await xhrGet(u + '?action=name');
     if (!data || !data.name) throw new Error('invalid response');
     setCheck('setupCheck2', 'ok', `גיליון נמצא — ${data.name}`);
 
@@ -2988,8 +3003,7 @@ async function obConnectWithUrl(url) {
 
   try {
     // Validate URL by calling ?action=name
-    const res = await fetch(url + '?action=name', { redirect: 'follow' });
-    const data = await res.json();
+    const data = await xhrGet(url + '?action=name');
 
     if (!data || !data.name) throw new Error('Invalid response');
 
@@ -3092,9 +3106,7 @@ async function fetchConnectedName() {
   badge.textContent = '✓ מחובר';
   badge.classList.add('visible');
   try {
-    const r = await fetch(url + '?action=name', { redirect: 'follow' });
-    const text = await r.text();
-    const d = JSON.parse(text);
+    const d = await xhrGet(url + '?action=name');
     if (d && d.name) {
       // Strip common prefixes like "AirLog - " or "AeroLog - "
       const name = d.name.replace(/^(air|aero)log\s*[-–]\s*/i, '').trim() || d.name;
@@ -3654,8 +3666,7 @@ async function loadStats() {
   // Pre-fetch count for real progress
   setLB(5, 'מתחבר לשרת...', '');
   try {
-    var cr   = await fetch(gasUrl + '?action=count', { redirect: 'follow' });
-    var cj   = await cr.json();
+    var cj   = await xhrGet(gasUrl + '?action=count');
     _totalCount = cj.count || 0;
     if (_totalCount) setLB(12, 'נמצאו ' + _totalCount + ' טיסות — טוען...');
   } catch(e) { /* continue without count */ }
@@ -3675,10 +3686,9 @@ async function loadStats() {
   _lbAnim = requestAnimationFrame(_lbTick);
 
   try {
-    const res  = await fetch(gasUrl + '?action=getFlights&lean=1', { redirect: 'follow' });
+    const json = await xhrGet(gasUrl + '?action=getFlights&lean=1');
     cancelAnimationFrame(_lbAnim);
     setLB(95, 'מעבד נתונים...' + (_totalCount ? ' · ' + _totalCount + '/' + _totalCount : ''));
-    const json = await res.json();
     allRows    = (json.rows || json.flights || []).filter(r => r.date);
     updateFlightNum();
     journalRows = [];
@@ -3757,10 +3767,9 @@ async function loadJournal() {
   animFrame = requestAnimationFrame(animateProgress);
 
   try {
-    const res  = await fetch(gasUrl + '?action=getFlights&lean=0', { redirect: 'follow' });
+    const json = await xhrGet(gasUrl + '?action=getFlights&lean=0');
     cancelAnimationFrame(animFrame);
     setProgress(92, 'מעבד נתונים...');
-    const json = await res.json();
     journalRows = (json.rows || json.flights || []).filter(r => r.date);
     _journalLoading = false;
     setProgress(100, 'מוכן!');
