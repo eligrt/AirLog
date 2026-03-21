@@ -2721,7 +2721,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.997.3T<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.997.4T<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2877,7 +2877,8 @@ async function saveSetup() {
 
   } catch(e) {
     setCheck('setupCheck2', 'err', 'לא הצלחנו להתחבר לגיליון');
-    el('setupErrMsg').textContent = 'בדוק שהכתובת נכונה ושה-Script פורס כ-Web App';
+    const errDetail = (e && e.message) ? e.message : String(e);
+    el('setupErrMsg').textContent = 'שגיאה: ' + errDetail;
     el('setupErrMsg').style.display = 'block';
     btn.disabled = false;
     btn.style.opacity = '1';
