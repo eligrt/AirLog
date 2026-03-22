@@ -172,7 +172,8 @@ body::before {
   width: 220px; height: 220px;
   border-radius: 0;
   margin-bottom: 22px;
-  overflow: hidden;
+  background: #060e18;
+  mix-blend-mode: normal;
 }
 .splash-title {
   font-family: var(--sans); font-size: 30px; font-weight: 700;
@@ -2721,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v1.997.205T<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v1.998.101T<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2839,8 +2840,8 @@ async function saveSetup() {
   setCheck('setupCheck2', 'spin', 'מתחבר לגיליון...');
   try {
     const res  = await fetch(u + '?action=name', {
-      credentials: 'omit',
-      cache: 'no-store'
+      method: 'GET',
+      redirect: 'follow'
     });
     const data = await res.json();
     if (!data || !data.name) throw new Error('invalid response');
@@ -2865,7 +2866,7 @@ async function saveSetup() {
 
   } catch(e) {
     setCheck('setupCheck2', 'err', 'לא הצלחנו להתחבר לגיליון');
-    el('setupErrMsg').textContent = (e ? (e.name + ': ' + e.message) : 'unknown error');
+    el('setupErrMsg').textContent = e ? (e.name + ': ' + e.message) : 'unknown';
     el('setupErrMsg').style.display = 'block';
     btn.disabled = false;
     btn.style.opacity = '1';
@@ -5503,7 +5504,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.997.205T</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.998.101T</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5511,7 +5512,7 @@ function createNewSheet() {
 <div id="setupOverlay">
   <div class="setup-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div class="setup-title" style="margin-bottom:0;">✈ הגדרה ראשונית <span style="font-size:10px;font-weight:400;color:var(--text3);font-family:var(--mono);">v1.997.205T</span></div>
+      <div class="setup-title" style="margin-bottom:0;">✈ הגדרה ראשונית</div>
       <button id="setupCloseBtn" onclick="closeSetup()" style="display:none;background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">×</button>
     </div>
     <div class="setup-sub">
@@ -5546,6 +5547,10 @@ function createNewSheet() {
       שמור והתחל <span style="display:inline-block;transform:scaleX(-1);">✈</span>
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.998.101T</div>
+      <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
+    </div>
   </div>
 </div>
 
