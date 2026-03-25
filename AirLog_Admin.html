@@ -495,15 +495,13 @@ body::before {
           <thead>
             <tr>
               <th>שם גיליון</th>
-              <th>מכשיר</th>
-              <th>מערכת</th>
               <th>טיסות</th>
               <th>נראה לאחרונה</th>
-              <th>סה"כ פתיחות</th>
+              <th>סה"כ כניסות</th>
             </tr>
           </thead>
           <tbody id="usersTableBody">
-            <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3);">טוען...</td></tr>
+            <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3);">טוען...</td></tr>
           </tbody>
         </table>
       </div>
@@ -528,14 +526,22 @@ body::before {
     <div class="sec-head">
       <div class="sec-title">⚡ פעילות אחרונה</div>
     </div>
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;direction:rtl;">
-      <span style="font-size:11px;color:var(--text3);align-self:center;margin-left:4px;">סינון:</span>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;direction:rtl;align-items:center;">
+      <span style="font-size:11px;color:var(--text3);align-self:center;">סינון אירוע:</span>
       <button class="feed-pill active" onclick="setFeedFilter('all')" id="fp-all">הכל</button>
-      <button class="feed-pill" onclick="setFeedFilter('flight_recorded')" id="fp-flight_recorded">✈ טיסות</button>
+      <button class="feed-pill" onclick="setFeedFilter('flight_recorded')" id="fp-flight_recorded">✈ רישום טיסה</button>
       <button class="feed-pill" onclick="setFeedFilter('app_open')" id="fp-app_open">📲 כניסות</button>
-      <button class="feed-pill" onclick="setFeedFilter('flight_archived')" id="fp-flight_archived">🗄 ארכוב</button>
+      <button class="feed-pill" onclick="setFeedFilter('flight_archived')" id="fp-flight_archived">🗄 ארכוב טיסה</button>
       <button class="feed-pill" onclick="setFeedFilter('setup_completed')" id="fp-setup_completed">🆕 הצטרפות</button>
+    </div>
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;direction:rtl;align-items:center;">
+      <span style="font-size:11px;color:var(--text3);align-self:center;">משתמש:</span>
+      <select id="feedUserFilter" onchange="renderFeed()"
+        style="font-family:var(--sans);font-size:12px;background:var(--raised);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;outline:none;cursor:pointer;">
+        <option value="all">כולם</option>
+      </select>
       <div style="flex:1;min-width:8px;"></div>
+      <span style="font-size:11px;color:var(--text3);align-self:center;">טווח:</span>
       <button class="feed-pill active" onclick="setFeedRange(20)" id="fr-20">20 אחרונים</button>
       <button class="feed-pill" onclick="setFeedRange(90)" id="fr-90">3 חודשים</button>
       <button class="feed-pill" onclick="setFeedRange(0)" id="fr-0">הכל</button>
@@ -550,7 +556,7 @@ body::before {
 </div>
 
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.2 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.51 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
 </div>
 
@@ -594,7 +600,8 @@ async function loadAll() {
     const footer = document.getElementById('footerUpdateTime');
     if (footer) footer.textContent = '· עודכן ' + timeStr;
   } catch(e) {
-    document.getElementById('lastRefresh').textContent = '⚠ שגיאת טעינה';
+    const ft = document.getElementById('footerUpdateTime');
+    if (ft) ft.textContent = '· ⚠ שגיאת טעינה';
     console.error(e);
   }
 
@@ -608,7 +615,24 @@ function render() {
   renderChart();
   renderUsers();
   renderDevices();
+  populateUserDropdown();
   renderFeed();
+}
+
+function populateUserDropdown() {
+  const sel = document.getElementById('feedUserFilter');
+  if (!sel) return;
+  const current = sel.value;
+  // Get unique users with names
+  const users = {};
+  allEvents.forEach(e => {
+    if (e.userId && e.sheetName) users[e.userId] = e.sheetName;
+  });
+  sel.innerHTML = '<option value="all">כולם</option>' +
+    Object.entries(users).map(([id, name]) =>
+      `<option value="${id}">${name}</option>`
+    ).join('');
+  if (current && current !== 'all') sel.value = current;
 }
 
 // ── SUMMARY CARDS ───────────────────────────────────────────────
@@ -699,7 +723,7 @@ function renderUsers() {
 
   if (!sorted.length) {
     document.getElementById('usersTableBody').innerHTML =
-      '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3);">אין נתונים</td></tr>';
+      '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3);">אין נתונים</td></tr>';
     return;
   }
 
@@ -709,8 +733,6 @@ function renderUsers() {
         <div class="user-name">${u.name}</div>
         <div class="user-id">${u.id}</div>
       </td>
-      <td><span class="device-tag ${deviceClass(u.device)}">${u.device}</span></td>
-      <td style="font-size:11px;color:var(--text3);font-family:var(--mono);">${u.os}</td>
       <td><span class="flights-num">${u.flights}</span></td>
       <td><span class="last-seen">${u.lastSeen ? fmtRelative(u.lastSeen) : '—'}</span></td>
       <td style="font-family:var(--mono);font-size:12px;color:var(--text3);">${u.opens}</td>
@@ -721,12 +743,11 @@ function renderUsers() {
 // ── DEVICE BREAKDOWN ────────────────────────────────────────────
 function renderDevices() {
   const counts = {};
-  const seen   = new Set();
 
+  // Count ALL events per device type (not just unique users)
   allEvents.forEach(e => {
-    if (!e.userId || seen.has(e.userId)) return;
-    seen.add(e.userId);
-    const type = getDeviceType(e.device || '');
+    if (!e.device) return;
+    const type = getDeviceType(e.device);
     counts[type] = (counts[type] || 0) + 1;
   });
 
@@ -764,6 +785,13 @@ function renderDevices() {
 // ── ACTIVITY FEED ────────────────────────────────────────────────
 function renderFeed() {
   let events = [...allEvents].sort((a, b) => parseDate(b.timestamp) - parseDate(a.timestamp));
+
+  // Apply user filter
+  const userSel = document.getElementById('feedUserFilter');
+  const userFilter = userSel ? userSel.value : 'all';
+  if (userFilter !== 'all') {
+    events = events.filter(e => e.userId === userFilter);
+  }
 
   // Apply event type filter
   if (_feedFilter !== 'all') {
@@ -839,11 +867,14 @@ function fmtRelative(d) {
 }
 
 function getDeviceType(device) {
+  if (!device || device === '—') return 'Unknown';
   if (/iPhone/i.test(device))  return 'iPhone';
   if (/iPad/i.test(device))    return 'iPad';
   if (/Android/i.test(device) || /samsung|xiaomi|huawei|pixel|redmi|oppo|vivo/i.test(device)) return 'Android';
-  if (/Mac|PC|Windows|Linux/i.test(device)) return 'Desktop';
-  return device || 'Unknown';
+  if (/Mac|PC|Windows|Linux|Android device/i.test(device)) return 'Desktop';
+  // Short model names that Android reports (like "K") — treat as Android
+  if (device.length <= 3) return 'Android';
+  return device;
 }
 
 function deviceClass(device) {
