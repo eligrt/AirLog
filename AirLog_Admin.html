@@ -490,12 +490,12 @@ body::before {
     <div class="sec-head">
       <div class="sec-title">📈 פעילות — 14 ימים אחרונים</div>
     </div>
-    <div class="sec-body">
-      <div class="chart-wrap" id="activityChart" style="height:120px;align-items:flex-end;">
+    <div class="sec-body" style="overflow-x:auto;">
+      <div class="chart-wrap" id="activityChart" style="height:120px;align-items:flex-end;min-width:420px;">
         <div class="empty-state" style="width:100%;">טוען...</div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;justify-content:center;">
-        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#22c55e;display:inline-block;"></span>רישום טיסה</span>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;justify-content:center;min-width:420px;">
+        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#34d399;display:inline-block;"></span>רישום טיסה</span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa;display:inline-block;"></span>כניסה</span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#f87171;display:inline-block;"></span>ארכוב</span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#fbbf24;display:inline-block;"></span>הצטרפות</span>
@@ -536,24 +536,29 @@ body::before {
     <div class="sec-head">
       <div class="sec-title">⚡ פעילות אחרונה</div>
     </div>
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;direction:rtl;align-items:center;">
-      <span style="font-size:11px;color:var(--text3);align-self:center;">סינון אירוע:</span>
+    <!-- Row 1: User -->
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;direction:rtl;align-items:center;">
+      <span style="font-size:11px;color:var(--text3);flex-shrink:0;">משתמש:</span>
+      <select id="feedUserFilter" onchange="renderFeed()"
+        style="font-family:var(--sans);font-size:12px;background:var(--raised);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;outline:none;cursor:pointer;flex:1;">
+        <option value="all">כולם</option>
+      </select>
+    </div>
+    <!-- Row 2: Event type -->
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;direction:rtl;align-items:center;">
+      <span style="font-size:11px;color:var(--text3);align-self:center;">סוג אירוע:</span>
       <button class="feed-pill active" onclick="setFeedFilter('all')" id="fp-all">הכל</button>
       <button class="feed-pill" onclick="setFeedFilter('flight_recorded')" id="fp-flight_recorded">✈ רישום טיסה</button>
       <button class="feed-pill" onclick="setFeedFilter('app_open')" id="fp-app_open">📲 כניסות</button>
       <button class="feed-pill" onclick="setFeedFilter('flight_archived')" id="fp-flight_archived">🗄 ארכוב טיסה</button>
       <button class="feed-pill" onclick="setFeedFilter('setup_completed')" id="fp-setup_completed">🆕 הצטרפות</button>
     </div>
-    <div style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;direction:rtl;align-items:center;">
-      <span style="font-size:11px;color:var(--text3);align-self:center;">משתמש:</span>
-      <select id="feedUserFilter" onchange="renderFeed()"
-        style="font-family:var(--sans);font-size:12px;background:var(--raised);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;outline:none;cursor:pointer;">
-        <option value="all">כולם</option>
-      </select>
-      <div style="flex:1;min-width:8px;"></div>
+    <!-- Row 3: Range -->
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;direction:rtl;align-items:center;">
       <span style="font-size:11px;color:var(--text3);align-self:center;">טווח:</span>
       <button class="feed-pill active" onclick="setFeedRange(5)"  id="fr-5">5 אחרונים</button>
-      <button class="feed-pill" onclick="setFeedRange(20)" id="fr-20">20 אחרונים</button>      <button class="feed-pill" onclick="setFeedRange(30)" id="fr-30">חודש</button>
+      <button class="feed-pill" onclick="setFeedRange(20)" id="fr-20">20 אחרונים</button>
+      <button class="feed-pill" onclick="setFeedRange(30)" id="fr-30">חודש</button>
       <button class="feed-pill" onclick="setFeedRange(90)" id="fr-90">3 חודשים</button>
       <button class="feed-pill" onclick="setFeedRange(0)"  id="fr-0">הכל</button>
     </div>
@@ -567,7 +572,7 @@ body::before {
 </div>
 
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.9 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.91 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
 </div>
 
@@ -684,11 +689,11 @@ function populateUserDropdown() {
   // Get unique users with names
   const users = {};
   allEvents.forEach(e => {
-    if (e.userId && e.sheetName) users[e.userId] = e.sheetName;
+    if (e.userId && e.sheetName) users[e.userId.trim()] = e.sheetName;
   });
   sel.innerHTML = '<option value="all">כולם</option>' +
     Object.entries(users).map(([id, name]) =>
-      `<option value="${id}">${name}</option>`
+      `<option value="${id.trim()}">${name}</option>`
     ).join('');
   if (current && current !== 'all') sel.value = current;
 }
@@ -872,11 +877,11 @@ function renderDevices() {
 function renderFeed() {
   let events = [...allEvents].sort((a, b) => parseDate(b.timestamp) - parseDate(a.timestamp));
 
-  // Apply user filter
+  // Apply user filter — strict userId match
   const userSel = document.getElementById('feedUserFilter');
-  const userFilter = userSel ? userSel.value : 'all';
+  const userFilter = userSel ? userSel.value.trim() : 'all';
   if (userFilter !== 'all') {
-    events = events.filter(e => e.userId === userFilter);
+    events = events.filter(e => (e.userId || '').trim() === userFilter);
   }
 
   // Apply event type filter
