@@ -439,13 +439,16 @@ body::before {
   </div>
 </div>
 
-<!-- LOADING BAR -->
-<div id="loadingBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:100;">
-  <div id="loadingBarFill" style="height:3px;background:linear-gradient(90deg,var(--accent),var(--cyan));width:0%;transition:width .4s ease;"></div>
-</div>
-<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(6,14,10,.7);z-index:99;backdrop-filter:blur(2px);align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-  <div style="font-size:28px;animation:spin .8s linear infinite;">↻</div>
+<!-- LOADING SPLASH -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(6,14,10,.85);z-index:99;backdrop-filter:blur(3px);align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="font-size:24px;animation:spin .8s linear infinite;color:var(--accent2);">↻</div>
   <div style="font-family:var(--mono);font-size:13px;color:var(--accent2);" id="loadingMsg">טוען נתונים...</div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);" id="loadingVersion"></div>
+  <!-- Progress bar — LTR, left to right like a real progress indicator -->
+  <div style="width:240px;height:6px;background:var(--raised);border-radius:10px;overflow:hidden;border:1px solid var(--border);direction:ltr;">
+    <div id="loadingBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:10px;transition:width .4s ease;"></div>
+  </div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);" id="loadingPct">0%</div>
 </div>
 
 <!-- PAGE -->
@@ -488,13 +491,17 @@ body::before {
   <!-- ACTIVITY CHART -->
   <div class="section">
     <div class="sec-head">
-      <div class="sec-title">📈 פעילות — 14 ימים אחרונים</div>
+      <div class="sec-title">📈 פעילות אחרונה</div>
+      <div style="display:flex;gap:4px;">
+        <button class="feed-pill" id="chart-7" onclick="setChartDays(7)" style="padding:3px 8px;font-size:10px;">7 ימים</button>
+        <button class="feed-pill active" id="chart-14" onclick="setChartDays(14)" style="padding:3px 8px;font-size:10px;">14 ימים</button>
+      </div>
     </div>
-    <div class="sec-body" style="overflow-x:auto;">
-      <div class="chart-wrap" id="activityChart" style="height:120px;align-items:flex-end;min-width:420px;">
+    <div class="sec-body">
+      <div class="chart-wrap" id="activityChart" style="height:120px;align-items:flex-end;">
         <div class="empty-state" style="width:100%;">טוען...</div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;justify-content:center;min-width:420px;">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;justify-content:center;">
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#34d399;display:inline-block;"></span>רישום טיסה</span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa;display:inline-block;"></span>כניסה</span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#f87171;display:inline-block;"></span>ארכוב</span>
@@ -572,7 +579,7 @@ body::before {
 </div>
 
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.91 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.92 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
 </div>
 
@@ -600,34 +607,39 @@ function setFeedRange(r) {
 }
 
 // ── LOAD ────────────────────────────────────────────────────────
+const ADMIN_VERSION = 'v1.92';
+
 async function loadAll() {
-  const btn  = document.getElementById('btnRefresh');
-  const icon = document.getElementById('refreshIcon');
+  const btn     = document.getElementById('btnRefresh');
+  const icon    = document.getElementById('refreshIcon');
   const overlay = document.getElementById('loadingOverlay');
-  const bar     = document.getElementById('loadingBar');
   const barFill = document.getElementById('loadingBarFill');
   const msg     = document.getElementById('loadingMsg');
+  const pct     = document.getElementById('loadingPct');
+  const ver     = document.getElementById('loadingVersion');
 
   btn.classList.add('loading');
   icon.classList.add('spin');
   overlay.style.display = 'flex';
-  bar.style.display = 'block';
+  if (ver) ver.textContent = ADMIN_VERSION;
   barFill.style.transition = 'width .4s ease';
   barFill.style.width = '0%';
+  if (pct) pct.textContent = '0%';
 
   // Animated steps while waiting
   const steps = [
-    { pct: 15, txt: 'מתחבר לשרת...' },
-    { pct: 35, txt: 'מושך נתוני אירועים...' },
-    { pct: 60, txt: 'מעבד רשומות...' },
-    { pct: 80, txt: 'כמעט מוכן...' },
+    { p: 15, txt: 'מתחבר לשרת...' },
+    { p: 35, txt: 'מושך נתוני אירועים...' },
+    { p: 60, txt: 'מעבד רשומות...' },
+    { p: 80, txt: 'כמעט מוכן...' },
   ];
   let stepIdx = 0;
   let done = false;
   function nextStep() {
     if (done || stepIdx >= steps.length) return;
     const s = steps[stepIdx++];
-    barFill.style.width = s.pct + '%';
+    barFill.style.width = s.p + '%';
+    if (pct) pct.textContent = s.p + '%';
     if (msg) msg.textContent = s.txt;
     setTimeout(nextStep, 700 + Math.random() * 400);
   }
@@ -640,14 +652,12 @@ async function loadAll() {
     done = true;
     if (msg) msg.textContent = 'מרנדר...';
     barFill.style.width = '95%';
+    if (pct) pct.textContent = '95%';
     render();
-    barFill.style.transition = 'width .2s ease';
+    barFill.style.transition = 'width .15s ease';
     barFill.style.width = '100%';
-    setTimeout(() => {
-      overlay.style.display = 'none';
-      bar.style.display = 'none';
-      barFill.style.width = '0%';
-    }, 250);
+    if (pct) pct.textContent = '100%';
+    setTimeout(() => { overlay.style.display = 'none'; }, 250);
     const now = new Date();
     const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
     const footer = document.getElementById('footerUpdateTime');
@@ -656,12 +666,12 @@ async function loadAll() {
     done = true;
     barFill.style.background = 'var(--red)';
     barFill.style.width = '100%';
-    if (msg) msg.textContent = '⚠ שגיאת טעינה';
+    if (pct) pct.textContent = '⚠';
+    if (msg) msg.textContent = 'שגיאת טעינה';
     setTimeout(() => {
       overlay.style.display = 'none';
-      bar.style.display = 'none';
-      barFill.style.width = '0%';
       barFill.style.background = '';
+      barFill.style.width = '0%';
     }, 2000);
     const ft = document.getElementById('footerUpdateTime');
     if (ft) ft.textContent = '· ⚠ שגיאת טעינה';
@@ -716,12 +726,23 @@ function renderSummary() {
   document.getElementById('sumOpens').textContent   = opensWeek;
 }
 
-// ── ACTIVITY CHART (14 days) ────────────────────────────────────
+// ── ACTIVITY CHART ────────────────────────────────────────────────
+let _chartDays = 14;
+
+function setChartDays(d) {
+  _chartDays = d;
+  document.querySelectorAll('[id^="chart-"]').forEach(el => el.classList.remove('active'));
+  const btn = document.getElementById('chart-' + d);
+  if (btn) btn.classList.add('active');
+  renderChart();
+}
+
 function renderChart() {
   const wrap = document.getElementById('activityChart');
-  const days  = 14;
+  const days  = _chartDays;
+  const BAR_MAX_PX = 80;
   const eventColors = {
-    'flight_recorded':  '#22c55e',
+    'flight_recorded':  '#34d399',
     'app_open':         '#60a5fa',
     'flight_archived':  '#f87171',
     'setup_completed':  '#fbbf24'
@@ -744,10 +765,8 @@ function renderChart() {
   const vals   = labels.map(l => buckets[l]);
   const maxVal = Math.max(...vals.map(v => v.total), 1);
 
-  const BAR_MAX_PX = 80; // max bar height in pixels
-
   wrap.innerHTML = labels.map((lbl, i) => {
-    const v    = vals[i];
+    const v     = vals[i];
     const parts = lbl.split('-');
     const short = parts[2] + '/' + parts[1];
 
