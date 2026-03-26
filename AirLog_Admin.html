@@ -491,7 +491,7 @@ body::before {
       <div class="sec-title">📈 פעילות — 14 ימים אחרונים</div>
     </div>
     <div class="sec-body">
-      <div class="chart-wrap" id="activityChart" style="height:110px;">
+      <div class="chart-wrap" id="activityChart" style="height:120px;align-items:flex-end;">
         <div class="empty-state" style="width:100%;">טוען...</div>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;justify-content:center;">
@@ -567,7 +567,7 @@ body::before {
 </div>
 
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.8 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.9 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
 </div>
 
@@ -739,26 +739,25 @@ function renderChart() {
   const vals   = labels.map(l => buckets[l]);
   const maxVal = Math.max(...vals.map(v => v.total), 1);
 
+  const BAR_MAX_PX = 80; // max bar height in pixels
+
   wrap.innerHTML = labels.map((lbl, i) => {
     const v    = vals[i];
-    const pct  = Math.round((v.total / maxVal) * 100);
     const parts = lbl.split('-');
     const short = parts[2] + '/' + parts[1];
-    // Stacked segments
+
     const segs = ['flight_recorded','app_open','flight_archived','setup_completed']
       .filter(k => v[k] > 0)
       .map(k => {
-        const segPct = Math.round(v[k] / v.total * 100);
-        return `<div style="width:100%;height:${Math.round(v[k]/maxVal*100)}%;background:${eventColors[k]};flex-shrink:0;" title="${k}: ${v[k]}"></div>`;
+        const px = Math.max(Math.round(v[k] / maxVal * BAR_MAX_PX), 2);
+        return `<div style="width:100%;height:${px}px;background:${eventColors[k]};border-radius:2px 2px 0 0;flex-shrink:0;" title="${k}: ${v[k]}"></div>`;
       }).join('');
 
     return `
       <div class="chart-bar-col">
         <div style="font-size:10px;font-weight:700;color:var(--accent2);font-family:var(--mono);text-align:center;margin-bottom:2px;min-height:14px;">${v.total || ''}</div>
-        <div style="flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;">
-          ${['flight_recorded','app_open','flight_archived','setup_completed'].filter(k => v[k] > 0).map(k =>
-            `<div style="width:100%;height:${Math.round(v[k]/maxVal*100)}%;min-height:${v[k]>0?2:0}px;background:${eventColors[k]};border-radius:2px 2px 0 0;" title="${k}: ${v[k]}"></div>`
-          ).join('')}
+        <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:1px;height:${BAR_MAX_PX}px;flex-shrink:0;">
+          ${segs}
         </div>
         <div class="chart-lbl">${short}</div>
       </div>`;
