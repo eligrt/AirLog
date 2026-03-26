@@ -8,19 +8,19 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg:       #060e0a;
-  --bg2:      #091209;
-  --surface:  #0d1f10;
-  --raised:   #122818;
-  --hover:    #173020;
-  --border:   #1a3d20;
-  --border2:  #2d6b38;
-  --text:     #e8f5ea;
-  --text2:    #8fbc94;
-  --text3:    #3d6b42;
-  --accent:   #22c55e;
-  --accent2:  #4ade80;
-  --glow:     #22c55e30;
+  --bg:       #070f09;
+  --bg2:      #0a1a0c;
+  --surface:  #0f2414;
+  --raised:   #162e1a;
+  --hover:    #1d3d22;
+  --border:   #244d2b;
+  --border2:  #3a8045;
+  --text:     #eaf6ec;
+  --text2:    #a8d4ae;
+  --text3:    #5a8f62;
+  --accent:   #34d399;
+  --accent2:  #6ee7b7;
+  --glow:     #34d39930;
   --cyan:     #22d3ee;
   --amber:    #fbbf24;
   --red:      #f87171;
@@ -494,7 +494,7 @@ body::before {
       <div class="chart-wrap" id="activityChart" style="height:110px;">
         <div class="empty-state" style="width:100%;">טוען...</div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;justify-content:center;">
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#22c55e;display:inline-block;"></span>רישום טיסה</span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa;display:inline-block;"></span>כניסה</span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#f87171;display:inline-block;"></span>ארכוב</span>
@@ -567,7 +567,7 @@ body::before {
 </div>
 
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.7 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.8 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
 </div>
 
@@ -607,29 +607,57 @@ async function loadAll() {
   icon.classList.add('spin');
   overlay.style.display = 'flex';
   bar.style.display = 'block';
+  barFill.style.transition = 'width .4s ease';
   barFill.style.width = '0%';
-  setTimeout(() => { barFill.style.width = '60%'; }, 50);
+
+  // Animated steps while waiting
+  const steps = [
+    { pct: 15, txt: 'מתחבר לשרת...' },
+    { pct: 35, txt: 'מושך נתוני אירועים...' },
+    { pct: 60, txt: 'מעבד רשומות...' },
+    { pct: 80, txt: 'כמעט מוכן...' },
+  ];
+  let stepIdx = 0;
+  let done = false;
+  function nextStep() {
+    if (done || stepIdx >= steps.length) return;
+    const s = steps[stepIdx++];
+    barFill.style.width = s.pct + '%';
+    if (msg) msg.textContent = s.txt;
+    setTimeout(nextStep, 700 + Math.random() * 400);
+  }
+  setTimeout(nextStep, 80);
 
   try {
     const res  = await fetch(ADMIN_GAS_URL + '?action=getEvents');
     const data = await res.json();
     allEvents  = data.events || [];
+    done = true;
+    if (msg) msg.textContent = 'מרנדר...';
+    barFill.style.width = '95%';
+    render();
+    barFill.style.transition = 'width .2s ease';
     barFill.style.width = '100%';
     setTimeout(() => {
       overlay.style.display = 'none';
       bar.style.display = 'none';
       barFill.style.width = '0%';
-    }, 300);
-    render();
+    }, 250);
     const now = new Date();
     const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
     const footer = document.getElementById('footerUpdateTime');
     if (footer) footer.textContent = '· עודכן ' + timeStr;
   } catch(e) {
+    done = true;
     barFill.style.background = 'var(--red)';
     barFill.style.width = '100%';
-    setTimeout(() => { overlay.style.display = 'none'; bar.style.display = 'none'; barFill.style.width = '0%'; barFill.style.background = ''; }, 1500);
     if (msg) msg.textContent = '⚠ שגיאת טעינה';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      bar.style.display = 'none';
+      barFill.style.width = '0%';
+      barFill.style.background = '';
+    }, 2000);
     const ft = document.getElementById('footerUpdateTime');
     if (ft) ft.textContent = '· ⚠ שגיאת טעינה';
     console.error(e);
@@ -726,7 +754,7 @@ function renderChart() {
 
     return `
       <div class="chart-bar-col">
-        <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-align:center;margin-bottom:2px;">${v.total || ''}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--accent2);font-family:var(--mono);text-align:center;margin-bottom:2px;min-height:14px;">${v.total || ''}</div>
         <div style="flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;">
           ${['flight_recorded','app_open','flight_archived','setup_completed'].filter(k => v[k] > 0).map(k =>
             `<div style="width:100%;height:${Math.round(v[k]/maxVal*100)}%;min-height:${v[k]>0?2:0}px;background:${eventColors[k]};border-radius:2px 2px 0 0;" title="${k}: ${v[k]}"></div>`
@@ -837,7 +865,7 @@ function renderDevices() {
     <div style="height:14px;border-radius:8px;overflow:hidden;display:flex;background:var(--raised);border:1px solid var(--border);margin-bottom:10px;">
       ${segments}
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;direction:ltr;">${legend}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;direction:ltr;justify-content:center;">${legend}</div>
   `;
 }
 
@@ -858,14 +886,20 @@ function renderFeed() {
   }
 
   // Apply time range
-  if (_feedRange === 20) {
+  if (_feedRange === 5) {
+    events = events.slice(0, 5);
+  } else if (_feedRange === 20) {
     events = events.slice(0, 20);
+  } else if (_feedRange === 30) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    events = events.filter(e => parseDate(e.timestamp) >= cutoff);
   } else if (_feedRange === 90) {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 90);
     events = events.filter(e => parseDate(e.timestamp) >= cutoff);
   }
-  // _feedRange === 0 means all — no slice
+  // _feedRange === 0 means all — no filter
 
   if (!events.length) {
     document.getElementById('feedList').innerHTML = '<div class="empty-state" style="padding:24px 0;">אין אירועים</div>';
