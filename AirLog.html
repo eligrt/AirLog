@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.06<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.07<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2806,9 +2806,7 @@ function getDeviceInfo() {
   else if (/iPhone/.test(ua)) { device = 'iPhone';  os = 'iOS '    + (ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g,'.') || ''); }
   else if (/Android/.test(ua)) {
     os = 'Android ' + (ua.match(/Android ([\d.]+)/)?.[1] || '');
-    // Try to get model — Android UA format: (Linux; Android X.X; MODEL)
     let model = ua.match(/;\s*([^;)]+)\)\s*AppleWebKit/)?.[1]?.trim() || '';
-    // 'K' is Google's privacy placeholder — try navigator.userAgentData if available
     if (!model || model === 'K' || model.length <= 2) {
       model = (navigator.userAgentData?.platform) || 'Android device';
     }
@@ -2821,12 +2819,42 @@ function getDeviceInfo() {
   return { device, os };
 }
 
+// Capture extended diagnostic info
+function getExtendedInfo() {
+  const ua = navigator.userAgent;
+  // Browser detection
+  let browser = 'Unknown';
+  if (/CriOS/.test(ua))        browser = 'Chrome iOS';
+  else if (/FxiOS/.test(ua))   browser = 'Firefox iOS';
+  else if (/EdgiOS/.test(ua))  browser = 'Edge iOS';
+  else if (/OPiOS/.test(ua))   browser = 'Opera iOS';
+  else if (/Safari/.test(ua) && /iPhone|iPad|iPod/.test(ua)) browser = 'Safari iOS';
+  else if (/Chrome/.test(ua))  browser = 'Chrome';
+  else if (/Firefox/.test(ua)) browser = 'Firefox';
+  else if (/Safari/.test(ua))  browser = 'Safari';
+  else if (/Edge/.test(ua))    browser = 'Edge';
+
+  // Screen resolution
+  const screenRes = `${window.screen.width}x${window.screen.height}`;
+
+  // PWA mode — true if launched from home screen
+  const isPWA = window.navigator.standalone === true ||
+                window.matchMedia('(display-mode: standalone)').matches;
+
+  // Network type
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const network = conn ? (conn.effectiveType || conn.type || 'unknown') : 'unknown';
+
+  return { browser, screenRes, isPWA, network };
+}
+
 // Send event to admin sheet — silent, never blocks the app
 async function reportEvent(event, extraData = {}) {
-  if (!ADMIN_GAS_URL) return; // not configured yet
+  if (!ADMIN_GAS_URL) return;
   try {
     const gasUrl = getUrl();
     const { device, os } = getDeviceInfo();
+    const { browser, screenRes, isPWA, network } = getExtendedInfo();
     const userId = gasUrl ? await hashString(gasUrl) : 'unknown';
     const payload = {
       event,
@@ -2834,13 +2862,19 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.06',
-      totalFlights: extraData.totalFlights || 0
+      appVersion:   'v2.07',
+      totalFlights: extraData.totalFlights || 0,
+      status:       extraData.status       || 'success',
+      errorMsg:     extraData.errorMsg     || '',
+      browser,
+      screenRes,
+      isPWA,
+      network
     };
     fetch(ADMIN_GAS_URL, {
       method: 'POST',
       body:   JSON.stringify(payload)
-    }).catch(() => {}); // truly silent — ignore all errors
+    }).catch(() => {});
   } catch(e) { /* silent */ }
 }
 
@@ -2928,10 +2962,16 @@ async function saveSetup() {
     fetchConnectedName();
     renderCurrency();
     if (!_journalLoading) loadJournal();
-    // Report setup_completed for new users
+    // Report setup_completed for new users + connection_success
     reportEvent('setup_completed', {
       sheetName:    window._adminSheetName || '',
-      totalFlights: allRows.length
+      totalFlights: allRows.length,
+      status:       'success'
+    });
+    reportEvent('connection_success', {
+      sheetName:    window._adminSheetName || '',
+      totalFlights: allRows.length,
+      status:       'success'
     });
 
   } catch(e) {
@@ -2946,6 +2986,11 @@ async function saveSetup() {
     el('setupErrMsg').style.display = 'block';
     btn.disabled = false;
     btn.style.opacity = '1';
+    // Report connection_error with full diagnostics
+    reportEvent('connection_error', {
+      status:   'error',
+      errorMsg: e && e.message ? e.message : String(e)
+    });
   }
 }
 
@@ -5625,7 +5670,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.06</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.07</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5676,7 +5721,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.06</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.07</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>

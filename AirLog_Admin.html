@@ -580,12 +580,43 @@ body::before {
         <div class="empty-state" style="padding:24px 0;">טוען...</div>
       </div>
     </div>
+  <!-- CONNECTION ERRORS -->
+  <div class="section" style="border-color:rgba(251,146,60,.3);">
+    <div class="sec-head" onclick="toggleErrors()" style="cursor:pointer;background:linear-gradient(90deg,rgba(251,146,60,.08),var(--surface));">
+      <div class="sec-title" style="color:#fb923c;">🔴 שגיאות חיבור</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="errorsCount"></div>
+        <span id="errorsChevron" style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;">▼</span>
+      </div>
+    </div>
+    <div id="errorsBody">
+      <div style="overflow-x:auto;">
+        <table class="users-table" id="errorsTable">
+          <thead>
+            <tr>
+              <th>זמן</th>
+              <th>אירוע</th>
+              <th>מכשיר</th>
+              <th>מערכת</th>
+              <th>דפדפן</th>
+              <th>מסך</th>
+              <th>PWA</th>
+              <th>רשת</th>
+              <th>שגיאה</th>
+            </tr>
+          </thead>
+          <tbody id="errorsTableBody">
+            <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">טוען...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 </div>
 
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.93 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v1.94 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
 </div>
 
@@ -613,7 +644,7 @@ function setFeedRange(r) {
 }
 
 // ── LOAD ────────────────────────────────────────────────────────
-const ADMIN_VERSION = 'v1.93';
+const ADMIN_VERSION = 'v1.94';
 
 async function loadAll() {
   const btn     = document.getElementById('btnRefresh');
@@ -696,6 +727,7 @@ function render() {
   renderDevices();
   populateUserDropdown();
   renderFeed();
+  renderErrors();
 }
 
 function populateUserDropdown() {
@@ -1012,8 +1044,51 @@ function toggleUsers() {
   _usersOpen = !_usersOpen;
   const body    = document.getElementById('usersBody');
   const chevron = document.getElementById('usersChevron');
-  body.style.display    = _usersOpen ? '' : 'none';
+  body.style.display      = _usersOpen ? '' : 'none';
   chevron.style.transform = _usersOpen ? '' : 'rotate(-90deg)';
+}
+
+let _errorsOpen = true;
+function toggleErrors() {
+  _errorsOpen = !_errorsOpen;
+  const body    = document.getElementById('errorsBody');
+  const chevron = document.getElementById('errorsChevron');
+  body.style.display      = _errorsOpen ? '' : 'none';
+  chevron.style.transform = _errorsOpen ? '' : 'rotate(-90deg)';
+}
+
+function renderErrors() {
+  const errorEvents = [...allEvents]
+    .filter(e => e.event === 'connection_error' || e.event === 'connection_success')
+    .sort((a, b) => parseDate(b.timestamp) - parseDate(a.timestamp));
+
+  const count = errorEvents.filter(e => e.event === 'connection_error').length;
+  const successCount = errorEvents.filter(e => e.event === 'connection_success').length;
+  document.getElementById('errorsCount').textContent =
+    `${count} שגיאות · ${successCount} הצלחות`;
+
+  if (!errorEvents.length) {
+    document.getElementById('errorsTableBody').innerHTML =
+      '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">אין רשומות</td></tr>';
+    return;
+  }
+
+  document.getElementById('errorsTableBody').innerHTML = errorEvents.map(e => {
+    const isErr = e.event === 'connection_error';
+    const color = isErr ? 'var(--red)' : '#a78bfa';
+    const label = isErr ? '🔴 שגיאה' : '🟢 הצלחה';
+    return `<tr>
+      <td><span class="last-seen">${fmtRelative(parseDate(e.timestamp))}</span></td>
+      <td><span style="color:${color};font-weight:700;font-size:11px;">${label}</span></td>
+      <td style="font-size:11px;color:var(--text2);">${e.device || '—'}</td>
+      <td style="font-size:11px;color:var(--text3);font-family:var(--mono);">${e.os || '—'}</td>
+      <td style="font-size:11px;color:var(--text3);font-family:var(--mono);">${e.browser || '—'}</td>
+      <td style="font-size:11px;color:var(--text3);font-family:var(--mono);">${e.screenRes || '—'}</td>
+      <td style="font-size:11px;color:var(--text3);font-family:var(--mono);">${e.isPWA || '—'}</td>
+      <td style="font-size:11px;color:var(--text3);font-family:var(--mono);">${e.network || '—'}</td>
+      <td style="font-size:11px;color:var(--red);font-family:var(--mono);max-width:200px;word-break:break-all;">${e.errorMsg || '—'}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
