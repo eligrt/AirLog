@@ -2729,7 +2729,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.16<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.18<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2890,7 +2890,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.16',
+      appVersion:   'v2.18',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3009,7 +3009,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.16',
+        'App Ver:    v2.18',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -5294,7 +5294,7 @@ async function archiveFlight(e, idx) {
 function refreshJournal() {
   const btn = el('btnRefreshJournal');
   if (btn) btn.classList.add('loading');
-  // Show bar immediately — same as other tabs
+  // Show bar immediately
   const wrap = el('loadBarJournal');
   const fill = el('loadBarJournalFill');
   const lbl  = el('loadBarJournalLabel');
@@ -5303,16 +5303,9 @@ function refreshJournal() {
   if (lbl)  lbl.textContent = 'מתחבר לשרת...';
   const card = el('view-search') ? el('view-search').querySelector('.card') : null;
   if (card) card.style.display = 'none';
-  // Reset and reload
-  allRows = []; journalRows = []; _journalLoading = false;
-  loadStatsAndJournal().then(function() {
-    const now = new Date();
-    const hh = now.getHours().toString().padStart(2,'0');
-    const mm = now.getMinutes().toString().padStart(2,'0');
-    const fs2 = el('footerStamp');
-    if (fs2) fs2.textContent = ' · updated ' + hh + ':' + mm;
-    if (btn) btn.classList.remove('loading');
-  });
+  // Only clear journal data — lean data stays, no need to refetch it
+  journalRows = []; _journalLoading = false;
+  loadJournal();
 }
 
 function refreshCurrency() {
@@ -5341,7 +5334,18 @@ function globalRefresh() {
 
   // Smart: also reload journal only if on journal tab
   const onJournal = el('tab-search') && el('tab-search').classList.contains('active');
-  if (onJournal) journalRows = [];
+  if (onJournal) {
+    journalRows = [];
+    // Show journal bar immediately — don't wait for loadStats to finish
+    const wrap = el('loadBarJournal');
+    const fill = el('loadBarJournalFill');
+    const lbl  = el('loadBarJournalLabel');
+    if (wrap) wrap.style.display = 'flex';
+    if (fill) fill.style.width = '3%';
+    if (lbl)  lbl.textContent = 'מתחבר לשרת...';
+    const card = el('view-search') ? el('view-search').querySelector('.card') : null;
+    if (card) card.style.display = 'none';
+  }
 
   loadStats().then(function() {
     renderCurrency();
@@ -5722,7 +5726,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.16</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.18</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5774,7 +5778,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.16</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.18</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
