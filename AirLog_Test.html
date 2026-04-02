@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.09.11T<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.09.12T<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2798,6 +2798,7 @@ async function smartFetch(url) {
     if (params) proxyUrl += '&' + params;
     const res  = await fetch(proxyUrl);
     const text = await res.text();
+    window._lastProxyResponse = text.slice(0, 200); // store for debug
     return JSON.parse(text);
   }
   const res = await fetch(url);
@@ -2891,7 +2892,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.09.11T',
+      appVersion:   'v2.09.12T',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3017,7 +3018,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.09.11T',
+        'App Ver:    v2.09.12T',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3027,6 +3028,7 @@ async function saveSetup() {
         'Error:      ' + errMsg,
         '',
         'Proxy URL:  ' + proxyUrl,
+        'Response:   ' + (window._lastProxyResponse || 'none'),
         '',
         'UserAgent:  ' + navigator.userAgent,
       ].join('\n');
@@ -5724,7 +5726,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.11T</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.12T</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5775,7 +5777,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.11T</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.12T</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
