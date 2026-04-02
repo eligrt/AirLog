@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.09.02T<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.09.03T<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2791,9 +2791,7 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 // Smart fetch — proxy on iOS, direct on Android/PC
 async function smartFetch(url) {
   if (isIOS) {
-    const gasBase  = url.split('?')[0];
-    const params   = url.includes('?') ? url.split('?')[1] : '';
-    const proxyUrl = CF_PROXY + '?gasUrl=' + encodeURIComponent(gasBase) + (params ? '&' + params : '');
+    const proxyUrl = CF_PROXY + '?gasUrl=' + encodeURIComponent(url);
     const res = await fetch(proxyUrl);
     return res.json();
   }
@@ -2881,7 +2879,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.09.02T',
+      appVersion:   'v2.09.03T',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -2998,7 +2996,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.09.02T',
+        'App Ver:    v2.09.03T',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -5703,7 +5701,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.02T</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.03T</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5754,7 +5752,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.02T</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.03T</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
