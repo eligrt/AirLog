@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.09<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.10<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2781,6 +2781,27 @@ const toHM = m => `${Math.floor(m/60)}:${pad(m%60)}`;
 //  SETUP / URL MANAGEMENT
 // ═══════════════════════════════════════════
 const LS_KEY = 'flight_log_gas_url';
+
+// ── CLOUDFLARE PROXY — iOS WebKit CORS bypass ────────────────────
+const CF_PROXY = 'https://airlog-proxy.eligrt.workers.dev/';
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+async function smartFetch(url) {
+  if (isIOS) {
+    const qIdx   = url.indexOf('?');
+    const base   = qIdx >= 0 ? url.slice(0, qIdx) : url;
+    const params = qIdx >= 0 ? url.slice(qIdx + 1) : '';
+    let proxyUrl = CF_PROXY + '?gasUrl=' + encodeURIComponent(base);
+    if (params) proxyUrl += '&' + params;
+    const res  = await fetch(proxyUrl);
+    const text = await res.text();
+    return JSON.parse(text);
+  }
+  const res = await fetch(url);
+  return res.json();
+}
 
 function getUrl()  { return localStorage.getItem(LS_KEY) || ''; }
 function saveUrl(u){ localStorage.setItem(LS_KEY, u.trim()); }
@@ -2862,7 +2883,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.09',
+      appVersion:   'v2.10',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -2903,7 +2924,9 @@ function closeSetup() {
 }
 
 async function saveSetup() {
-  const u = el('setupUrl').value.trim();
+  const raw = el('setupUrl').value.trim();
+  const match = raw.match(/https:\/\/script\.google\.com\/[^\s]*/);
+  const u = match ? match[0] : raw;
   if (!u.startsWith('https://script.google.com')) {
     el('setupUrl').classList.add('err');
     return;
@@ -2938,11 +2961,7 @@ async function saveSetup() {
   // Check 2 — connect to sheet
   setCheck('setupCheck2', 'spin', 'מתחבר לגיליון...');
   try {
-    const res  = await fetch(u + '?action=name', {
-      credentials: 'omit',
-      cache: 'no-store'
-    });
-    const data = await res.json();
+    const data = await smartFetch(u + '?action=name');
     if (!data || !data.name) throw new Error('invalid response');
     setCheck('setupCheck2', 'ok', `גיליון נמצא — ${data.name}`);
 
@@ -2983,7 +3002,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.09',
+        'App Ver:    v2.10',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3137,8 +3156,7 @@ async function obConnectWithUrl(url) {
 
   try {
     // Validate URL by calling ?action=name
-    const res = await fetch(url + '?action=name');
-    const data = await res.json();
+    const data = await smartFetch(url + '?action=name');
 
     if (!data || !data.name) throw new Error('Invalid response');
 
@@ -3246,9 +3264,7 @@ async function fetchConnectedName() {
   badge.textContent = '✓ מחובר';
   badge.classList.add('visible');
   try {
-    const r = await fetch(url + '?action=name');
-    const text = await r.text();
-    const d = JSON.parse(text);
+    const d = await smartFetch(url + '?action=name');
     if (d && d.name) {
       // Strip common prefixes like "AirLog - " or "AeroLog - "
       const name = d.name.replace(/^(air|aero)log\s*[-–]\s*/i, '').trim() || d.name;
@@ -3843,8 +3859,7 @@ async function loadStats() {
   // Pre-fetch count for real progress
   setLB(5, 'מתחבר לשרת...', '');
   try {
-    var cr   = await fetch(gasUrl + '?action=count');
-    var cj   = await cr.json();
+    var cj   = await smartFetch(gasUrl + '?action=count');
     _totalCount = cj.count || 0;
     if (_totalCount) setLB(12, 'נמצאו ' + _totalCount + ' טיסות — טוען...');
   } catch(e) { /* continue without count */ }
@@ -3864,10 +3879,9 @@ async function loadStats() {
   _lbAnim = requestAnimationFrame(_lbTick);
 
   try {
-    const res  = await fetch(gasUrl + '?action=getFlights&lean=1');
+    const json = await smartFetch(gasUrl + '?action=getFlights&lean=1');
     cancelAnimationFrame(_lbAnim);
     setLB(95, 'מעבד נתונים...' + (_totalCount ? ' · ' + _totalCount + '/' + _totalCount : ''));
-    const json = await res.json();
     allRows    = (json.rows || json.flights || []).filter(r => r.date);
     updateFlightNum();
     journalRows = [];
@@ -3946,10 +3960,9 @@ async function loadJournal() {
   animFrame = requestAnimationFrame(animateProgress);
 
   try {
-    const res  = await fetch(gasUrl + '?action=getFlights&lean=0');
+    const json = await smartFetch(gasUrl + '?action=getFlights&lean=0');
     cancelAnimationFrame(animFrame);
     setProgress(92, 'מעבד נתונים...');
-    const json = await res.json();
     journalRows = (json.rows || json.flights || []).filter(r => r.date);
     _journalLoading = false;
     setProgress(100, 'מוכן!');
@@ -5694,7 +5707,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.10</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5705,6 +5718,14 @@ function createNewSheet() {
       <div class="setup-title" style="margin-bottom:0;">✈ הגדרה ראשונית</div>
       <button id="setupCloseBtn" onclick="closeSetup()" style="display:none;background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">×</button>
     </div>
+
+    <!-- iOS warning — shown automatically if iOS detected -->
+    <div id="iosWarning" style="display:none;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:14px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7;text-align:right;">
+      <div style="font-weight:700;color:var(--amber);margin-bottom:6px;">📱 נראה שאתה משתמש במכשיר iPhone או iPad</div>
+      <div>לצערנו, אפל מגבילה את היכולת של אפליקציות דפדפן (WebApp) להתחבר לשירותים חיצוניים כמו Google Sheets, מה שעלול למנוע את החיבור של AirLog לגיליון שלך.</div>
+      <div style="margin-top:8px;">אפשר לנסות... ייתכן ויעבוד 🤞</div>
+    </div>
+
     <div class="setup-sub">
       הדבק את כתובת ה-Apps Script שקיבלת מגיליון ה-AirLog שלך.
     </div>
@@ -5715,13 +5736,6 @@ function createNewSheet() {
     <input type="text" class="setup-input" id="setupUrl"
            placeholder="📋 הדבק כאן..."
            dir="ltr" autocomplete="off" spellcheck="false">
-
-    <!-- iOS warning — shown automatically if iOS detected -->
-    <div id="iosWarning" style="display:none;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:14px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7;text-align:right;">
-      <div style="font-weight:700;color:var(--amber);margin-bottom:6px;">📱 נראה שאתה משתמש במכשיר iPhone או iPad</div>
-      <div>לצערנו, אפל מגבילה את היכולת של אפליקציות דפדפן (WebApp) להתחבר לשירותים חיצוניים כמו Google Sheets, מה שעלול למנוע את החיבור של AirLog לגיליון שלך.</div>
-      <div style="margin-top:8px;">אפשר לנסות... ייתכן ויעבוד 🤞</div>
-    </div>
 
     <!-- Validation checks (hidden until save clicked) -->
     <div id="setupChecks" style="display:none;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
@@ -5745,7 +5759,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.10</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
