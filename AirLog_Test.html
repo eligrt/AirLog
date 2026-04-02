@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.09.06T<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.09.07T<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2796,17 +2796,8 @@ async function smartFetch(url) {
     const params  = qIdx >= 0 ? url.slice(qIdx + 1) : '';
     let proxyUrl  = CF_PROXY + '?gasUrl=' + encodeURIComponent(base);
     if (params) proxyUrl += '&' + params;
-    try {
-      const res = await fetch(proxyUrl);
-      return res.json();
-    } catch(e) {
-      // Send full debug URL via email
-      const mailtoLink = 'mailto:eligrt@gmail.com'
-        + '?subject=' + encodeURIComponent('AirLog Debug - smartFetch error')
-        + '&body=' + encodeURIComponent('Error: ' + e.message + '\n\nProxy URL:\n' + proxyUrl);
-      window.location.href = mailtoLink;
-      throw e;
-    }
+    const res = await fetch(proxyUrl);
+    return res.json();
   }
   const res = await fetch(url);
   return res.json();
@@ -2892,7 +2883,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.09.06T',
+      appVersion:   'v2.09.07T',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3005,11 +2996,18 @@ async function saveSetup() {
       const { device, os } = getDeviceInfo();
       const errMsg = err && err.message ? err.message : String(err);
       const now = new Date().toLocaleString('he-IL');
+      const qIdx   = u.indexOf('?');
+      const base   = qIdx >= 0 ? u.slice(0, qIdx) : u;
+      const params = qIdx >= 0 ? u.slice(qIdx + 1) : '';
+      let proxyUrl = CF_PROXY + '?gasUrl=' + encodeURIComponent(base);
+      if (params) proxyUrl += '&' + params;
+      proxyUrl += '&action=name';
+
       const body = [
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.09.06T',
+        'App Ver:    v2.09.07T',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3017,6 +3015,8 @@ async function saveSetup() {
         'PWA:        ' + (isPWA ? 'yes' : 'no'),
         'Network:    ' + network,
         'Error:      ' + errMsg,
+        '',
+        'Proxy URL:  ' + proxyUrl,
         '',
         'UserAgent:  ' + navigator.userAgent,
       ].join('\n');
@@ -5714,7 +5714,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.06T</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.07T</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5765,7 +5765,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.06T</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.07T</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
