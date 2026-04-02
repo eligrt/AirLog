@@ -2265,7 +2265,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       </div>
 
       <!-- ⏱ משך טיסה — full width -->
-      <div class="sec-lbl">⏱ משך טיסה</div>
+      <div class="sec-lbl">⏱ משך טיסה <span class="req">*</span></div>
       <div class="card" id="splitHeadTime" style="margin-top:4px;">
         <div class="time-card-body" id="tpSingle">
           <div class="time-inner" style="align-items:center;">
@@ -2722,7 +2722,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.0<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.09.01T<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2782,8 +2782,123 @@ const toHM = m => `${Math.floor(m/60)}:${pad(m%60)}`;
 // ═══════════════════════════════════════════
 const LS_KEY = 'flight_log_gas_url';
 
+// ── JSONP fetch — bypasses iOS WebKit CORS block ─────────────────
+function jsonpFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    }, 10000);
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function(data) { cleanup(); resolve(data); };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = () => { cleanup(); reject(new Error('JSONP load failed')); };
+    document.head.appendChild(script);
+  });
+}
+
 function getUrl()  { return localStorage.getItem(LS_KEY) || ''; }
 function saveUrl(u){ localStorage.setItem(LS_KEY, u.trim()); }
+
+// ═══════════════════════════════════════════
+//  ADMIN REPORTING
+// ═══════════════════════════════════════════
+const ADMIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbwMROMQAzdAz-dCNdAbLn2axJ9X9vQW8ibWr3bFI6A35hRJIn9-pLJUVvDhlmT6IY8/exec';
+
+// Simple hash of a string (for user ID)
+async function hashString(str) {
+  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('').slice(0, 12);
+}
+
+// Parse device info from userAgent
+function getDeviceInfo() {
+  const ua = navigator.userAgent;
+  let device = 'Unknown';
+  let os     = 'Unknown';
+
+  if (/iPad/.test(ua))        { device = 'iPad';    os = 'iPadOS ' + (ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g,'.') || ''); }
+  else if (/iPhone/.test(ua)) { device = 'iPhone';  os = 'iOS '    + (ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g,'.') || ''); }
+  else if (/Android/.test(ua)) {
+    os = 'Android ' + (ua.match(/Android ([\d.]+)/)?.[1] || '');
+    let model = ua.match(/;\s*([^;)]+)\)\s*AppleWebKit/)?.[1]?.trim() || '';
+    if (!model || model === 'K' || model.length <= 2) {
+      model = (navigator.userAgentData?.platform) || 'Android device';
+    }
+    device = model;
+  }
+  else if (/Mac/.test(ua))    { device = 'Mac';     os = 'macOS'; }
+  else if (/Windows/.test(ua)){ device = 'PC';      os = 'Windows'; }
+  else if (/Linux/.test(ua))  { device = 'Linux';   os = 'Linux'; }
+
+  return { device, os };
+}
+
+// Capture extended diagnostic info
+function getExtendedInfo() {
+  const ua = navigator.userAgent;
+  // Browser detection
+  let browser = 'Unknown';
+  if (/CriOS/.test(ua))        browser = 'Chrome iOS';
+  else if (/FxiOS/.test(ua))   browser = 'Firefox iOS';
+  else if (/EdgiOS/.test(ua))  browser = 'Edge iOS';
+  else if (/OPiOS/.test(ua))   browser = 'Opera iOS';
+  else if (/Safari/.test(ua) && /iPhone|iPad|iPod/.test(ua)) browser = 'Safari iOS';
+  else if (/Chrome/.test(ua))  browser = 'Chrome';
+  else if (/Firefox/.test(ua)) browser = 'Firefox';
+  else if (/Safari/.test(ua))  browser = 'Safari';
+  else if (/Edge/.test(ua))    browser = 'Edge';
+
+  // Screen resolution
+  const screenRes = `${window.screen.width}x${window.screen.height}`;
+
+  // PWA mode — true if launched from home screen
+  const isPWA = window.navigator.standalone === true ||
+                window.matchMedia('(display-mode: standalone)').matches;
+
+  // Network type
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const network = conn ? (conn.effectiveType || conn.type || 'unknown') : 'unknown';
+
+  return { browser, screenRes, isPWA, network };
+}
+
+// Send event to admin sheet — silent, never blocks the app
+async function reportEvent(event, extraData = {}) {
+  if (!ADMIN_GAS_URL) return;
+  try {
+    const gasUrl = getUrl();
+    const { device, os } = getDeviceInfo();
+    const { browser, screenRes, isPWA, network } = getExtendedInfo();
+    const userId = gasUrl ? await hashString(gasUrl) : 'unknown';
+    const payload = {
+      event,
+      sheetName:    extraData.sheetName    || '',
+      userId,
+      device,
+      os,
+      appVersion:   'v2.09.01T',
+      totalFlights: extraData.totalFlights || 0,
+      status:       extraData.status       || 'success',
+      errorMsg:     extraData.errorMsg     || '',
+      browser,
+      screenRes,
+      isPWA,
+      network
+    };
+    fetch(ADMIN_GAS_URL, {
+      method: 'POST',
+      body:   JSON.stringify(payload)
+    }).catch(() => {});
+  } catch(e) { /* silent */ }
+}
+
 
 function openSetup() {
   el('setupUrl').value = '';
@@ -2844,11 +2959,7 @@ async function saveSetup() {
   // Check 2 — connect to sheet
   setCheck('setupCheck2', 'spin', 'מתחבר לגיליון...');
   try {
-    const res  = await fetch(u + '?action=name', {
-      credentials: 'omit',
-      cache: 'no-store'
-    });
-    const data = await res.json();
+    const data = await jsonpFetch(u + '?action=name');
     if (!data || !data.name) throw new Error('invalid response');
     setCheck('setupCheck2', 'ok', `גיליון נמצא — ${data.name}`);
 
@@ -2868,13 +2979,53 @@ async function saveSetup() {
     fetchConnectedName();
     renderCurrency();
     if (!_journalLoading) loadJournal();
+    // Report setup_completed for new users
+    reportEvent('setup_completed', {
+      sheetName:    window._adminSheetName || '',
+      totalFlights: allRows.length,
+      status:       'success'
+    });
 
-  } catch(e) {
+  } catch(err) {
     setCheck('setupCheck2', 'err', 'לא הצלחנו להתחבר לגיליון');
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (isIOS) {
-      el('setupErrMsg').innerHTML = '🍎 כצפוי, אפל חסמה את AirLog מלגשת לגיליון שלך 😔<br>צר לי. בשלב זה תוכל להנות ממנה ב-PC או ש... תחליף לאנדרואיד 😜';
+      // Build diagnostic report for mailto
+      const { browser, screenRes, isPWA, network } = getExtendedInfo();
+      const { device, os } = getDeviceInfo();
+      const errMsg = err && err.message ? err.message : String(err);
+      const now = new Date().toLocaleString('he-IL');
+      const body = [
+        'AirLog iOS Error Report',
+        '=======================',
+        'Timestamp:  ' + now,
+        'App Ver:    v2.09.01T',
+        'Device:     ' + device,
+        'OS:         ' + os,
+        'Browser:    ' + browser,
+        'Screen:     ' + screenRes,
+        'PWA:        ' + (isPWA ? 'yes' : 'no'),
+        'Network:    ' + network,
+        'Error:      ' + errMsg,
+        '',
+        'UserAgent:  ' + navigator.userAgent,
+      ].join('\n');
+
+      const mailtoLink = 'mailto:eligrt@gmail.com'
+        + '?subject=' + encodeURIComponent('AirLog iOS Error Report - ' + os)
+        + '&body='    + encodeURIComponent(body);
+
+      el('setupErrMsg').innerHTML =
+        '🍎 כצפוי, אפל חסמה את AirLog מלגשת לגיליון שלך 😔<br>צר לי. בשלב זה תוכל להנות ממנה ב-PC או ש... תחליף לאנדרואיד 😜' +
+        '<br><br>' +
+        '<a href="' + mailtoLink + '" style="' +
+          'display:inline-block;margin-top:4px;padding:8px 14px;' +
+          'background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);' +
+          'border-radius:8px;color:#60a5fa;font-size:12px;font-weight:600;' +
+          'text-decoration:none;direction:rtl;">' +
+          '📋 שלח דוח שגיאה למפתח' +
+        '</a>';
     } else {
       el('setupErrMsg').textContent = 'בדוק שהכתובת נכונה ושה-Script פורס כ-Web App';
     }
@@ -3003,8 +3154,7 @@ async function obConnectWithUrl(url) {
 
   try {
     // Validate URL by calling ?action=name
-    const res = await fetch(url + '?action=name');
-    const data = await res.json();
+    const data = await jsonpFetch(url + '?action=name');
 
     if (!data || !data.name) throw new Error('Invalid response');
 
@@ -3072,6 +3222,11 @@ async function startupLoad() {
   try {
     await loadStats();
     setSplash(70, 'טוען יומן טיסות...');
+    // Report app_open event silently
+    reportEvent('app_open', {
+      sheetName:    window._adminSheetName || '',
+      totalFlights: allRows.length
+    });
   } catch(e) {
     setSplash(100, 'שגיאה בטעינה — בדוק חיבור');
     setTimeout(() => hideSplash(), 2000);
@@ -3107,14 +3262,13 @@ async function fetchConnectedName() {
   badge.textContent = '✓ מחובר';
   badge.classList.add('visible');
   try {
-    const r = await fetch(url + '?action=name');
-    const text = await r.text();
-    const d = JSON.parse(text);
+    const d = await jsonpFetch(url + '?action=name');
     if (d && d.name) {
       // Strip common prefixes like "AirLog - " or "AeroLog - "
       const name = d.name.replace(/^(air|aero)log\s*[-–]\s*/i, '').trim() || d.name;
       badge.textContent = name;
       badge.title = d.name;
+      window._adminSheetName = d.name; // store for admin reporting
     }
   } catch(e) {
     console.log('name fetch error:', e);
@@ -3389,12 +3543,44 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    if (!payload.acType) {
+      errBar.textContent = 'יש לבחור סוג מטוס';
+      errBar.classList.add('show');
+      btn.disabled = false;
+      el('btnLabel').style.display   = '';
+      el('btnSpinner').style.display = 'none';
+      return;
+    }
+
+    if (!payload.aircraft) {
+      errBar.textContent = 'יש לבחור זיהוי / או"ק';
+      errBar.classList.add('show');
+      btn.disabled = false;
+      el('btnLabel').style.display   = '';
+      el('btnSpinner').style.display = 'none';
+      return;
+    }
+
+    if ((state.pic + state.dual) === 0) {
+      errBar.textContent = 'יש להזין משך טיסה';
+      errBar.classList.add('show');
+      btn.disabled = false;
+      el('btnLabel').style.display   = '';
+      el('btnSpinner').style.display = 'none';
+      return;
+    }
+
     try {
       const res  = await fetch(gasUrl, { method:'POST', body: JSON.stringify(payload) });
       const text = await res.text();
       if (text.includes('success') || res.ok) {
         form.style.display = 'none';
         el('successScreen').classList.add('show');
+        // Report flight_recorded event silently
+        reportEvent('flight_recorded', {
+          sheetName:    window._adminSheetName || '',
+          totalFlights: allRows.length + 1
+        });
 
         // Build badges for active classifications
         const flags = [];
@@ -3443,7 +3629,9 @@ function resetForm() {
   setFlightMode('pic');
   renderActive();
   const tpManual = el('tpManual');
-  if (tpManual) { tpManual.classList.remove('open'); const t = tpManual.previousElementSibling; if(t) t.textContent='✏ הזן ידנית'; }
+  if (tpManual) { tpManual.classList.remove('open'); }
+  const tpMlbl = tpManual ? tpManual.querySelector('.tp-mlbl') : null;
+  if (tpMlbl) tpMlbl.textContent = 'או הזן ידנית';
   initDate();
   populateLogFormAcDropdowns();
   applyDefaultAcToForm();
@@ -3669,8 +3857,7 @@ async function loadStats() {
   // Pre-fetch count for real progress
   setLB(5, 'מתחבר לשרת...', '');
   try {
-    var cr   = await fetch(gasUrl + '?action=count');
-    var cj   = await cr.json();
+    var cj   = await jsonpFetch(gasUrl + '?action=count');
     _totalCount = cj.count || 0;
     if (_totalCount) setLB(12, 'נמצאו ' + _totalCount + ' טיסות — טוען...');
   } catch(e) { /* continue without count */ }
@@ -3690,10 +3877,9 @@ async function loadStats() {
   _lbAnim = requestAnimationFrame(_lbTick);
 
   try {
-    const res  = await fetch(gasUrl + '?action=getFlights&lean=1');
+    const json = await jsonpFetch(gasUrl + '?action=getFlights&lean=1');
     cancelAnimationFrame(_lbAnim);
     setLB(95, 'מעבד נתונים...' + (_totalCount ? ' · ' + _totalCount + '/' + _totalCount : ''));
-    const json = await res.json();
     allRows    = (json.rows || json.flights || []).filter(r => r.date);
     updateFlightNum();
     journalRows = [];
@@ -3772,10 +3958,9 @@ async function loadJournal() {
   animFrame = requestAnimationFrame(animateProgress);
 
   try {
-    const res  = await fetch(gasUrl + '?action=getFlights&lean=0');
+    const json = await jsonpFetch(gasUrl + '?action=getFlights&lean=0');
     cancelAnimationFrame(animFrame);
     setProgress(92, 'מעבד נתונים...');
-    const json = await res.json();
     journalRows = (json.rows || json.flights || []).filter(r => r.date);
     _journalLoading = false;
     setProgress(100, 'מוכן!');
@@ -4041,7 +4226,7 @@ function renderCurrency() {
     } else {
       const lastLC    = levelRows[0].date;
       const expiry    = new Date(lastLC);
-      expiry.setDate(expiry.getDate() + 730);
+      expiry.setDate(expiry.getDate() + 729);
       const expiryStr = expiry.toISOString().slice(0,10);
       const daysLeft  = daysBetween(today, expiryStr);
       const cls       = daysLeft <= 0 ? 'c-red' : daysLeft <= 30 ? 'c-red' : daysLeft <= 90 ? 'c-amber' : 'c-green';
@@ -5069,6 +5254,11 @@ async function archiveFlight(e, idx) {
       banner.className = 'archive-progress show success';
       banner.innerHTML = '<span>✓ הטיסה אורכבה בהצלחה</span>';
     }
+    // Report flight_archived event silently
+    reportEvent('flight_archived', {
+      sheetName:    window._adminSheetName || '',
+      totalFlights: allRows.length - 1
+    });
     if (card) card.classList.add('archiving');
     setTimeout(() => {
       journalRows = journalRows.filter(r => r !== row);
@@ -5515,7 +5705,7 @@ function createNewSheet() {
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.0</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.01T</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5566,7 +5756,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.0</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.09.01T</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
