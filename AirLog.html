@@ -2729,7 +2729,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.12<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.16<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2890,7 +2890,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.12',
+      appVersion:   'v2.16',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3009,7 +3009,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.12',
+        'App Ver:    v2.16',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3299,23 +3299,17 @@ async function switchTab(t) {
   if (t === 'currency') renderCurrency();
   if (t === 'search') {
     if (journalRows.length === 0) {
+      // Show bar immediately
+      const wrap = el('loadBarJournal');
+      const fill = el('loadBarJournalFill');
+      const lbl  = el('loadBarJournalLabel');
+      if (wrap) wrap.style.display = 'flex';
+      if (fill) fill.style.width = '3%';
+      if (lbl)  lbl.textContent = 'מתחבר לשרת...';
+      const card = el('view-search') ? el('view-search').querySelector('.card') : null;
+      if (card) card.style.display = 'none';
       if (allRows.length === 0) await loadStats();
-      if (_journalLoading) {
-        // Already loading in background — show progress indicator so user knows
-        const out = el('searchResults');
-        if (out && !out.querySelector('.jload-wrap')) {
-          out.innerHTML =
-            '<div class="jload-wrap">' +
-              '<div class="jload-icon">📖</div>' +
-              '<div class="jload-label">טוען יומן... עוד רגע</div>' +
-              '<div class="jload-track" dir="ltr">' +
-                '<div class="jload-fill" style="width:60%;animation:grow 1.5s ease-in-out infinite alternate;"></div>' +
-              '</div>' +
-            '</div>';
-        }
-      } else {
-        loadJournal();
-      }
+      if (!_journalLoading) loadJournal();
     } else {
       searchJournal();
     }
@@ -3806,20 +3800,16 @@ let activePeriod = 'all';
 let _journalLoading = false; // guard against double-fetch
 
 async function loadStatsAndJournal() {
-  // Show journal progress immediately so user sees activity
+  // Show journal bar immediately so user sees activity
   if (journalRows.length === 0 && !_journalLoading) {
-    const out = el('searchResults');
-    if (out && !out.querySelector('.jload-wrap')) {
-      out.innerHTML =
-        '<div class="jload-wrap">' +
-          '<div class="jload-icon">📖</div>' +
-          '<div class="jload-label">מתחבר לשרת...</div>' +
-          '<div class="jload-track" dir="ltr">' +
-            '<div class="jload-fill" style="width:3%"></div>' +
-          '</div>' +
-          '<div class="jload-count"></div>' +
-        '</div>';
-    }
+    const wrap = el('loadBarJournal');
+    const fill = el('loadBarJournalFill');
+    const lbl  = el('loadBarJournalLabel');
+    if (wrap) { wrap.style.display = 'flex'; }
+    if (fill) fill.style.width = '3%';
+    if (lbl)  lbl.textContent = 'מתחבר לשרת...';
+    const card = el('view-search') ? el('view-search').querySelector('.card') : null;
+    if (card) card.style.display = 'none';
   }
   // Step 1: ensure lean data is loaded first
   if (allRows.length === 0) await loadStats();
@@ -3889,9 +3879,11 @@ async function loadStats() {
     const json = await smartFetch(gasUrl + '?action=getFlights&lean=1');
     cancelAnimationFrame(_lbAnim);
     setLB(95, 'מעבד נתונים...' + (_totalCount ? ' · ' + _totalCount + '/' + _totalCount : ''));
-    allRows    = (json.rows || json.flights || []).filter(r => r.date);
+    const newRows = (json.rows || json.flights || []).filter(r => r.date);
+    // Only invalidate journal cache if data actually changed
+    if (newRows.length !== allRows.length) journalRows = [];
+    allRows = newRows;
     updateFlightNum();
-    journalRows = [];
 
     const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
     const sel = el('fFilterType');
@@ -3977,7 +3969,6 @@ async function loadJournal() {
     _journalLoading = false;
     setProgress(100, 'מוכן!');
     setTimeout(function() {
-      if (overlay) overlay.style.display = 'none';
       hideBar();
       populateJournalAcPills();
       searchJournal();
@@ -3992,7 +3983,6 @@ async function loadJournal() {
   } catch(err) {
     cancelAnimationFrame(animFrame);
     _journalLoading = false;
-    if (overlay) overlay.style.display = 'none';
     hideBar();
     console.error('loadJournal error:', err);
     const out = el('searchResults');
@@ -5304,6 +5294,16 @@ async function archiveFlight(e, idx) {
 function refreshJournal() {
   const btn = el('btnRefreshJournal');
   if (btn) btn.classList.add('loading');
+  // Show bar immediately — same as other tabs
+  const wrap = el('loadBarJournal');
+  const fill = el('loadBarJournalFill');
+  const lbl  = el('loadBarJournalLabel');
+  if (wrap) wrap.style.display = 'flex';
+  if (fill) fill.style.width = '3%';
+  if (lbl)  lbl.textContent = 'מתחבר לשרת...';
+  const card = el('view-search') ? el('view-search').querySelector('.card') : null;
+  if (card) card.style.display = 'none';
+  // Reset and reload
   allRows = []; journalRows = []; _journalLoading = false;
   loadStatsAndJournal().then(function() {
     const now = new Date();
@@ -5716,13 +5716,13 @@ function createNewSheet() {
     <img src="./icon-512.png" width="220" height="220" style="display:block;border-radius:0;">
   </div>
   <div class="splash-concept">Where aviation meets Google Sheets</div>
-  <div class="splash-tagline">Your flights. Your logbook. Your data.</div>
+  <div class="splash-tagline" dir="ltr">Your flights. Your logbook. Your data.</div>
   <div class="splash-bar-wrap" dir="ltr" style="margin-top:32px;">
     <div class="splash-bar-fill" id="splashBarFill"></div>
   </div>
   <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.12</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.16</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5774,7 +5774,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.12</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.16</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
