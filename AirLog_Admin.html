@@ -511,17 +511,17 @@ body::before {
 
   <!-- SUMMARY CARDS — row 2: champions (wider) -->
   <div class="summary-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px;">
-    <div class="sum-card" style="border-color:rgba(251,191,36,.3);background:linear-gradient(135deg,var(--surface),rgba(251,191,36,.04));">
-      <div style="font-size:22px;margin-bottom:4px;">🏆</div>
-      <div style="font-size:11px;font-weight:700;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">הכי הרבה טיסות ביומן</div>
+    <div class="sum-card" style="border-color:rgba(251,191,36,.35);background:linear-gradient(135deg,var(--surface),rgba(251,191,36,.06));">
+      <div style="display:flex;gap:4px;font-size:20px;margin-bottom:4px;">🏆✈️</div>
+      <div style="font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.08em;margin-bottom:6px;font-family:var(--mono);">AirLog CAPTAIN</div>
       <div class="sum-val" id="sumTopUser" style="font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--amber);">—</div>
-      <div class="sum-lbl" style="margin-top:4px;"><span id="sumTopFlights" style="color:var(--accent2);font-size:16px;font-weight:700;">—</span> טיסות בסה"כ</div>
+      <div style="margin-top:6px;font-size:11px;color:var(--text3);">יומן עם <span id="sumTopFlights" style="color:var(--accent2);font-weight:700;">—</span> טיסות</div>
     </div>
-    <div class="sum-card" style="border-color:rgba(34,211,153,.2);background:linear-gradient(135deg,var(--surface),rgba(34,211,153,.04));">
-      <div style="font-size:22px;margin-bottom:4px;">✈</div>
-      <div style="font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">הכי הרבה טיסות שנרשמו</div>
-      <div class="sum-val" id="sumTopRecUser" style="font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--cyan);">—</div>
-      <div class="sum-lbl" style="margin-top:4px;"><span id="sumTopRecorded" style="color:var(--cyan);font-size:16px;font-weight:700;">—</span> טיסות רשם דרך האפ</div>
+    <div class="sum-card" style="border-color:rgba(168,208,250,.25);background:linear-gradient(135deg,var(--surface),rgba(168,208,250,.04));">
+      <div style="display:flex;gap:4px;font-size:20px;margin-bottom:4px;">🏅✍️</div>
+      <div style="font-size:12px;font-weight:700;color:var(--accent2);letter-spacing:.08em;margin-bottom:6px;font-family:var(--mono);">AirLog TOP LOGGER</div>
+      <div class="sum-val" id="sumTopRecUser" style="font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--accent2);">—</div>
+      <div style="margin-top:6px;font-size:11px;color:var(--text3);">רשם <span id="sumTopRecorded" style="color:var(--cyan);font-weight:700;">—</span> טיסות דרך האפ</div>
     </div>
   </div>
 
@@ -594,6 +594,7 @@ body::before {
   <div class="section">
     <div class="sec-head">
       <div class="sec-title">⚡ פעילות אחרונה</div>
+      <button class="feed-pill" onclick="resetFeedFilters()" style="font-size:10px;padding:3px 10px;color:var(--text3);border-color:var(--border);">↺ איפוס סינון</button>
     </div>
     <!-- Row 1: User -->
     <div style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;direction:rtl;align-items:center;">
@@ -672,7 +673,7 @@ body::before {
 </div>
 
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.01 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.04 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
   <div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;" id="debugLastTs"></div>
 </div>
@@ -709,8 +710,34 @@ function setFeedOS(os) {
   renderFeed();
 }
 
+function resetFeedFilters() {
+  // Reset event type
+  _feedFilter = 'all';
+  document.querySelectorAll('[id^="fp-"]').forEach(el => el.classList.remove('active'));
+  const fpAll = document.getElementById('fp-all');
+  if (fpAll) fpAll.classList.add('active');
+
+  // Reset OS
+  _feedOS = 'all';
+  document.querySelectorAll('[id^="fo-"]').forEach(el => el.classList.remove('active'));
+  const foAll = document.getElementById('fo-all');
+  if (foAll) foAll.classList.add('active');
+
+  // Reset range to default (5)
+  _feedRange = 5;
+  document.querySelectorAll('[id^="fr-"]').forEach(el => el.classList.remove('active'));
+  const frDef = document.getElementById('fr-5');
+  if (frDef) frDef.classList.add('active');
+
+  // Reset user dropdown
+  const userSel = document.getElementById('feedUserFilter');
+  if (userSel) userSel.value = 'all';
+
+  renderFeed();
+}
+
 // ── LOAD ────────────────────────────────────────────────────────
-const ADMIN_VERSION = 'v2.01';
+const ADMIN_VERSION = 'v2.04';
 
 async function loadAll() {
   const btn     = document.getElementById('btnRefresh');
@@ -857,13 +884,19 @@ function renderSummary() {
   if (tO) tO.innerHTML = trendHTML(opensThisWeek, opensLastWeek);
   if (tF) tF.innerHTML = trendHTML(flightsThisWeek, flightsLastWeek);
 
-  // Most active user by logbook flights
-  const userFlights  = {};
-  const userRecorded = {};
-  const userNames    = {};
+  const userFlights     = {}; // most recent totalFlights per user
+  const userFlightsTimes= {}; // timestamp of that event
+  const userRecorded    = {};
+  const userNames       = {};
   allEvents.forEach(e => {
     if (!e.userId) return;
-    if (e.totalFlights)                userFlights[e.userId]  = Math.max(userFlights[e.userId] || 0, parseInt(e.totalFlights) || 0);
+    if (e.totalFlights !== undefined && e.totalFlights !== '') {
+      const ts = parseDate(e.timestamp).getTime();
+      if (!userFlightsTimes[e.userId] || ts > userFlightsTimes[e.userId]) {
+        userFlightsTimes[e.userId] = ts;
+        userFlights[e.userId] = parseInt(e.totalFlights) || 0;
+      }
+    }
     if (e.event === 'flight_recorded') userRecorded[e.userId] = (userRecorded[e.userId] || 0) + 1;
     if (e.sheetName)                   userNames[e.userId]    = e.sheetName;
   });
@@ -964,24 +997,33 @@ function renderUsers() {
     if (!users[id]) {
       users[id] = {
         id,
-        name:       e.sheetName || '—',
-        device:     e.device    || '—',
-        os:         e.os        || '—',
-        flights:    0,
-        recorded:   0,
-        opens:      0,
-        lastSeen:   null,
-        firstSeen:  null,
-        appVersion: '—',
+        name:           e.sheetName || '—',
+        device:         e.device    || '—',
+        os:             e.os        || '—',
+        flights:        0,
+        flightsTime:    0,
+        recorded:       0,
+        opens:          0,
+        lastSeen:       null,
+        firstSeen:      null,
+        appVersion:     '—',
       };
     }
-    if (e.sheetName)  users[id].name   = e.sheetName;
-    if (e.device)     users[id].device = e.device;
-    if (e.os)         users[id].os     = e.os;
+    if (e.sheetName)  users[id].name       = e.sheetName;
+    if (e.device)     users[id].device     = e.device;
+    if (e.os)         users[id].os         = e.os;
     if (e.appVersion) users[id].appVersion = e.appVersion;
     if (e.event === 'app_open')        users[id].opens++;
     if (e.event === 'flight_recorded') users[id].recorded++;
-    if (e.totalFlights) users[id].flights = Math.max(users[id].flights, parseInt(e.totalFlights) || 0);
+
+    // Use most-recent totalFlights, not max
+    if (e.totalFlights !== undefined && e.totalFlights !== '') {
+      const ts = parseDate(e.timestamp).getTime();
+      if (ts > users[id].flightsTime) {
+        users[id].flightsTime = ts;
+        users[id].flights     = parseInt(e.totalFlights) || 0;
+      }
+    }
 
     const ts = parseDate(e.timestamp);
     if (!users[id].lastSeen  || ts > users[id].lastSeen)  users[id].lastSeen  = ts;
