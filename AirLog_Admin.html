@@ -494,6 +494,21 @@ body::before {
 .bname { font-weight: 600; color: var(--text); }
 .bval { text-align: right; color: var(--text3); font-family: var(--mono); font-size: 11px; }
 
+/* ── TOGGLE SWITCH ── */
+.toggle-wrap { position:relative;width:40px;height:22px;flex-shrink:0;margin-left:14px; }
+.toggle-wrap input { opacity:0;width:0;height:0;position:absolute; }
+.toggle-track { position:absolute;inset:0;background:var(--border2);border-radius:22px;cursor:pointer;transition:background .2s; }
+.toggle-track:before { content:'';position:absolute;width:16px;height:16px;top:3px;left:3px;background:var(--text3);border-radius:50%;transition:transform .2s,background .2s; }
+.toggle-wrap input:checked + .toggle-track { background:var(--accent); }
+.toggle-wrap input:checked + .toggle-track:before { transform:translateX(18px);background:white; }
+
+/* ── MINI CHARTS ── */
+.mini-charts-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.mini-chart-wrap { background:var(--raised);border-radius:8px;padding:10px 10px 6px; }
+.mini-chart-label { font-size:10px;font-weight:700;color:var(--text3);font-family:var(--mono);letter-spacing:.04em;margin-bottom:6px;display:flex;align-items:center;gap:6px; }
+.mini-chart-dot { width:7px;height:7px;border-radius:2px;flex-shrink:0; }
+.mini-chart-bars { display:flex;align-items:flex-end;gap:2px;height:50px;direction:ltr; }
+
 /* ── FOOTER ── */
 .admin-footer {
   text-align: center;
@@ -515,6 +530,9 @@ body::before {
     </div>
   </div>
   <div class="header-right">
+    <button class="btn-refresh" id="btnSettings" onclick="openSettings()" style="background:rgba(126,184,247,.06);border-color:var(--border);">
+      ⚙ Settings<span id="blockedBadge" style="display:none;margin-left:6px;font-size:10px;background:rgba(248,113,113,.2);color:#f87171;border-radius:10px;padding:1px 6px;font-family:var(--mono);"></span>
+    </button>
     <button class="btn-refresh" id="btnRefresh" onclick="loadAll()">
       <span id="refreshIcon">↻</span> Refresh
     </button>
@@ -606,14 +624,23 @@ body::before {
         </div>
       </div>
       <div class="sec-body">
-        <div class="chart-wrap" id="activityChart" style="height:120px;align-items:flex-end;">
-          <div class="empty-state" style="width:100%;">Loading...</div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;direction:ltr;justify-content:center;">
-          <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#34d399;display:inline-block;"></span>Flight logged</span>
-          <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#60a5fa;display:inline-block;"></span>App open</span>
-          <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#f87171;display:inline-block;"></span>Archived</span>
-          <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:2px;background:#fbbf24;display:inline-block;"></span>New install</span>
+        <div class="mini-charts-grid" style="grid-template-columns:1fr;">
+          <div class="mini-chart-wrap">
+            <div class="mini-chart-label"><span class="mini-chart-dot" style="background:#fbbf24;"></span>New Installs</div>
+            <div class="mini-chart-bars" id="miniChart-setup_completed"></div>
+          </div>
+          <div class="mini-chart-wrap">
+            <div class="mini-chart-label"><span class="mini-chart-dot" style="background:#60a5fa;"></span>App Opens</div>
+            <div class="mini-chart-bars" id="miniChart-app_open"></div>
+          </div>
+          <div class="mini-chart-wrap">
+            <div class="mini-chart-label"><span class="mini-chart-dot" style="background:#34d399;"></span>Flights Logged</div>
+            <div class="mini-chart-bars" id="miniChart-flight_recorded"></div>
+          </div>
+          <div class="mini-chart-wrap">
+            <div class="mini-chart-label"><span class="mini-chart-dot" style="background:#f87171;"></span>Archived</div>
+            <div class="mini-chart-bars" id="miniChart-flight_archived"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -790,8 +817,38 @@ body::before {
 
 </div>
 
+<!-- SETTINGS MODAL -->
+<div id="settingsOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);width:100%;max-width:460px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+
+    <!-- Modal header -->
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);font-family:var(--mono);">⚙ User Visibility</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Hidden users are excluded from all stats, charts and badges</div>
+      </div>
+      <button onclick="closeSettings()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1;">✕</button>
+    </div>
+
+    <!-- Enable all -->
+    <div style="padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:12px;color:var(--text2);">Show all users</span>
+      <button onclick="enableAllUsers()" style="font-size:11px;font-family:var(--mono);background:rgba(126,184,247,.08);border:1px solid var(--border2);color:var(--accent2);border-radius:6px;padding:4px 12px;cursor:pointer;">Enable All</button>
+    </div>
+
+    <!-- User list -->
+    <div id="settingsUserList" style="overflow-y:auto;flex:1;padding:8px 0;"></div>
+
+    <!-- Footer -->
+    <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;display:flex;justify-content:flex-end;">
+      <button onclick="closeSettings()" style="font-size:13px;font-weight:700;font-family:var(--mono);background:var(--accent);border:none;color:#0d0f12;border-radius:8px;padding:8px 24px;cursor:pointer;">Done</button>
+    </div>
+
+  </div>
+</div>
+
 <div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.16 <span id="footerUpdateTime"></span></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.19 <span id="footerUpdateTime"></span></div>
   <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
 </div>
 
@@ -860,7 +917,7 @@ function resetFeedFilters() {
 }
 
 // ── LOAD ────────────────────────────────────────────────────────
-const ADMIN_VERSION = 'v2.16';
+const ADMIN_VERSION = 'v2.19';
 
 async function loadAll() {
   const btn     = document.getElementById('btnRefresh');
@@ -934,7 +991,102 @@ async function loadAll() {
   icon.classList.remove('spin');
 }
 
-// ── TAB SWITCHING ────────────────────────────────────────────────
+// ── USER VISIBILITY SETTINGS ─────────────────────────────────────
+const STORAGE_KEY = 'airlog_admin_blocked_users';
+
+let blockedUsers = new Set();
+
+function loadBlockedUsers() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    blockedUsers = saved ? new Set(JSON.parse(saved)) : new Set();
+  } catch(e) { blockedUsers = new Set(); }
+  // Update badge after DOM is ready
+  setTimeout(() => saveBlockedUsers(), 0);
+}
+
+function saveBlockedUsers() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...blockedUsers]));
+  } catch(e) {}
+  const badge = document.getElementById('blockedBadge');
+  if (badge) {
+    if (blockedUsers.size > 0) {
+      badge.textContent = blockedUsers.size + ' hidden';
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
+
+function getVisibleEvents() {
+  if (!blockedUsers.size) return allEvents;
+  return allEvents.filter(e => !blockedUsers.has(e.userId));
+}
+
+function openSettings() {
+  const overlay = document.getElementById('settingsOverlay');
+  overlay.style.display = 'flex';
+  renderSettingsUserList();
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').style.display = 'none';
+}
+
+function enableAllUsers() {
+  blockedUsers.clear();
+  saveBlockedUsers();
+  renderSettingsUserList();
+  render();
+}
+
+function toggleUserVisibility(userId, visible) {
+  if (visible) blockedUsers.delete(userId);
+  else         blockedUsers.add(userId);
+  saveBlockedUsers();
+  render();
+}
+
+function renderSettingsUserList() {
+  const users = {};
+  allEvents.forEach(e => {
+    if (!e.userId) return;
+    if (!users[e.userId]) users[e.userId] = { name: e.sheetName || '—', id: e.userId };
+    if (e.sheetName) users[e.userId].name = e.sheetName;
+  });
+
+  const list = document.getElementById('settingsUserList');
+  const entries = Object.values(users).sort((a,b) => a.name.localeCompare(b.name));
+
+  if (!entries.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px;">No users found</div>';
+    return;
+  }
+
+  list.innerHTML = entries.map(u => {
+    const isBlocked = blockedUsers.has(u.id);
+    const checkId   = 'chk_' + u.id;
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);opacity:${isBlocked?'.45':'1'};">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.name}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">${u.id}</div>
+        </div>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="${checkId}" ${isBlocked?'':'checked'}
+            onchange="toggleUserVisibility('${u.id}', this.checked)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>`;
+  }).join('');
+}
+
+// Close modal on overlay click
+document.getElementById('settingsOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -946,23 +1098,23 @@ function switchTab(name) {
 
 // ── RENDER ALL ──────────────────────────────────────────────────
 function render() {
-  renderSummary();
-  renderChart();
-  renderUsers();
-  renderDevices();
-  populateUserDropdown();
+  const ev = getVisibleEvents();
+  renderSummary(ev);
+  renderChart(ev);
+  renderUsers(ev);
+  renderDevices(ev);
+  populateUserDropdown(ev);
   renderFeed();
-  renderErrors();
-  renderBadges();
+  renderErrors(ev);
+  renderBadges(ev);
 }
 
-function populateUserDropdown() {
+function populateUserDropdown(ev) {
   const sel = document.getElementById('feedUserFilter');
   if (!sel) return;
   const current = sel.value;
-  // Get unique users with names
   const users = {};
-  allEvents.forEach(e => {
+  ev.forEach(e => {
     if (e.userId && e.sheetName) users[e.userId.trim()] = e.sheetName;
   });
   sel.innerHTML = '<option value="all">All users</option>' +
@@ -973,23 +1125,23 @@ function populateUserDropdown() {
 }
 
 // ── SUMMARY CARDS ───────────────────────────────────────────────
-function renderSummary() {
-  const uniqueUsers  = new Set(allEvents.map(e => e.userId).filter(Boolean)).size;
-  const flightsTotal = allEvents.filter(e => e.event === 'flight_recorded').length;
-  const newUsers     = allEvents.filter(e => e.event === 'setup_completed').length;
+function renderSummary(ev) {
+  const uniqueUsers  = new Set(ev.map(e => e.userId).filter(Boolean)).size;
+  const flightsTotal = ev.filter(e => e.event === 'flight_recorded').length;
+  const newUsers     = ev.filter(e => e.event === 'setup_completed').length;
 
   const now     = new Date();
   const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
   const twoWeeksAgo = new Date(now); twoWeeksAgo.setDate(now.getDate() - 14);
 
-  const opensThisWeek = allEvents.filter(e => e.event === 'app_open' && parseDate(e.timestamp) >= weekAgo).length;
-  const opensLastWeek = allEvents.filter(e => {
+  const opensThisWeek = ev.filter(e => e.event === 'app_open' && parseDate(e.timestamp) >= weekAgo).length;
+  const opensLastWeek = ev.filter(e => {
     const t = parseDate(e.timestamp);
     return e.event === 'app_open' && t >= twoWeeksAgo && t < weekAgo;
   }).length;
 
-  const flightsThisWeek = allEvents.filter(e => e.event === 'flight_recorded' && parseDate(e.timestamp) >= weekAgo).length;
-  const flightsLastWeek = allEvents.filter(e => {
+  const flightsThisWeek = ev.filter(e => e.event === 'flight_recorded' && parseDate(e.timestamp) >= weekAgo).length;
+  const flightsLastWeek = ev.filter(e => {
     const t = parseDate(e.timestamp);
     return e.event === 'flight_recorded' && t >= twoWeeksAgo && t < weekAgo;
   }).length;
@@ -1013,7 +1165,7 @@ function renderSummary() {
 }
 
 // ── BADGES ────────────────────────────────────────────────────────
-function renderBadges() {
+function renderBadges(ev) {
   const userRecorded   = {};
   const userNames      = {};
   const userLastFlight = {}; // last flight timestamp per user
@@ -1022,7 +1174,7 @@ function renderBadges() {
   const thirtyDaysAgo  = new Date(now); thirtyDaysAgo.setDate(now.getDate() - 30);
   const recentFlights  = []; // {userId, timestamp} for last 5 table
 
-  allEvents.forEach(e => {
+  ev.forEach(e => {
     if (!e.userId) return;
     if (e.sheetName) userNames[e.userId] = e.sheetName;
     const ts = parseDate(e.timestamp);
@@ -1094,58 +1246,55 @@ function setChartDays(d) {
   document.querySelectorAll('[id^="chart-"]').forEach(el => el.classList.remove('active'));
   const btn = document.getElementById('chart-' + d);
   if (btn) btn.classList.add('active');
-  renderChart();
+  renderChart(getVisibleEvents());
 }
 
-function renderChart() {
-  const wrap = document.getElementById('activityChart');
-  const days  = _chartDays;
-  const BAR_MAX_PX = 80;
-  const eventColors = {
-    'flight_recorded':  '#34d399',
-    'app_open':         '#60a5fa',
-    'flight_archived':  '#f87171',
-    'setup_completed':  '#fbbf24'
-  };
+function renderChart(ev) {
+  const days = _chartDays;
+  const BAR_MAX_PX = 50;
+
+  const eventTypes = [
+    { key: 'flight_recorded', color: '#34d399' },
+    { key: 'app_open',        color: '#60a5fa' },
+    { key: 'flight_archived', color: '#f87171' },
+    { key: 'setup_completed', color: '#fbbf24' },
+  ];
+
+  // Build day buckets
+  const labels = [];
   const buckets = {};
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    buckets[fmtDay(d)] = { total: 0, flight_recorded: 0, app_open: 0, flight_archived: 0, setup_completed: 0 };
+    const key = fmtDay(d);
+    labels.push(key);
+    buckets[key] = { flight_recorded: 0, app_open: 0, flight_archived: 0, setup_completed: 0 };
   }
-
-  allEvents.forEach(e => {
+  ev.forEach(e => {
     const d = fmtDay(parseDate(e.timestamp));
-    if (!(d in buckets)) return;
-    buckets[d].total++;
-    if (buckets[d][e.event] !== undefined) buckets[d][e.event]++;
+    if (buckets[d] && buckets[d][e.event] !== undefined) buckets[d][e.event]++;
   });
 
-  const labels = Object.keys(buckets);
-  const vals   = labels.map(l => buckets[l]);
-  const maxVal = Math.max(...vals.map(v => v.total), 1);
+  eventTypes.forEach(({ key, color }) => {
+    const container = document.getElementById('miniChart-' + key);
+    if (!container) return;
 
-  wrap.innerHTML = labels.map((lbl, i) => {
-    const v     = vals[i];
-    const parts = lbl.split('-');
-    const short = _chartDays <= 7 ? parts[2] + '/' + parts[1] : parts[2];
+    const vals   = labels.map(l => buckets[l][key]);
+    const maxVal = Math.max(...vals, 1);
 
-    const segs = ['flight_recorded','app_open','flight_archived','setup_completed']
-      .filter(k => v[k] > 0)
-      .map(k => {
-        const px = Math.max(Math.round(v[k] / maxVal * BAR_MAX_PX), 2);
-        return `<div style="width:100%;height:${px}px;background:${eventColors[k]};border-radius:2px 2px 0 0;flex-shrink:0;" title="${k}: ${v[k]}"></div>`;
-      }).join('');
+    container.innerHTML = labels.map((lbl, i) => {
+      const v     = vals[i];
+      const px    = Math.max(Math.round(v / maxVal * BAR_MAX_PX), v > 0 ? 2 : 0);
+      const parts = lbl.split('-');
+      const short = days <= 7 ? parts[2] + '/' + parts[1] : parts[2];
 
-    return `
-      <div class="chart-bar-col">
-        <div style="font-size:10px;font-weight:700;color:var(--accent2);font-family:var(--mono);text-align:center;margin-bottom:2px;min-height:14px;">${v.total || ''}</div>
-        <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:1px;height:${BAR_MAX_PX}px;flex-shrink:0;">
-          ${segs}
-        </div>
-        <div class="chart-lbl">${short}</div>
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:${BAR_MAX_PX}px;position:relative;">
+        ${v > 0 ? `<div style="font-size:8px;font-weight:700;color:${color};font-family:var(--mono);margin-bottom:1px;line-height:1;">${v}</div>` : '<div style="height:9px;"></div>'}
+        <div style="width:100%;height:${px}px;background:${color};border-radius:2px 2px 0 0;min-height:${v>0?2:0}px;"></div>
+        <div style="font-size:7px;color:var(--text3);font-family:var(--mono);margin-top:2px;white-space:nowrap;">${short}</div>
       </div>`;
-  }).join('');
+    }).join('');
+  });
 }
 
 // ── USERS TABLE ─────────────────────────────────────────────────
@@ -1159,9 +1308,9 @@ function sortUsers(key) {
   renderUsersTable();
 }
 
-function renderUsers() {
+function renderUsers(ev) {
   const users = {};
-  allEvents.forEach(e => {
+  ev.forEach(e => {
     const id = e.userId || 'unknown';
     if (!users[id]) {
       users[id] = {
@@ -1254,16 +1403,20 @@ function renderUsersTable() {
 }
 
 // ── DEVICE BREAKDOWN ────────────────────────────────────────────
-function renderDevices() {
+function renderDevices(ev) {
   const counts = {};
-  allEvents.forEach(e => {
+  ev.forEach(e => {
     if (!e.device) return;
     const type = getDeviceType(e.device);
     counts[type] = (counts[type] || 0) + 1;
   });
 
   const total  = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const DEVICE_ORDER = ['Android', 'iPhone', 'iPad', 'Desktop', 'Unknown'];
+  const sorted = DEVICE_ORDER
+    .filter(type => counts[type] > 0)
+    .map(type => [type, counts[type]])
+    .concat(Object.entries(counts).filter(([t]) => !DEVICE_ORDER.includes(t)));
 
   const totalEl = document.getElementById('deviceTotal');
   if (totalEl) totalEl.textContent = total + ' events';
@@ -1300,7 +1453,7 @@ function renderDevices() {
 
 // ── ACTIVITY FEED ────────────────────────────────────────────────
 function renderFeed() {
-  let events = [...allEvents].sort((a, b) => parseDate(b.timestamp) - parseDate(a.timestamp));
+  let events = [...getVisibleEvents()].sort((a, b) => parseDate(b.timestamp) - parseDate(a.timestamp));
 
   // Apply user filter
   const userSel = document.getElementById('feedUserFilter');
@@ -1450,8 +1603,8 @@ function toggleErrors() {
   chevron.style.transform = _errorsOpen ? '' : 'rotate(-90deg)';
 }
 
-function renderErrors() {
-  const errorEvents = [...allEvents]
+function renderErrors(ev) {
+  const errorEvents = [...ev]
     .filter(e => e.event === 'connection_error' || e.event === 'connection_success')
     .sort((a, b) => parseDate(b.timestamp) - parseDate(a.timestamp));
 
@@ -1495,6 +1648,7 @@ function renderErrors() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
+loadBlockedUsers();
 loadAll();
 // Auto-refresh every 5 minutes
 setInterval(loadAll, 5 * 60 * 1000);
