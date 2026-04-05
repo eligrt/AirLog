@@ -827,6 +827,12 @@ body::before {
 
   </div>
 
+  <!-- FOOTER inside page so it shows on all tabs -->
+  <div class="admin-footer">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.22 <span id="footerUpdateTime"></span></div>
+    <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
+  </div>
+
 </div>
 
 <!-- SETTINGS MODAL -->
@@ -858,11 +864,23 @@ body::before {
 
   </div>
 </div>
-
-<div class="admin-footer">
-  <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.21 <span id="footerUpdateTime"></span></div>
-  <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
-</div>
+<!-- PWA Service Worker — inline, no separate file needed -->
+<script>
+if ('serviceWorker' in navigator) {
+  const sw = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+self.addEventListener('fetch', e => {
+  if (e.request.url.startsWith('https://script.google.com') ||
+      e.request.url.startsWith('https://fonts.googleapis.com') ||
+      e.request.url.startsWith('https://fonts.gstatic.com')) return;
+  e.respondWith(fetch(e.request).catch(() => new Response('')));
+});
+`;
+  const blob = new Blob([sw], {type: 'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob), {scope: './'}).catch(() => {});
+}
+</script>
 
 <script>
 const ADMIN_GAS_URL = 'https://script.google.com/macros/s/AKfycbwMROMQAzdAz-dCNdAbLn2axJ9X9vQW8ibWr3bFI6A35hRJIn9-pLJUVvDhlmT6IY8/exec';
@@ -929,7 +947,7 @@ function resetFeedFilters() {
 }
 
 // ── LOAD ────────────────────────────────────────────────────────
-const ADMIN_VERSION = 'v2.21';
+const ADMIN_VERSION = 'v2.22';
 
 async function loadAll() {
   const btn     = document.getElementById('btnRefresh');
