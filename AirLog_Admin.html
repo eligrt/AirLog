@@ -829,7 +829,7 @@ body::before {
 
   <!-- FOOTER inside page so it shows on all tabs -->
   <div class="admin-footer">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.22 <span id="footerUpdateTime"></span></div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.23 <span id="footerUpdateTime"></span></div>
     <div style="font-size:11px;color:var(--text2);margin-top:2px;">built by eligrt</div>
   </div>
 
@@ -864,7 +864,7 @@ body::before {
 
   </div>
 </div>
-<!-- PWA Service Worker — inline, no separate file needed -->
+<!-- PWA Service Worker — inline blob, same approach as AirLog -->
 <script>
 if ('serviceWorker' in navigator) {
   const sw = `
@@ -878,7 +878,8 @@ self.addEventListener('fetch', e => {
 });
 `;
   const blob = new Blob([sw], {type: 'application/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(blob), {scope: './'}).catch(() => {});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl, {scope: '/'}).catch(() => {});
 }
 </script>
 
@@ -947,7 +948,7 @@ function resetFeedFilters() {
 }
 
 // ── LOAD ────────────────────────────────────────────────────────
-const ADMIN_VERSION = 'v2.22';
+const ADMIN_VERSION = 'v2.23';
 
 async function loadAll() {
   const btn     = document.getElementById('btnRefresh');
