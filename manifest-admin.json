@@ -1,0 +1,24 @@
+{
+  "name": "AirLog Admin",
+  "short_name": "Admin",
+  "description": "AirLog flight logbook admin dashboard",
+  "start_url": "./AirLog_Admin.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0f12",
+  "theme_color": "#0d0f12",
+  "icons": [
+    {
+      "src": "./icon-admin-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-admin-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
