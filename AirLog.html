@@ -163,7 +163,7 @@ body::before {
   align-items: center;
   justify-content: center;
   gap: 0;
-  transition: opacity .5s ease;
+  transition: opacity .55s ease;
   padding: 32px;
 }
 #splashOverlay.show { display: flex; }
@@ -180,27 +180,24 @@ body::before {
   color: var(--accent2); letter-spacing: 4px; margin-bottom: 18px;
 }
 .splash-concept {
-  font-size: 13px; color: var(--text2); font-weight: 500;
-  margin-bottom: 6px; text-align: center; letter-spacing: 0.3px;
+  font-size: 15px; color: var(--text2); font-weight: 500;
+  margin-bottom: 8px; text-align: center; letter-spacing: 0.3px;
+  min-height: 22px;
 }
 .splash-tagline {
-  font-size: 11px; color: var(--text3);
-  margin-bottom: 40px; text-align: center; letter-spacing: 0.2px;
+  font-size: 12px; color: var(--text3);
+  margin-bottom: 0; text-align: center; letter-spacing: 0.2px;
+  min-height: 18px;
 }
-.splash-bar-wrap {
-  width: 240px; height: 6px; background: #1a3554;
-  border-radius: 10px; overflow: hidden;
-  border: 1px solid #1e3a54;
-  margin-bottom: 12px;
-}
-.splash-bar-fill {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--accent) 0%, var(--emerald) 100%);
-  border-radius: 10px; transition: width .35s ease;
-}
-.splash-label {
-  font-size: 11px; color: var(--text3); font-family: var(--mono);
-  min-height: 16px; text-align: center;
+/* typewriter cursor blink */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.tw-cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: var(--cyan);
+  vertical-align: text-bottom;
+  margin-right: 2px;
+  animation: blink .75s step-end infinite;
 }
 
 .setup-box {
@@ -331,6 +328,31 @@ body::before {
   min-height: 48px;
 }
 .tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+
+/* ── TAB LOADING INDICATORS ── */
+.tab-inner { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.3; }
+.tab-name-row { display: flex; align-items: center; justify-content: center; gap: 3px; }
+.tab-status-lbl { font-size: 9px; font-weight: 500; letter-spacing: .02em; line-height: 1; }
+.tab-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  display: none;
+}
+.tab-spin {
+  width: 7px; height: 7px; flex-shrink: 0;
+  border: 1.5px solid var(--border);
+  border-top-color: var(--amber, #fbbf24);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+/* state: loading */
+.tab.tab-loading .tab-spin    { display: inline-block; }
+.tab.tab-loading .tab-status-lbl { display: block; color: var(--amber, #fbbf24); }
+/* state: fresh */
+.tab.tab-fresh .tab-dot       { display: inline-block; background: var(--emerald, #34d399); }
+.tab.tab-fresh .tab-status-lbl { display: block; color: var(--emerald, #34d399); }
+/* hide status label by default */
+.tab-status-lbl { display: none; }
 
 /* ── PAGE WRAPPER ── */
 .page {
@@ -949,6 +971,7 @@ select {
   border-radius: 10px; padding: 11px 14px;
   font-size: 12px; font-weight: 600;
   margin-bottom: 14px;
+  transition: background .6s ease, border-color .6s ease, color .6s ease;
 }
 .cur-banner.green { background: rgba(52,211,153,.1);  border: 1px solid rgba(52,211,153,.3); color: var(--emerald); }
 .cur-banner.amber { background: rgba(251,191,36,.1);  border: 1px solid rgba(251,191,36,.3); color: var(--amber); }
@@ -2199,11 +2222,26 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 <!-- ── TAB BAR ── -->
 <div class="tab-bar">
-  <div class="tab active" id="tab-currency" onclick="switchTab('currency')">כשירות</div>
-  <div class="tab"        id="tab-log"      onclick="switchTab('log')">רישום<br>טיסה</div>
-  <div class="tab"        id="tab-stats"    onclick="switchTab('stats')">סטטיסטיקה</div>
-  <div class="tab"        id="tab-search"   onclick="switchTab('search')">יומן</div>
-  <div class="tab"        id="tab-settings" onclick="switchTab('settings')">הגדרות</div>
+  <div class="tab active" id="tab-currency" onclick="switchTab('currency')">
+    <div class="tab-inner">
+      <div class="tab-name-row"><div class="tab-spin"></div><div class="tab-dot"></div>כשירות</div>
+      <div class="tab-status-lbl" id="tab-currency-lbl"></div>
+    </div>
+  </div>
+  <div class="tab" id="tab-log" onclick="switchTab('log')">רישום<br>טיסה</div>
+  <div class="tab" id="tab-stats" onclick="switchTab('stats')">
+    <div class="tab-inner">
+      <div class="tab-name-row"><div class="tab-spin"></div><div class="tab-dot"></div>סטטיסטיקה</div>
+      <div class="tab-status-lbl" id="tab-stats-lbl"></div>
+    </div>
+  </div>
+  <div class="tab" id="tab-search" onclick="switchTab('search')">
+    <div class="tab-inner">
+      <div class="tab-name-row"><div class="tab-spin"></div><div class="tab-dot"></div>יומן</div>
+      <div class="tab-status-lbl" id="tab-search-lbl"></div>
+    </div>
+  </div>
+  <div class="tab" id="tab-settings" onclick="switchTab('settings')">הגדרות</div>
 </div>
 
 <div class="page">
@@ -2384,6 +2422,11 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
     </div>
 
     <div id="currencyContent">
+    <!-- Cache sync banner -->
+    <div id="cacheSyncBanner" style="display:none;" class="cur-banner amber">
+      <span style="font-size:13px;flex-shrink:0;">⚠</span>
+      <span id="cacheSyncText"></span>
+    </div>
     <!-- Summary banner -->
     <div id="cur-summary-banner" style="display:none;" class="cur-banner">
       <span id="cur-banner-icon" style="font-size:15px;flex-shrink:0;"></span>
@@ -2759,7 +2802,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   </div><!-- /view-settings -->
 
   <div class="app-footer">
-    <div class="footer-meta" dir="ltr">v2.32<span id="footerStamp"></span></div>
+    <div class="footer-meta" dir="ltr">v2.33.005<span id="footerStamp"></span></div>
     <div class="footer-credit">built by eligrt</div>
   </div>
 
@@ -2817,7 +2860,76 @@ const toHM = m => `${Math.floor(m/60)}:${pad(m%60)}`;
 // ═══════════════════════════════════════════
 //  SETUP / URL MANAGEMENT
 // ═══════════════════════════════════════════
-const LS_KEY = 'flight_log_gas_url';
+const LS_KEY        = 'flight_log_gas_url';
+const LS_CACHE_ROWS = 'airlog_cache_rows';
+const LS_CACHE_TS   = 'airlog_cache_ts';
+
+// ── Tab loading state helpers ──
+// state: 'loading' | 'fresh' | 'idle'
+function setTabState(tabId, state, labelText) {
+  const tab = el('tab-' + tabId);
+  if (!tab) return;
+  tab.classList.remove('tab-loading', 'tab-fresh');
+  const lbl = el('tab-' + tabId + '-lbl');
+  if (state === 'loading') {
+    tab.classList.add('tab-loading');
+    if (lbl) lbl.textContent = labelText || 'טוען...';
+  } else if (state === 'fresh') {
+    tab.classList.add('tab-fresh');
+    if (lbl) lbl.textContent = 'עודכן';
+  }
+}
+
+// ── Cache banner on כשירות tab ──
+function showCacheBanner(ts) {
+  const banner = el('cacheSyncBanner');
+  const text   = el('cacheSyncText');
+  if (!banner || !text) return;
+  const d = new Date(ts);
+  const dateStr = d.toLocaleDateString('he-IL', { day:'numeric', month:'numeric' });
+  const timeStr = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  text.textContent = 'נתונים מ ' + dateStr + ' ' + timeStr + ' — מרענן ברקע';
+  banner.className = 'cur-banner amber';
+  banner.style.display = 'flex';
+}
+
+function showFreshBanner() {
+  const banner = el('cacheSyncBanner');
+  const text   = el('cacheSyncText');
+  if (!banner || !text) return;
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  // Fade text out, swap content and class, fade back in
+  banner.style.opacity = '0';
+  banner.style.transition = 'opacity .3s ease';
+  setTimeout(() => {
+    text.textContent = 'הנתונים עודכנו ב ' + timeStr;
+    banner.className = 'cur-banner green';
+    banner.style.opacity = '1';
+  }, 300);
+}
+
+function hideSyncBanner() {
+  const banner = el('cacheSyncBanner');
+  if (banner) banner.style.display = 'none';
+}
+
+// ── Save / load lean rows cache ──
+function saveLeanCache(rows) {
+  try {
+    localStorage.setItem(LS_CACHE_ROWS, JSON.stringify(rows));
+    localStorage.setItem(LS_CACHE_TS,   Date.now().toString());
+  } catch(e) { /* storage full or private mode */ }
+}
+
+function loadLeanCache() {
+  try {
+    const raw = localStorage.getItem(LS_CACHE_ROWS);
+    const ts  = localStorage.getItem(LS_CACHE_TS);
+    if (!raw || !ts) return null;
+    return { rows: JSON.parse(raw), ts: parseInt(ts, 10) };
+  } catch(e) { return null; }
+}
 
 // ── CLOUDFLARE PROXY — iOS WebKit CORS bypass ────────────────────
 const CF_PROXY = 'https://airlog-proxy.eligrt.workers.dev/';
@@ -2920,7 +3032,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.32',
+      appVersion:   'v2.33.005',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3040,7 +3152,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.32',
+        'App Ver:    v2.33.005',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3247,36 +3359,81 @@ function obEnterApp() {
 
 async function startupLoad() {
   const splash = el('splashOverlay');
-  const fill   = el('splashBarFill');
-  const label  = el('splashLabel');
+  splash.classList.add('show');
+  startSplashTypewriter();
 
-  function setSplash(pct, txt) {
-    if (fill)  fill.style.width = pct + '%';
-    if (label) label.textContent = txt;
+  // ── Try cache first ──
+  const cached = loadLeanCache();
+  if (cached && cached.rows && cached.rows.length > 0) {
+    // Hydrate app instantly from cache
+    allRows = cached.rows;
+    updateFlightNum();
+    const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
+    const sel = el('fFilterType');
+    if (sel) {
+      sel.innerHTML = '<option value="">הכל</option>' +
+        types.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+    }
+    applyFilters();
+    populateJournalAcPills();
+    populateLogFormAcDropdowns();
+    buildYearPills();
+    applyDefaultAcToForm();
+    try { renderYearly(); } catch(e) {}
+    try { renderMonthly(); } catch(e) {}
+    renderFlightCards(allRows);
+    renderCurrency();
+    // Make sure stats content is visible (it starts hidden, normally shown by hideLB)
+    const sc = el('statsContent'); if (sc) sc.style.display = 'block';
+    const cc = el('currencyContent'); if (cc) cc.style.display = 'block';
+
+    // Wait for typewriter to finish + a beat before hiding splash
+    // line1 (35 chars * 40ms) + 300ms start delay + 200ms gap + 600ms line2 fade + 1000ms pause ≈ 3500ms
+    await new Promise(r => setTimeout(r, 3500));
+    hideSplash();
+
+    // Show amber state — data is from cache, refresh in background
+    setTabState('currency', 'loading', 'טוען...');
+    setTabState('stats',    'loading', 'טוען...');
+    setTabState('search',   'loading', 'טוען...');
+    showCacheBanner(cached.ts);
+
+    // Background refresh
+    let _backgroundRefresh = true;
+    try {
+      await loadStats(_backgroundRefresh);
+      renderCurrency();   // re-render with fresh data
+      setTabState('currency', 'fresh');
+      setTabState('stats',    'fresh');
+      showFreshBanner();
+    } catch(e) {
+      // Keep showing cached data silently — no crash
+    }
+    if (!_journalLoading) loadJournal();
+    return;
   }
 
-  splash.classList.add('show');
-  setSplash(5, 'מתחבר לשרת...');
+  // ── No cache — normal first-time load ──
+  setTabState('currency', 'loading', 'טוען...');
+  setTabState('stats',    'loading', 'טוען...');
+  setTabState('search',   'loading', 'טוען...');
 
-  // Step 1: load lean data (stats + currency)
   try {
     await loadStats();
-    setSplash(70, 'טוען יומן טיסות...');
-    // Report app_open event silently
     reportEvent('app_open', {
       sheetName:    window._adminSheetName || '',
       totalFlights: allRows.length
     });
   } catch(e) {
-    setSplash(100, 'שגיאה בטעינה — בדוק חיבור');
-    setTimeout(() => hideSplash(), 2000);
+    hideSplash();
     return;
   }
 
-  // Render currency immediately after lean load
   renderCurrency();
-
-  // Step 2: load journal in background (don't block splash)
+  setTabState('currency', 'fresh');
+  setTabState('stats',    'fresh');
+  // Wait for typewriter to finish before hiding
+  await new Promise(r => setTimeout(r, 3500));
   hideSplash();
   if (!_journalLoading) loadJournal();
 }
@@ -3284,14 +3441,52 @@ async function startupLoad() {
 function hideSplash() {
   const splash = el('splashOverlay');
   if (!splash) return;
-  el('splashBarFill').style.width = '100%';
-  el('splashLabel').textContent = 'מוכן!';
   setTimeout(() => {
     splash.classList.add('fade');
     setTimeout(() => {
       splash.classList.remove('show', 'fade');
       splash.style.display = 'none';
-    }, 420);
+    }, 560);
+  }, 200);
+}
+
+function startSplashTypewriter() {
+  const line1El = el('splashConcept');
+  const line2El = el('splashTagline');
+  if (!line1El || !line2El) return;
+
+  const line1 = 'Where aviation meets Google Sheets';
+  const line2 = 'Your flights. Your logbook. Your data.';
+  const speed = 40; // ms per character
+
+  // Force LTR so cursor appears at end of text, not start
+  line1El.setAttribute('dir', 'ltr');
+  line2El.setAttribute('dir', 'ltr');
+  line2El.style.opacity = '0';
+
+  function typeText(targetEl, text, cb) {
+    let i = 0;
+    targetEl.innerHTML = '<span class="tw-cursor"></span>';
+    const interval = setInterval(() => {
+      i++;
+      targetEl.innerHTML = text.slice(0, i) + '<span class="tw-cursor"></span>';
+      if (i >= text.length) {
+        clearInterval(interval);
+        targetEl.innerHTML = text; // remove cursor
+        if (cb) setTimeout(cb, 200);
+      }
+    }, speed);
+  }
+
+  // Return total expected duration so startupLoad can wait correctly
+  // line1 chars * speed + 200 gap + line2 fade = ~1800ms for 34-char line1
+  setTimeout(() => {
+    typeText(line1El, line1, () => {
+      // Fade in line2 then show it (no typewriter on line2)
+      line2El.style.transition = 'opacity 0.6s ease';
+      line2El.style.opacity = '1';
+      line2El.textContent = line2;
+    });
   }, 300);
 }
 
@@ -3848,7 +4043,7 @@ async function loadStatsAndJournal() {
   if (journalRows.length === 0 && !_journalLoading) loadJournal();
 }
 
-async function loadStats() {
+async function loadStats(silent) {
   const gasUrl = getUrl();
   if (!gasUrl) { openSetup(); return; }
 
@@ -3858,6 +4053,7 @@ async function loadStats() {
   var _totalCount = 0;
 
   function setLB(pct, label) {
+    if (silent) return;   // suppress all bar UI during background refresh
     var wrap = el('loadBarStats'), fill = el('loadBarStatsFill'), lbl = el('loadBarStatsLabel');
     if (!wrap) return;
     wrap.style.display = 'flex';
@@ -3870,12 +4066,6 @@ async function loadStats() {
     if (cFill) cFill.style.width = Math.round(pct) + '%';
     if (cLbl)  cLbl.textContent  = label;
     var cc = el('currencyContent'); if (cc) cc.style.display = 'none';
-    // mirror to splash bar if visible
-    var sf = el('splashBarFill'), sl = el('splashLabel');
-    if (sf && el('splashOverlay') && el('splashOverlay').classList.contains('show')) {
-      sf.style.width = Math.min(65, Math.round(pct * 0.65)) + '%';
-      if (sl) sl.textContent = label;
-    }
   }
   function hideLB() {
     var w = el('loadBarStats'); if(w) w.style.display='none';
@@ -3914,6 +4104,7 @@ async function loadStats() {
     // Only invalidate journal cache if data actually changed
     if (newRows.length !== allRows.length) journalRows = [];
     allRows = newRows;
+    saveLeanCache(allRows);
     updateFlightNum();
 
     const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
@@ -3998,6 +4189,7 @@ async function loadJournal() {
     setProgress(92, 'מעבד נתונים...');
     journalRows = (json.rows || json.flights || []).filter(r => r.date);
     _journalLoading = false;
+    setTabState('search', 'fresh');
     setProgress(100, 'מוכן!');
     setTimeout(function() {
       hideBar();
@@ -5771,14 +5963,10 @@ function createNewSheet() {
   <div class="splash-icon">
     <img src="./icon-512.png" width="220" height="220" style="display:block;border-radius:0;">
   </div>
-  <div class="splash-concept">Where aviation meets Google Sheets</div>
-  <div class="splash-tagline" dir="ltr">Your flights. Your logbook. Your data.</div>
-  <div class="splash-bar-wrap" dir="ltr" style="margin-top:32px;">
-    <div class="splash-bar-fill" id="splashBarFill"></div>
-  </div>
-  <div class="splash-label" id="splashLabel">מתחבר לשרת...</div>
+  <div class="splash-concept" id="splashConcept"></div>
+  <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.32</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.005</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -5830,7 +6018,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.32</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.005</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
