@@ -57,15 +57,15 @@
   --r-sm: 8px;
 }
 
-html { font-size: 16px; overflow-y: scroll; }
+html { font-size: 16px; }
 
 body {
   font-family: var(--sans);
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
-  min-height: 100svh; /* mobile address-bar fix — see AirCheck */
-  overflow-x: hidden;
+  height: 100vh;
+  height: 100svh; /* mobile address-bar fix — see AirCheck */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -278,9 +278,7 @@ body::before {
   padding: 8px 16px; background: var(--surface);
   border-bottom: 1px solid var(--border);
   gap: 8px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  flex-shrink: 0;
 }
 .top-title {
   font-size: 14px; font-weight: 700; color: var(--text1);
@@ -305,9 +303,7 @@ body::before {
 
 /* ── TABS ── */
 .tab-bar {
-  position: sticky;
-  top: 41px;
-  z-index: 15;
+  flex-shrink: 0;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -357,15 +353,16 @@ body::before {
 /* hide status label by default */
 .tab-status-lbl { display: none; }
 
-/* ── PAGE WRAPPER ── */
+/* ── PAGE WRAPPER (scrolls internally; header/tabs/footer stay put) ── */
 .page {
   max-width: 520px;
   margin: 0 auto;
-  padding: 14px 14px 18px;
+  padding: 14px 14px 14px;
   flex: 1;
   width: 100%;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 /* ── VIEWS ── */
@@ -1827,7 +1824,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   padding: 10px; letter-spacing: .1em;
   font-family: var(--mono); text-transform: uppercase;
   color: var(--text3);
-  margin-top: auto;
+  flex-shrink: 0;
   background: var(--bg);
   border-top: 1px solid var(--border2);
 }
@@ -2833,9 +2830,9 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
   </div><!-- /view-settings -->
 
-  <div class="app-footer" dir="ltr">AirLog · v2.33.013<span id="footerStamp"></span> · built by eligrt</div>
-
 </div><!-- /page -->
+
+<div class="app-footer" dir="ltr">AirLog · v2.33.015<span id="footerStamp"></span> · built by eligrt</div>
 
 <!-- ── GAS INFO MODAL ── -->
 <div id="gasInfoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
@@ -3061,7 +3058,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.33.013',
+      appVersion:   'v2.33.015',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3181,7 +3178,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.33.013',
+        'App Ver:    v2.33.015',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -6003,7 +6000,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.013</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.015</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -6055,7 +6052,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.013</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.015</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
