@@ -64,7 +64,10 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  min-height: 100svh; /* mobile address-bar fix — see AirCheck */
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* subtle radial glow at top */
@@ -358,7 +361,11 @@ body::before {
 .page {
   max-width: 520px;
   margin: 0 auto;
-  padding: 20px 14px 60px;
+  padding: 14px 14px 18px;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── VIEWS ── */
@@ -861,17 +868,17 @@ select {
 .cur-sec-lbl {
   font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
   color: var(--text3); text-transform: uppercase;
-  margin: 10px 0 6px;
+  margin: 8px 0 5px;
 }
 .cur-sec-sub {
   font-size: 11px; color: var(--text2);
-  margin: -2px 0 6px; line-height: 1.5;
+  margin: -2px 0 5px; line-height: 1.5;
 }
 .cur-big-card {
   background: var(--bg2);
   border-radius: 18px;
-  padding: 13px 14px;
-  margin-bottom: 10px;
+  padding: 11px 14px;
+  margin-bottom: 8px;
   border: 1px solid var(--border);
   position: relative;
   overflow: hidden;
@@ -895,7 +902,7 @@ select {
 .cur-card-sub b { color: var(--text); font-weight: 600; }
 .cur-card-note {
   font-size: 10px; color: var(--text3);
-  margin-top: 8px; padding-top: 8px;
+  margin-top: 6px; padding-top: 6px;
   border-top: 1px solid var(--border); line-height: 1.5;
 }
 .cur-card-note b { color: var(--text2); font-weight: 600; }
@@ -918,7 +925,7 @@ select {
 .c-amber .cur-arc-num { color: var(--amber); }
 .c-red   .cur-arc-num { color: #ef4444; }
 /* Pax stats row */
-.cur-pax-row { display: flex; gap: 8px; margin-top: 8px; }
+.cur-pax-row { display: flex; gap: 8px; margin-top: 6px; }
 .cur-pax-stat {
   flex: 1; text-align: center;
   background: var(--bg1); border-radius: 10px; padding: 7px 4px;
@@ -928,11 +935,12 @@ select {
 .cur-pax-stat.ok   .cur-pax-num { color: var(--emerald); }
 .cur-pax-stat.bad  .cur-pax-num { color: #ef4444; }
 /* Aircraft grid */
-.cur-ac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.cur-ac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
 .cur-ac-card {
   background: var(--bg2); border-radius: 14px;
   padding: 10px 10px 10px; border: 1px solid var(--border);
   text-align: center; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; height: 100%;
 }
 .cur-ac-card::after {
   content: ''; position: absolute;
@@ -949,13 +957,21 @@ select {
 .cur-ac-card.c-green .cur-ac-badge { background: rgba(52,211,153,.15); color: var(--emerald); }
 .cur-ac-card.c-amber .cur-ac-badge { background: rgba(251,191,36,.15);  color: var(--amber); }
 .cur-ac-card.c-red   .cur-ac-badge { background: rgba(239,68,68,.15);   color: #ef4444; }
-.cur-ac-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+/* Fixed-height name slot (room for 2 lines) so the days-number row
+   lines up across cards regardless of how the aircraft name wraps. */
+.cur-ac-name {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  margin-bottom: 4px; min-height: 37px; line-height: 1.2;
+  display: flex; align-items: center; justify-content: center;
+}
 .cur-ac-days { font-size: 34px; font-weight: 700; font-family: var(--mono); line-height: 1; }
 .cur-ac-card.c-green .cur-ac-days { color: var(--emerald); }
 .cur-ac-card.c-amber .cur-ac-days { color: var(--amber); }
 .cur-ac-card.c-red   .cur-ac-days { color: #ef4444; }
 .cur-ac-days-lbl  { font-size: 10px; color: var(--text2); margin: 2px 0 8px; }
-.cur-ac-last-date { font-size: 10px; color: var(--text2); padding-top: 8px; border-top: 1px solid var(--border); }
+/* margin-top:auto pins this row to the card's bottom edge, so the
+   separator/last-flight line sits at the same height on every card. */
+.cur-ac-last-date { font-size: 10px; color: var(--text2); padding-top: 8px; border-top: 1px solid var(--border); margin-top: auto; }
 /* Tab alert dot */
 .tab-alert-dot {
   display: inline-block; width: 7px; height: 7px;
@@ -968,9 +984,9 @@ select {
 .tab-alert-dot.amber { background: var(--amber); }
 .cur-banner {
   display: flex; align-items: center; gap: 8px;
-  border-radius: 10px; padding: 11px 14px;
+  border-radius: 10px; padding: 10px 14px;
   font-size: 12px; font-weight: 600;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   transition: background .6s ease, border-color .6s ease, color .6s ease;
 }
 .cur-banner.green { background: rgba(52,211,153,.1);  border: 1px solid rgba(52,211,153,.3); color: var(--emerald); }
@@ -1808,9 +1824,12 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 .app-footer {
   text-align: center; font-size: 9px;
-  padding: 5px 14px 8px; letter-spacing: .1em;
+  padding: 10px; letter-spacing: .1em;
   font-family: var(--mono); text-transform: uppercase;
   color: var(--text3);
+  margin-top: auto;
+  background: var(--bg);
+  border-top: 1px solid var(--border2);
 }
 
 @media (max-width: 380px) {
@@ -2814,7 +2833,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
   </div><!-- /view-settings -->
 
-  <div class="app-footer" dir="ltr">AirLog · v2.33.009<span id="footerStamp"></span> · built by eligrt</div>
+  <div class="app-footer" dir="ltr">AirLog · v2.33.013<span id="footerStamp"></span> · built by eligrt</div>
 
 </div><!-- /page -->
 
@@ -3042,7 +3061,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.33.009',
+      appVersion:   'v2.33.013',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3162,7 +3181,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.33.009',
+        'App Ver:    v2.33.013',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -5984,7 +6003,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.009</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.013</div>
     <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
   </div>
 </div>
@@ -6036,7 +6055,7 @@ function createNewSheet() {
     </button>
     <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.009</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.013</div>
       <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
     </div>
   </div>
