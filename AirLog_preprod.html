@@ -235,6 +235,8 @@ body::before {
   border-bottom: 1px dashed rgba(52,211,153,.5); padding-bottom: 1px;
   cursor: pointer; direction: ltr; white-space: nowrap; vertical-align: baseline;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
 }
 .su-email:active { color: var(--cyan); }
 .su-email.copied { color: var(--emerald); border-bottom-color: var(--emerald); }
@@ -1881,14 +1883,17 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 .app-footer {
-  text-align: center; font-size: 11px;
-  padding: 10px; letter-spacing: .1em;
+  text-align: center;
+  padding: 8px 10px; letter-spacing: .1em;
   font-family: var(--mono); text-transform: uppercase;
   color: var(--text3);
   flex-shrink: 0;
   background: var(--bg);
   border-top: 1px solid var(--border2);
 }
+.app-footer .af-main { font-size: 11px; }
+.app-footer .af-stamp { font-size: 9.5px; color: var(--text3); opacity: .75; margin-top: 3px; }
+.app-footer .af-stamp:empty { display: none; }
 
 @media (max-width: 380px) {
   .grid2 { grid-template-columns: 1fr; }
@@ -2856,7 +2861,10 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 </div><!-- /page -->
 
-<div class="app-footer" dir="ltr">AirLog · v2.34.016<span id="footerStamp"></span> · built by eligrt</div>
+<div class="app-footer" dir="ltr">
+  <div class="af-main">AirLog · v2.34.017 · built by eligrt</div>
+  <div class="af-stamp" id="footerStamp"></div>
+</div>
 
 <!-- ── GAS INFO MODAL ── -->
 <div id="gasInfoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
@@ -3124,7 +3132,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.016',
+      appVersion:   'v2.34.017',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3341,7 +3349,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.016',
+        'App Ver:    v2.34.017',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3368,7 +3376,7 @@ async function saveSetup() {
           '📋 שלח דוח שגיאה למפתח' +
         '</a>';
     } else {
-      el('setupErrMsg').textContent = 'בדוק שהכתובת נכונה ושה-Script פורס כ-Web App';
+      el('setupErrMsg').textContent = 'לא הצלחנו להתחבר לגיליון - ודא שהדבקת את הקישור הנכון ושהגיליון שותף עם airlogsync@gmail.com';
     }
     el('setupErrMsg').style.display = 'block';
     btn.disabled = false;
@@ -4387,7 +4395,7 @@ async function loadJournal() {
       const hh = now.getHours().toString().padStart(2,'0');
       const mm = now.getMinutes().toString().padStart(2,'0');
       const fs1 = el('footerStamp');
-      if (fs1) fs1.textContent = ' · updated ' + hh + ':' + mm;
+      if (fs1) fs1.textContent = 'updated ' + hh + ':' + mm;
       const btn = el('btnRefreshJournal');
       if (btn) btn.classList.remove('loading');
     }, 400);
@@ -5767,7 +5775,7 @@ function refreshCurrency() {
       const hh = now.getHours().toString().padStart(2,'0');
       const mm = now.getMinutes().toString().padStart(2,'0');
       const fs = el('footerStamp');
-      if (fs) fs.textContent = ' · updated ' + hh + ':' + mm;
+      if (fs) fs.textContent = 'updated ' + hh + ':' + mm;
       if (btn) btn.classList.remove('loading');
     }, 1100);
   });
@@ -5802,7 +5810,7 @@ function globalRefresh() {
     const hh = now.getHours().toString().padStart(2,'0');
     const mm = now.getMinutes().toString().padStart(2,'0');
     const fs3 = el('footerStamp');
-    if (fs3) fs3.textContent = ' · updated ' + hh + ':' + mm;
+    if (fs3) fs3.textContent = 'updated ' + hh + ':' + mm;
     if (btn) btn.classList.remove('loading');
     // Re-render current tab content
     const active = ['log','currency','stats','search','settings'].find(id =>
@@ -6142,7 +6150,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
-    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.016 · built by eligrt</div>
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.017 · built by eligrt</div>
   </div>
 </div>
 
@@ -6209,7 +6217,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.016</span>
+      <span dir="ltr">v2.34.017</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
