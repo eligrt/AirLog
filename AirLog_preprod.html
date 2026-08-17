@@ -2738,30 +2738,6 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <!-- ══════════ SETTINGS VIEW ══════════ -->
   <div class="view" id="view-settings">
 
-    <!-- ── SETUP RETURN BANNER (shown after returning from GAS setup) ── -->
-    <div id="setupReturnBanner" style="display:none;margin-bottom:14px;background:linear-gradient(135deg,#0d2a1a,#0a2218);border:1.5px solid rgba(52,211,153,.3);border-radius:12px;padding:16px 14px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div style="font-size:22px;">✈️</div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:var(--emerald);">הגיליון שלך מוכן!</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:2px;">לחץ כדי לחבר אותו לאפליקציה</div>
-        </div>
-      </div>
-      <button onclick="setupReturnConnect()" id="setupReturnBtn"
-        style="width:100%;padding:13px;background:linear-gradient(135deg,#059669,#34d399);border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;">
-        חבר את הגיליון ←
-      </button>
-      <div id="setupReturnPasteFallback" style="display:none;margin-top:10px;">
-        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-align:center;">לא הצלחנו לקרוא את הלוח — הדבק את הכתובת ידנית:</div>
-        <input type="text" id="setupReturnPasteInput" dir="ltr"
-          placeholder="📋 הדבק כאן..."
-          style="width:100%;background:var(--raised);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:11px;padding:10px 12px;outline:none;"
-          oninput="setupReturnOnPaste(this.value)">
-      </div>
-      <div id="setupReturnMsg" style="display:none;margin-top:10px;font-size:13px;font-weight:700;text-align:center;color:var(--emerald);">✓ מחובר בהצלחה!</div>
-      <div id="setupReturnErr" style="display:none;margin-top:10px;font-size:12px;text-align:center;color:var(--red);">לא הצלחנו להתחבר — בדוק שהכתובת נכונה</div>
-    </div>
-
     <!-- ── MAIN SETTINGS ── -->
     <div style="margin-bottom:6px;" class="set-section-title">הגדרות</div>
     <div class="set-group" style="margin-bottom:14px;">
@@ -2819,11 +2795,8 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
           <div class="set-expand-desc">קישור הגיליון המחובר:</div>
           <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;direction:ltr;word-break:break-all;line-height:1.6;min-height:38px;margin-bottom:8px;"></div>
         </div>
-        <!-- Always visible options -->
-        <button class="settings-action-btn secondary" onclick="openSetup()" style="margin-bottom:8px;">🔗 חיבור / שינוי גיליון</button>
-        <!-- Disconnect (only when connected) -->
-        <button id="setDisconnectBtn" class="settings-action-btn danger" onclick="disconnectApp()" style="display:none;margin-bottom:8px;">🔌 התנתק מהגיליון</button>
-        <button onclick="showGasInfo()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-align:center;padding:4px;width:100%;">מה זה Apps Script? ›</button>
+        <!-- Connect / change sheet -->
+        <button class="settings-action-btn secondary" onclick="openSetupFromSettings()" style="margin-bottom:8px;">🔗 חבר / שנה AirLog Sheet</button>
       </div>
 
       <!-- Install row — direct action (no expand) -->
@@ -2862,48 +2835,8 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.017 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.019 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
-</div>
-
-<!-- ── GAS INFO MODAL ── -->
-<div id="gasInfoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
-  align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
-  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;
-    padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px #000a;direction:rtl;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-size:16px;font-weight:700;color:var(--text);">🔗 מה זה Apps Script ואיך מתחילים?</div>
-      <button onclick="closeGasInfo()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;">×</button>
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.7;display:flex;flex-direction:column;gap:14px;">
-      <div style="font-size:12px;color:var(--text2);">
-        ה-Apps Script הוא ה״גשר״ שמחבר את AirLog לגיליון Google Sheets האישי שלך.
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent2);background:var(--raised);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:1px;">1</div>
-          <div><strong style="color:var(--text);">קבל את התבנית</strong><br>
-          <span style="font-size:12px;color:var(--text2);">פנה למפתח AirLog וקבל קישור ל-Google Sheets Template, פתח אותה וצור לך עותק אישי.</span></div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent2);background:var(--raised);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:1px;">2</div>
-          <div><strong style="color:var(--text);">הפעל את ה-Script</strong><br>
-          <span style="font-size:12px;color:var(--text2);">בגיליון שלך (העותק החדש שיצרת), תחת תפריט Extensions בצע Apps Script → Deploy. בסיום תקבל כתובת URL ייחודית שמזהה את הגיליון שלך.</span></div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent2);background:var(--raised);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:1px;">3</div>
-          <div><strong style="color:var(--text);">חבר את AirLog</strong><br>
-          <span style="font-size:12px;color:var(--text2);">העתק את כתובת ה-Apps Script שקיבלת והדבק אותה בתפריט ״חיבור ל-Google Sheets״ הנמצא בלשונית ״הגדרות״ של AirLog.</span></div>
-        </div>
-      </div>
-      <div style="font-size:13px;font-weight:600;color:var(--emerald);text-align:center;padding:4px 0;">
-        זהו! מרגע זה AirLog מחובר לגיליון שלך ומוכן לטיסה <span style="display:inline-block;transform:scaleX(-1);">✈</span>
-      </div>
-      <div style="font-size:11px;color:var(--text3);background:var(--raised);border-radius:6px;padding:8px 10px;">
-        🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.
-      </div>
-    </div>
-  </div>
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
@@ -3132,7 +3065,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.017',
+      appVersion:   'v2.34.019',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3149,7 +3082,7 @@ async function reportEvent(event, extraData = {}) {
 }
 
 
-function openSetup() {
+function openSetup(forcePane) {
   el('setupUrl').value = '';
   el('setupUrl').placeholder = 'הדבק כאן את קישור ה-AirLog Sheet שלך';
   el('setupUrl').classList.remove('err');
@@ -3167,9 +3100,16 @@ function openSetup() {
   const closeBtn = el('setupCloseBtn');
   const connected = !!getUrl();
   if (closeBtn) closeBtn.style.display = connected ? 'block' : 'none';
-  // Already connected users just want to re-paste a link → jump to pane 2
-  gotoPane(connected ? 2 : 1);
+  // Default: connected users jump to pane 2 (re-paste). forcePane overrides.
+  const target = forcePane || (connected ? 2 : 1);
+  gotoPane(target);
   el('setupOverlay').classList.add('show');
+}
+
+// From Settings "change sheet": always start at pane 1 so the user can
+// create a fresh sheet OR use "already have one" to paste a different link.
+function openSetupFromSettings() {
+  openSetup(1);
 }
 
 // Switch between the two onboarding panes
@@ -3349,7 +3289,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.017',
+        'App Ver:    v2.34.019',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3392,20 +3332,6 @@ window.addEventListener('DOMContentLoaded', () => {
   initManual();
   setLandings(0);
   refreshSettingsView();
-
-  // Handle return from GAS setup (?setup=1)
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('setup') === '1') {
-    window.history.replaceState({}, '', window.location.pathname);
-    // Switch to settings tab and show the return banner
-    ['log','currency','stats','search','settings'].forEach(id => {
-      el(`tab-${id}`).classList.toggle('active', id === 'settings');
-      el(`view-${id}`).classList.toggle('active', id === 'settings');
-    });
-    el('setupReturnBanner').style.display = 'block';
-    refreshSettingsView();
-    return;
-  }
 
   if (!getUrl()) {
     openSetup();
@@ -4032,7 +3958,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else { throw new Error(text); }
     } catch(err) {
       console.error(err);
-      errBar.textContent = 'שגיאה בשליחה — בדוק את כתובת ה-Apps Script';
+      errBar.textContent = 'שגיאה בשליחה — בדוק את החיבור לגיליון';
       errBar.classList.add('show');
       btn.disabled = false;
       el('btnLabel').style.display   = '';
@@ -5834,7 +5760,6 @@ function refreshSettingsView() {
   const gasSub = el('setGasSubtitle');
   if (gasSub) gasSub.textContent = url ? '🟢 מחובר' : '🔴 לא מחובר';
   if (el('gasConnectedState')) el('gasConnectedState').style.display = url ? 'block' : 'none';
-  if (el('setDisconnectBtn')) el('setDisconnectBtn').style.display = url ? 'block' : 'none';
   if (el('gasNotConnectedState')) el('gasNotConnectedState').style.display = 'none'; // no longer used
 
   // Aircraft default subtitle
@@ -6126,15 +6051,6 @@ function confirmResolve(val) {
   if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
 }
 
-function showGasInfo() {
-  const m = el('gasInfoModal');
-  m.style.display = 'flex';
-  m.onclick = e => { if (e.target === m) closeGasInfo(); };
-}
-function closeGasInfo() {
-  el('gasInfoModal').style.display = 'none';
-}
-
 // ── NEW SHEET CREATION ──────────────────────────────────────────
 // ── NEW SHEET CREATION ──────────────────────────────────────────
 function createNewSheet() {
@@ -6150,7 +6066,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
-    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.017 · built by eligrt</div>
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.019 · built by eligrt</div>
   </div>
 </div>
 
@@ -6217,7 +6133,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.017</span>
+      <span dir="ltr">v2.34.019</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
