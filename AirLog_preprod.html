@@ -2216,12 +2216,23 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 .set-row.danger .set-row-title { color: #ef4444; }
 .set-row.danger .set-row-sub   { color: rgba(239,68,68,0.6); }
 .set-expand {
-  display: none; flex-direction: column; gap: 10px;
-  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 0 16px;
   background: var(--bg1);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-bottom: 0 solid var(--border);
+  transition: max-height .28s ease, opacity .22s ease,
+              padding .28s ease, border-bottom-width .28s ease;
 }
-.set-expand:last-child { border-bottom: none; }
-.set-expand.open { display: flex; }
+.set-expand.open {
+  max-height: 600px;
+  opacity: 1;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.set-expand:last-child.open { border-bottom: none; }
 .set-expand-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
 .set-expand-desc b { color: var(--text); font-weight: 600; }
 .set-field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -2299,6 +2310,9 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 }
 
 </style>
+
+<!-- SheetJS (xlsx) — used by Settings → import flights from XLSX -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 </head>
 <body>
@@ -2792,11 +2806,44 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
       <div class="set-expand" id="setExpandGas">
         <!-- Current sheet link (only when connected) -->
         <div id="gasConnectedState" style="display:none;">
-          <div class="set-expand-desc">קישור הגיליון המחובר:</div>
+          <div class="set-expand-desc">שם הגיליון המחובר:</div>
+          <div id="currentNameDisplay" style="font-size:13px;font-weight:600;color:var(--emerald);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:8px;word-break:break-word;">...</div>
+          <div class="set-expand-desc">קישור הגיליון:</div>
           <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;direction:ltr;word-break:break-all;line-height:1.6;min-height:38px;margin-bottom:8px;"></div>
         </div>
         <!-- Connect / change sheet -->
         <button class="settings-action-btn secondary" onclick="openSetupFromSettings()" style="margin-bottom:8px;">🔗 חבר / שנה AirLog Sheet</button>
+      </div>
+
+      <!-- Import flights row -->
+      <div class="set-row" onclick="toggleSetRow('setExpandImport', this)">
+        <div class="set-row-left">
+          <div class="set-row-icon amber">📥</div>
+          <div>
+            <div class="set-row-title">ייבוא טיסות מאקסל</div>
+            <div class="set-row-sub">העלה קובץ XLSX מוכן</div>
+          </div>
+        </div>
+        <div class="set-row-right"><span class="set-row-arrow">▶</span></div>
+      </div>
+      <div class="set-expand" id="setExpandImport">
+        <div class="set-expand-desc">בחר קובץ <b>XLSX</b> מובנה (בעמודות המתאימות). האפליקציה תציג סיכום לפני שמירה - <b>שום דבר לא נכתב עד שתאשר</b>.</div>
+
+        <input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none;" onchange="handleImportFile(event)">
+        <button class="settings-action-btn secondary" id="importPickBtn" onclick="el('importFileInput').click()">📂 בחר קובץ XLSX</button>
+
+        <!-- Preview / summary card (hidden until a file is parsed) -->
+        <div id="importPreview" style="display:none;margin-top:10px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+          <div id="importSummary" style="font-size:12px;color:var(--text2);line-height:1.9;"></div>
+          <div id="importSkipped" style="display:none;font-size:11px;color:var(--amber);margin-top:6px;"></div>
+          <div id="importDupWarn" style="font-size:11px;color:var(--amber);margin-top:8px;line-height:1.5;">⚠️ ייבוא חוזר של אותו קובץ יוסיף שורות כפולות.</div>
+          <button class="settings-action-btn" id="importConfirmBtn" onclick="confirmImport()" style="margin-top:10px;">
+            <span id="importConfirmLabel">✓ ייבא טיסות</span>
+            <span id="importConfirmSpinner" style="display:none;">⏳ מייבא...</span>
+          </button>
+        </div>
+
+        <div id="importResultMsg" style="display:none;font-size:12px;text-align:center;font-weight:600;margin-top:8px;"></div>
       </div>
 
       <!-- Install row — direct action (no expand) -->
@@ -2835,7 +2882,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.019 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.022 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
 </div>
 
@@ -3065,7 +3112,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.019',
+      appVersion:   'v2.34.022',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3289,7 +3336,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.019',
+        'App Ver:    v2.34.022',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -5756,9 +5803,30 @@ function refreshSettingsView() {
     ? ('https://docs.google.com/spreadsheets/d/' + sheetId + '/edit')
     : 'לא מוגדר';
 
+  // Sheet name — show cached name immediately, fetch if we don't have it yet
+  const nameEl = el('currentNameDisplay');
+  if (nameEl) {
+    if (window._adminSheetName) {
+      nameEl.textContent = window._adminSheetName;
+    } else if (url) {
+      nameEl.textContent = 'טוען...';
+      // fetchConnectedName sets window._adminSheetName; refresh the label when done
+      fetchConnectedName().then(function() {
+        if (window._adminSheetName) nameEl.textContent = window._adminSheetName;
+        else nameEl.textContent = '(לא זמין)';
+      }).catch(function(){ nameEl.textContent = '(לא זמין)'; });
+    } else {
+      nameEl.textContent = 'לא מוגדר';
+    }
+  }
+
   // GAS subtitle + show URL only when connected
   const gasSub = el('setGasSubtitle');
-  if (gasSub) gasSub.textContent = url ? '🟢 מחובר' : '🔴 לא מחובר';
+  if (gasSub) {
+    if (url && window._adminSheetName) gasSub.textContent = '🟢 ' + window._adminSheetName;
+    else if (url)                      gasSub.textContent = '🟢 מחובר';
+    else                               gasSub.textContent = '🔴 לא מחובר';
+  }
   if (el('gasConnectedState')) el('gasConnectedState').style.display = url ? 'block' : 'none';
   if (el('gasNotConnectedState')) el('gasNotConnectedState').style.display = 'none'; // no longer used
 
@@ -5777,9 +5845,301 @@ function refreshSettingsView() {
 function toggleSetRow(expandId, rowEl) {
   const expand = el(expandId);
   if (!expand) return;
-  const isOpen = expand.classList.toggle('open');
+  const willOpen = !expand.classList.contains('open');
+
+  // Accordion: close every other open panel + reset its arrow first.
+  document.querySelectorAll('.set-expand.open').forEach(function(openPanel) {
+    if (openPanel === expand) return;
+    openPanel.classList.remove('open');
+    // find the row that controls this panel and reset its arrow
+    const ctrlRow = openPanel.previousElementSibling;
+    if (ctrlRow) {
+      const a = ctrlRow.querySelector('.set-row-arrow');
+      if (a) a.classList.remove('open');
+    }
+  });
+
+  expand.classList.toggle('open', willOpen);
   const arrow = rowEl.querySelector('.set-row-arrow');
-  if (arrow) arrow.classList.toggle('open', isOpen);
+  if (arrow) arrow.classList.toggle('open', willOpen);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  IMPORT FLIGHTS FROM XLSX  (Settings → ייבוא טיסות)
+//  Expects a pre-structured file whose columns map to the same
+//  fields a single flight uses. Lenient: valid rows imported,
+//  invalid ones counted & reported. One bulkImport POST on confirm.
+// ══════════════════════════════════════════════════════════════
+
+let _importValidRows = [];   // parsed & validated rows, ready to POST
+
+// Column-name aliases → canonical field. Case-insensitive, trimmed.
+// Accepts both Hebrew and English headers so the offline-prepped file
+// can use whichever is convenient.
+const IMPORT_ALIASES = {
+  date:       ['date','תאריך'],
+  aircraft:   ['aircraft','זיהוי','זיהוי מטוס','או"ק','רישום'],
+  acType:     ['type','actype','סוג','סוג מטוס'],
+  pic:        ['pic','טייס','pic time'],
+  dual:       ['dual','הדרכה','dual time'],
+  total:      ['total','סהכ','סה"כ','משך','זמן טיסה'],
+  landings:   ['landings','נחיתות','נחיתה'],
+  description:['description','תיאור','desc'],
+  lessons:    ['lessons','לקחים','מה למדתי'],
+  xc:         ['xc','ניווט','cross country'],
+  night:      ['night','לילה'],
+  levelCheck: ['levelcheck','level check','מבחן רמה','רמה'],
+};
+
+// Map a raw header row to { fieldName: colIndex }
+function buildImportColMap(headerRow) {
+  const map = {};
+  const norm = s => String(s == null ? '' : s).trim().toLowerCase();
+  headerRow.forEach((cell, idx) => {
+    const h = norm(cell);
+    if (!h) return;
+    for (const field in IMPORT_ALIASES) {
+      if (IMPORT_ALIASES[field].some(a => norm(a) === h)) { map[field] = idx; break; }
+    }
+  });
+  return map;
+}
+
+// Normalise a date cell (Excel serial, Date, or dd/mm/yyyy string) → yyyy-mm-dd
+function normImportDate(v) {
+  if (v == null || v === '') return '';
+  // SheetJS with cellDates:true gives JS Date objects
+  if (v instanceof Date && !isNaN(v)) {
+    const y = v.getFullYear(), m = pad(v.getMonth() + 1), d = pad(v.getDate());
+    return `${y}-${m}-${d}`;
+  }
+  const s = String(v).trim();
+  // yyyy-mm-dd already
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  // dd/mm/yyyy or dd.mm.yyyy or dd-mm-yyyy
+  m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/);
+  if (m) {
+    let yr = m[3]; if (yr.length === 2) yr = '20' + yr;
+    return `${yr}-${pad(+m[2])}-${pad(+m[1])}`;
+  }
+  return ''; // unrecognised → row will be skipped
+}
+
+// Normalise a duration cell → "H:MM". Accepts "1:30", "1.5" (hours),
+// Excel time fractions (0.0625 = 1:30 of a day → handled as hours*24? no),
+// or plain numbers treated as hours.
+function normImportDur(v) {
+  if (v == null || v === '') return '0:00';
+  if (v instanceof Date && !isNaN(v)) {
+    return v.getHours() + ':' + pad(v.getMinutes());
+  }
+  const s = String(v).trim();
+  if (s.includes(':')) {
+    const [h, mm] = s.split(':');
+    return (parseInt(h, 10) || 0) + ':' + pad(parseInt(mm, 10) || 0);
+  }
+  // decimal hours e.g. "1.5" → 1:30
+  const f = parseFloat(s);
+  if (!isNaN(f)) {
+    const h = Math.floor(f);
+    const mm = Math.round((f - h) * 60);
+    return h + ':' + pad(mm);
+  }
+  return '0:00';
+}
+
+// Yes/no cell → 'כן' / 'לא'
+function normImportBool(v) {
+  const s = String(v == null ? '' : v).trim().toLowerCase();
+  if (['כן','yes','y','true','1','x','v','✓'].includes(s)) return 'כן';
+  return 'לא';
+}
+
+function handleImportFile(evt) {
+  const file = evt.target.files && evt.target.files[0];
+  el('importResultMsg').style.display = 'none';
+  if (!file) return;
+
+  if (typeof XLSX === 'undefined') {
+    showImportResult('שגיאה: ספריית הקריאה לא נטענה. בדוק חיבור אינטרנט ונסה שוב.', false);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb    = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws    = wb.Sheets[wb.SheetNames[0]];
+      const aoa   = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: true });
+      parseImportRows(aoa);
+    } catch (err) {
+      showImportResult('שגיאה בקריאת הקובץ: ' + err.message, false);
+    }
+  };
+  reader.onerror = function() { showImportResult('שגיאה בקריאת הקובץ.', false); };
+  reader.readAsArrayBuffer(file);
+
+  // reset the input so re-selecting the same file re-triggers change
+  evt.target.value = '';
+}
+
+function parseImportRows(aoa) {
+  _importValidRows = [];
+  let skipped = 0;
+  const skipReasons = {};
+
+  if (!aoa || aoa.length < 2) {
+    showImportResult('הקובץ ריק או ללא שורות נתונים.', false);
+    el('importPreview').style.display = 'none';
+    return;
+  }
+
+  const colMap = buildImportColMap(aoa[0]);
+  // Need at least a date column to make sense of anything
+  if (colMap.date == null) {
+    showImportResult('לא נמצאה עמודת תאריך בקובץ. ודא שהכותרות תקינות.', false);
+    el('importPreview').style.display = 'none';
+    return;
+  }
+
+  const get = (row, field) => (colMap[field] != null ? row[colMap[field]] : '');
+
+  for (let i = 1; i < aoa.length; i++) {
+    const row = aoa[i];
+    if (!row || row.every(c => c === '' || c == null)) continue; // blank line
+
+    const date = normImportDate(get(row, 'date'));
+    const pic  = normImportDur(get(row, 'pic'));
+    const dual = normImportDur(get(row, 'dual'));
+    let   total = normImportDur(get(row, 'total'));
+    const totMin = parseHM(pic) + parseHM(dual);
+    // If total missing/zero but pic+dual present, derive it
+    if (parseHM(total) === 0 && totMin > 0) total = toHM(totMin);
+
+    const aircraft = String(get(row, 'aircraft') || '').trim();
+    const acType   = String(get(row, 'acType')   || '').trim();
+
+    // Lenient validation — skip rows missing essentials
+    if (!date)                 { skipped++; skipReasons['תאריך חסר/שגוי'] = (skipReasons['תאריך חסר/שגוי']||0)+1; continue; }
+    if (parseHM(total) === 0 && totMin === 0) { skipped++; skipReasons['ללא משך טיסה'] = (skipReasons['ללא משך טיסה']||0)+1; continue; }
+
+    _importValidRows.push({
+      date:        date,
+      aircraft:    aircraft,
+      acType:      acType,
+      pic:         pic,
+      dual:        dual,
+      total:       total,
+      night:       normImportBool(get(row, 'night')),
+      xc:          normImportBool(get(row, 'xc')),
+      levelCheck:  normImportBool(get(row, 'levelCheck')),
+      landings:    parseInt(String(get(row, 'landings') || '0').replace(/[^\d]/g,''), 10) || 0,
+      description: String(get(row, 'description') || '').trim(),
+      lessons:     String(get(row, 'lessons') || '').trim(),
+    });
+  }
+
+  if (!_importValidRows.length) {
+    showImportResult('לא נמצאו טיסות תקינות בקובץ.', false);
+    el('importPreview').style.display = 'none';
+    return;
+  }
+
+  renderImportPreview(_importValidRows, skipped, skipReasons);
+}
+
+function renderImportPreview(rows, skipped, skipReasons) {
+  // Aggregate stats
+  const dates = rows.map(r => r.date).filter(Boolean).sort();
+  const from  = dates[0], to = dates[dates.length - 1];
+
+  let totMin = 0, picMin = 0, xcMin = 0, lastLevel = '';
+  rows.forEach(r => {
+    const t = parseHM(r.total) || (parseHM(r.pic) + parseHM(r.dual));
+    totMin += t;
+    picMin += parseHM(r.pic);
+    if (r.xc === 'כן') xcMin += t;
+    if (r.levelCheck === 'כן' && r.date > lastLevel) lastLevel = r.date;
+  });
+
+  const fmtD = iso => {
+    if (!iso) return '—';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  };
+
+  const lines = [
+    `נמצאו <b>${rows.length}</b> טיסות תקינות`,
+    `תקופה: <b>${fmtD(from)}</b> – <b>${fmtD(to)}</b>`,
+    `סה"כ שעות טיסה: <b>${toHM(totMin)}</b>`,
+    `סה"כ PIC: <b>${toHM(picMin)}</b>`,
+    `סה"כ ניווט (XC): <b>${toHM(xcMin)}</b>`,
+    `טיסה אחרונה: <b>${fmtD(to)}</b>`,
+    `מבחן רמה אחרון: <b>${lastLevel ? fmtD(lastLevel) : '-'}</b>`,
+  ];
+  el('importSummary').innerHTML = lines.join('<br>');
+
+  const skipEl = el('importSkipped');
+  if (skipped > 0) {
+    const reasons = Object.entries(skipReasons).map(([k,v]) => `${k} (${v})`).join(', ');
+    skipEl.innerHTML = `⏭️ דולגו ${skipped} שורות: ${reasons}`;
+    skipEl.style.display = 'block';
+  } else {
+    skipEl.style.display = 'none';
+  }
+
+  el('importResultMsg').style.display = 'none';
+  el('importPreview').style.display = 'block';
+}
+
+async function confirmImport() {
+  if (!_importValidRows.length) return;
+
+  if (!getSheetId()) {
+    showImportResult('אינך מחובר לגיליון. חבר קודם ב"חיבור ל-Google Sheets".', false);
+    return;
+  }
+
+  const btn = el('importConfirmBtn');
+  btn.disabled = true;
+  el('importConfirmLabel').style.display   = 'none';
+  el('importConfirmSpinner').style.display = 'inline';
+
+  try {
+    const text = await smartPost({ action: 'bulkImport', rows: _importValidRows });
+    let ok = false, written = _importValidRows.length;
+    try {
+      const j = JSON.parse(text);
+      ok = (j.status === 'success');
+      if (typeof j.written === 'number') written = j.written;
+    } catch(e) { ok = /success/.test(text); }
+
+    if (ok) {
+      showImportResult(`✓ יובאו ${written} טיסות בהצלחה`, true);
+      el('importPreview').style.display = 'none';
+      _importValidRows = [];
+      reportEvent('flights_imported', { count: written });
+      // Force a fresh reload of flight data next time tabs are opened
+      allRows = []; journalRows = []; _journalLoading = false;
+      try { localStorage.removeItem(LS_CACHE_ROWS); } catch(e) {}
+    } else {
+      showImportResult('הייבוא נכשל. נסה שוב או בדוק את החיבור.', false);
+    }
+  } catch (err) {
+    showImportResult('שגיאה בייבוא: ' + err.message, false);
+  } finally {
+    btn.disabled = false;
+    el('importConfirmLabel').style.display   = 'inline';
+    el('importConfirmSpinner').style.display = 'none';
+  }
+}
+
+function showImportResult(msg, ok) {
+  const m = el('importResultMsg');
+  m.textContent = msg;
+  m.style.color = ok ? 'var(--emerald)' : '#ef4444';
+  m.style.display = 'block';
 }
 
 function populateSettingsAcDropdowns() {
@@ -6066,7 +6426,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
-    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.019 · built by eligrt</div>
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.022 · built by eligrt</div>
   </div>
 </div>
 
@@ -6133,7 +6493,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.019</span>
+      <span dir="ltr">v2.34.022</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
