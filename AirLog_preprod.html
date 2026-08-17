@@ -2882,7 +2882,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.022 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.024 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
 </div>
 
@@ -3020,7 +3020,20 @@ async function smartPost(payload) {
 
 function getSheetId() { return localStorage.getItem(LS_SHEET_ID) || ''; }
 function saveCreds(sheetId) {
-  localStorage.setItem(LS_SHEET_ID, sheetId.trim());
+  const clean = sheetId.trim();
+  const prev  = localStorage.getItem(LS_SHEET_ID) || '';
+  // If switching to a DIFFERENT sheet, purge locally-cached data from the old
+  // sheet so tabs don't show stale flights. This only clears the local cache /
+  // in-memory copies — it never touches the Google Sheet itself.
+  if (prev && prev !== clean) {
+    try { localStorage.removeItem(LS_CACHE_ROWS); } catch(e) {}
+    try { localStorage.removeItem(LS_CACHE_TS); } catch(e) {}
+    allRows = [];
+    journalRows = [];
+    _journalLoading = false;
+    window._adminSheetName = '';
+  }
+  localStorage.setItem(LS_SHEET_ID, clean);
 }
 // getUrl(): connected ⇒ master URL, else '' (keeps all call-site checks intact)
 function getUrl()  { return getSheetId() ? MASTER_GAS_URL : ''; }
@@ -3112,7 +3125,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.022',
+      appVersion:   'v2.34.024',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3168,9 +3181,16 @@ function gotoPane(n) {
   const backBtn = el('suBackBtn');
   if (backBtn) backBtn.style.display = n === 2 ? 'block' : 'none';
   if (n === 2) {
-    // Try to auto-fill the link from clipboard (best-effort; ignored on failure/iOS)
-    tryAutofillLink();
-    setTimeout(() => { const i = el('setupUrl'); if (i) i.focus(); }, 60);
+    // Field stays empty — user pastes their link manually (no clipboard autofill).
+    // Focus the field, then scroll it into view so the mobile keyboard
+    // doesn't cover the input / popup.
+    setTimeout(() => {
+      const i = el('setupUrl');
+      if (i) {
+        i.focus();
+        try { i.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e) {}
+      }
+    }, 60);
   }
 }
 
@@ -3201,17 +3221,6 @@ function createAndShare() {
     } catch (e) { /* ignore */ }
     copied();
   }
-}
-
-// Best-effort: if the clipboard holds a Google Sheets link, pre-fill the paste field
-async function tryAutofillLink() {
-  const input = el('setupUrl');
-  if (!input || input.value.trim()) return;
-  try {
-    if (!navigator.clipboard || !navigator.clipboard.readText) return;
-    const txt = await navigator.clipboard.readText();
-    if (txt && parseSheetId(txt)) input.value = txt.trim();
-  } catch (e) { /* clipboard blocked — user pastes manually */ }
 }
 
 function closeSetup() {
@@ -3336,7 +3345,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.022',
+        'App Ver:    v2.34.024',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -6426,7 +6435,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
-    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.022 · built by eligrt</div>
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.024 · built by eligrt</div>
   </div>
 </div>
 
@@ -6493,7 +6502,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.022</span>
+      <span dir="ltr">v2.34.024</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
