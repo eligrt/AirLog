@@ -246,6 +246,19 @@ body::before {
   color: var(--emerald); font-weight: 700; font-size: 14px;
 }
 .su-skip { font-size: 13px; color: var(--text2); text-align: center; margin-top: 18px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border2); -webkit-tap-highlight-color: transparent; }
+.su-help { text-align: center; margin-bottom: 14px; font-size: 12px; color: var(--text3); line-height: 1.6; }
+.su-help span { display: block; }
+.su-help-link {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;
+  color: var(--accent2); font-weight: 600; text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.su-help-link::before {
+  content: ""; width: 14px; height: 14px; flex-shrink: 0;
+  background: var(--accent2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat;
+}
 .setup-title {
   font-size: 18px;
   font-weight: 700;
@@ -2829,7 +2842,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 </div><!-- /page -->
 
-<div class="app-footer" dir="ltr">AirLog · v2.34.012<span id="footerStamp"></span> · built by eligrt</div>
+<div class="app-footer" dir="ltr">AirLog · v2.34.013<span id="footerStamp"></span> · built by eligrt</div>
 
 <!-- ── GAS INFO MODAL ── -->
 <div id="gasInfoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
@@ -3097,7 +3110,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.012',
+      appVersion:   'v2.34.013',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3314,7 +3327,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.012',
+        'App Ver:    v2.34.013',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -6095,7 +6108,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
-    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.012 · built by eligrt</div>
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.013 · built by eligrt</div>
   </div>
 </div>
 
@@ -6141,7 +6154,13 @@ function createNewSheet() {
 
       <input type="text" class="setup-input" id="setupUrl"
              placeholder="הדבק כאן את קישור ה-AirLog Sheet שלך"
-             dir="ltr" autocomplete="off" spellcheck="false" style="margin-bottom:12px;">
+             dir="ltr" autocomplete="off" spellcheck="false" style="margin-bottom:10px;">
+
+      <!-- find-the-sheet helper -->
+      <div class="su-help">
+        <span>הגיליון שיצרת מחכה ב-Google Drive שלך.</span>
+        <a href="https://drive.google.com/drive/recent" target="_blank" rel="noopener" class="su-help-link">פתח את Google Drive</a>
+      </div>
 
       <!-- validation checks -->
       <div id="setupChecks" style="display:none;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
