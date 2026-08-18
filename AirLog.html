@@ -210,7 +210,70 @@ body::before {
   padding: 28px 24px;
   max-width: 420px;
   width: 100%;
+  position: relative;
   box-shadow: 0 24px 60px #0008, 0 0 0 1px #3b82f620;
+}
+.su-brand {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: .02em;
+  padding-top: 4px;
+}
+.su-prog { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 14px 0 22px; }
+.su-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: .3s; }
+.su-dot.on { background: var(--cyan); width: 22px; border-radius: 4px; }
+.su-dot.done { background: var(--emerald); }
+.su-kick { font-family: var(--mono); font-size: 11px; letter-spacing: .2em; color: var(--text3); text-transform: uppercase; text-align: center; margin-bottom: 20px; }
+.su-title { font-size: 25px; font-weight: 700; color: var(--text); text-align: center; letter-spacing: -.015em; line-height: 1.25; margin: 0 0 18px; }
+.su-title .en, .su-lead .en { font-weight: 600; }
+.su-lead {
+  font-size: 14px; color: var(--text2); text-align: center; line-height: 1.7;
+  margin: 0 auto 24px; max-width: 300px;
+}
+.su-email {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 13.5px; color: var(--emerald);
+  border-bottom: 1px dashed rgba(52,211,153,.5); padding-bottom: 1px;
+  cursor: pointer; direction: ltr; white-space: nowrap; vertical-align: baseline;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+.su-email:active { color: var(--cyan); }
+.su-email.copied { color: var(--emerald); border-bottom-color: var(--emerald); }
+.su-email.copied .cp { color: var(--emerald); font-weight: 700; }
+.su-email .cp { display: inline-flex; }
+.su-toast {
+  margin-top: 14px; padding: 11px; border-radius: 11px; text-align: center;
+  background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.4);
+  color: var(--emerald); font-weight: 700; font-size: 14px;
+}
+.su-skip { font-size: 13px; color: var(--text2); text-align: center; margin-top: 18px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border2); -webkit-tap-highlight-color: transparent; }
+.su-ver {
+  position: relative;
+  margin-top: 20px; text-align: center;
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: .05em; color: var(--text3);
+}
+.su-ver-refresh {
+  position: absolute; top: 50%; left: 0; transform: translateY(-50%);
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  color: var(--accent2); cursor: pointer; letter-spacing: 0;
+  border-bottom: 1px dashed rgba(96,165,250,.5); padding-bottom: 1px;
+  -webkit-tap-highlight-color: transparent;
+}
+.su-ver-refresh:active { color: var(--cyan); }
+.su-help { text-align: center; margin-bottom: 14px; font-size: 12px; color: var(--text3); line-height: 1.6; }
+.su-help span { display: block; }
+.su-help-link {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;
+  color: var(--accent2); font-weight: 600; text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.su-help-link::before {
+  content: ""; width: 14px; height: 14px; flex-shrink: 0;
+  background: var(--accent2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z' fill='black'/%3E%3C/svg%3E") center/contain no-repeat;
 }
 .setup-title {
   font-size: 18px;
@@ -350,6 +413,8 @@ body::before {
 /* state: fresh */
 .tab.tab-fresh .tab-dot       { display: inline-block; background: var(--emerald, #34d399); }
 .tab.tab-fresh .tab-status-lbl { display: block; color: var(--emerald, #34d399); }
+/* state: pending — queued, not fetching yet (dim static dot, no spin) */
+.tab.tab-pending .tab-dot     { display: inline-block; background: var(--text3, #6b7280); }
 /* hide status label by default */
 .tab-status-lbl { display: none; }
 
@@ -1820,14 +1885,17 @@ tbody td:first-child { color: var(--text); font-weight: 600; font-family: var(--
 textarea { resize: none; overflow: hidden; min-height: 56px; }
 
 .app-footer {
-  text-align: center; font-size: 9px;
-  padding: 10px; letter-spacing: .1em;
+  text-align: center;
+  padding: 8px 10px; letter-spacing: .1em;
   font-family: var(--mono); text-transform: uppercase;
   color: var(--text3);
   flex-shrink: 0;
   background: var(--bg);
   border-top: 1px solid var(--border2);
 }
+.app-footer .af-main { font-size: 11px; }
+.app-footer .af-stamp { font-size: 9.5px; color: var(--text3); opacity: .75; margin-top: 3px; }
+.app-footer .af-stamp:empty { display: none; }
 
 @media (max-width: 380px) {
   .grid2 { grid-template-columns: 1fr; }
@@ -2150,12 +2218,23 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 .set-row.danger .set-row-title { color: #ef4444; }
 .set-row.danger .set-row-sub   { color: rgba(239,68,68,0.6); }
 .set-expand {
-  display: none; flex-direction: column; gap: 10px;
-  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 0 16px;
   background: var(--bg1);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-bottom: 0 solid var(--border);
+  transition: max-height .28s ease, opacity .22s ease,
+              padding .28s ease, border-bottom-width .28s ease;
 }
-.set-expand:last-child { border-bottom: none; }
-.set-expand.open { display: flex; }
+.set-expand.open {
+  max-height: 600px;
+  opacity: 1;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.set-expand:last-child.open { border-bottom: none; }
 .set-expand-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
 .set-expand-desc b { color: var(--text); font-weight: 600; }
 .set-field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -2233,6 +2312,9 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 }
 
 </style>
+
+<!-- SheetJS (xlsx) — used by Settings → import flights from XLSX -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 </head>
 <body>
@@ -2672,30 +2754,6 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   <!-- ══════════ SETTINGS VIEW ══════════ -->
   <div class="view" id="view-settings">
 
-    <!-- ── SETUP RETURN BANNER (shown after returning from GAS setup) ── -->
-    <div id="setupReturnBanner" style="display:none;margin-bottom:14px;background:linear-gradient(135deg,#0d2a1a,#0a2218);border:1.5px solid rgba(52,211,153,.3);border-radius:12px;padding:16px 14px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div style="font-size:22px;">✈️</div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:var(--emerald);">הגיליון שלך מוכן!</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:2px;">לחץ כדי לחבר אותו לאפליקציה</div>
-        </div>
-      </div>
-      <button onclick="setupReturnConnect()" id="setupReturnBtn"
-        style="width:100%;padding:13px;background:linear-gradient(135deg,#059669,#34d399);border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;">
-        חבר את הגיליון ←
-      </button>
-      <div id="setupReturnPasteFallback" style="display:none;margin-top:10px;">
-        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-align:center;">לא הצלחנו לקרוא את הלוח — הדבק את הכתובת ידנית:</div>
-        <input type="text" id="setupReturnPasteInput" dir="ltr"
-          placeholder="📋 הדבק כאן..."
-          style="width:100%;background:var(--raised);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:11px;padding:10px 12px;outline:none;"
-          oninput="setupReturnOnPaste(this.value)">
-      </div>
-      <div id="setupReturnMsg" style="display:none;margin-top:10px;font-size:13px;font-weight:700;text-align:center;color:var(--emerald);">✓ מחובר בהצלחה!</div>
-      <div id="setupReturnErr" style="display:none;margin-top:10px;font-size:12px;text-align:center;color:var(--red);">לא הצלחנו להתחבר — בדוק שהכתובת נכונה</div>
-    </div>
-
     <!-- ── MAIN SETTINGS ── -->
     <div style="margin-bottom:6px;" class="set-section-title">הגדרות</div>
     <div class="set-group" style="margin-bottom:14px;">
@@ -2748,14 +2806,46 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
         <div class="set-row-right"><span class="set-row-arrow">▶</span></div>
       </div>
       <div class="set-expand" id="setExpandGas">
-        <!-- Current URL (only when connected) -->
+        <!-- Current sheet link (only when connected) -->
         <div id="gasConnectedState" style="display:none;">
-          <div class="set-expand-desc">כתובת ה-Apps Script המחוברת כרגע:</div>
+          <div class="set-expand-desc">שם הגיליון המחובר:</div>
+          <div id="currentNameDisplay" style="font-size:13px;font-weight:600;color:var(--emerald);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:8px;word-break:break-word;">...</div>
+          <div class="set-expand-desc">קישור הגיליון:</div>
           <div id="currentUrlDisplay" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:10px 12px;direction:ltr;word-break:break-all;line-height:1.6;min-height:38px;margin-bottom:8px;"></div>
         </div>
-        <!-- Always visible options -->
-        <button class="settings-action-btn secondary" onclick="openSetup()" style="margin-bottom:8px;">🔗 חיבור / שינוי גיליון</button>
-        <button onclick="showGasInfo()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-align:center;padding:4px;width:100%;">מה זה Apps Script? ›</button>
+        <!-- Connect / change sheet -->
+        <button class="settings-action-btn secondary" onclick="openSetupFromSettings()" style="margin-bottom:8px;">🔗 חבר / שנה AirLog Sheet</button>
+      </div>
+
+      <!-- Import flights row -->
+      <div class="set-row" onclick="toggleSetRow('setExpandImport', this)">
+        <div class="set-row-left">
+          <div class="set-row-icon amber">📥</div>
+          <div>
+            <div class="set-row-title">ייבוא טיסות מאקסל</div>
+            <div class="set-row-sub">העלה קובץ XLSX מוכן</div>
+          </div>
+        </div>
+        <div class="set-row-right"><span class="set-row-arrow">▶</span></div>
+      </div>
+      <div class="set-expand" id="setExpandImport">
+        <div class="set-expand-desc">בחר קובץ <b>XLSX</b> מובנה (בעמודות המתאימות). האפליקציה תציג סיכום לפני שמירה - <b>שום דבר לא נכתב עד שתאשר</b>.</div>
+
+        <input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none;" onchange="handleImportFile(event)">
+        <button class="settings-action-btn secondary" id="importPickBtn" onclick="el('importFileInput').click()">📂 בחר קובץ XLSX</button>
+
+        <!-- Preview / summary card (hidden until a file is parsed) -->
+        <div id="importPreview" style="display:none;margin-top:10px;background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+          <div id="importSummary" style="font-size:12px;color:var(--text2);line-height:1.9;"></div>
+          <div id="importSkipped" style="display:none;font-size:11px;color:var(--amber);margin-top:6px;"></div>
+          <div id="importDupWarn" style="font-size:11px;color:var(--amber);margin-top:8px;line-height:1.5;">⚠️ ייבוא חוזר של אותו קובץ יוסיף שורות כפולות.</div>
+          <button class="settings-action-btn" id="importConfirmBtn" onclick="confirmImport()" style="margin-top:10px;">
+            <span id="importConfirmLabel">✓ ייבא טיסות</span>
+            <span id="importConfirmSpinner" style="display:none;">⏳ מייבא...</span>
+          </button>
+        </div>
+
+        <div id="importResultMsg" style="display:none;font-size:12px;text-align:center;font-weight:600;margin-top:8px;"></div>
       </div>
 
       <!-- Install row — direct action (no expand) -->
@@ -2789,89 +2879,13 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 
     </div>
 
-    <!-- ── MAINTENANCE ── -->
-    <div style="margin-bottom:6px;" class="set-section-title">תחזוקה</div>
-    <div class="set-group danger-group">
-
-      <!-- Clear RAM row -->
-      <div class="set-row" onclick="toggleSetRow('setExpandRam', this)">
-        <div class="set-row-left">
-          <div class="set-row-icon amber">🧹</div>
-          <div>
-            <div class="set-row-title">ניקוי זיכרון זמני</div>
-            <div class="set-row-sub">מאלץ טעינה מחדש</div>
-          </div>
-        </div>
-        <div class="set-row-right"><span class="set-row-arrow">▶</span></div>
-      </div>
-      <div class="set-expand" id="setExpandRam">
-        <div class="set-expand-desc">הנתונים נטענים מ-Google Sheets ונשמרים זמנית בזיכרון המכשיר (RAM).<br>ניקוי הזיכרון <b style="color:var(--emerald)">לא מוחק</b> שום דבר מה-Google Sheets, רק מאלץ טעינה מחדש בפעם הבאה.</div>
-        <button class="settings-action-btn" onclick="clearRAM()">🧹 נקה נתונים מהזיכרון</button>
-        <div id="ramClearedMsg" style="display:none;font-size:12px;color:var(--emerald);text-align:center;font-weight:600;">✓ הזיכרון נוקה בהצלחה</div>
-      </div>
-
-      <!-- Disconnect row -->
-      <div class="set-row danger" onclick="toggleSetRow('setExpandDisc', this)">
-        <div class="set-row-left">
-          <div class="set-row-icon red">🔌</div>
-          <div>
-            <div class="set-row-title">ניתוק</div>
-            <div class="set-row-sub">מסיר את כתובת ה-Script</div>
-          </div>
-        </div>
-        <div class="set-row-right"><span class="set-row-arrow" style="color:#ef4444">▶</span></div>
-      </div>
-      <div class="set-expand" id="setExpandDisc">
-        <div class="set-expand-desc">ניתוק מסיר את כתובת ה-Apps Script מהמכשיר ומנקה את הזיכרון.<br><b style="color:var(--amber)">הנתונים ב-Google Sheets נשארים שלמים לחלוטין.</b></div>
-        <button class="settings-action-btn danger" onclick="disconnectApp()">🔌 נתק והסר כתובת</button>
-      </div>
-
-    </div>
-
   </div><!-- /view-settings -->
 
 </div><!-- /page -->
 
-<div class="app-footer" dir="ltr">AirLog · v2.33.015<span id="footerStamp"></span> · built by eligrt</div>
-
-<!-- ── GAS INFO MODAL ── -->
-<div id="gasInfoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
-  align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
-  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;
-    padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px #000a;direction:rtl;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-size:16px;font-weight:700;color:var(--text);">🔗 מה זה Apps Script ואיך מתחילים?</div>
-      <button onclick="closeGasInfo()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;">×</button>
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.7;display:flex;flex-direction:column;gap:14px;">
-      <div style="font-size:12px;color:var(--text2);">
-        ה-Apps Script הוא ה״גשר״ שמחבר את AirLog לגיליון Google Sheets האישי שלך.
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent2);background:var(--raised);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:1px;">1</div>
-          <div><strong style="color:var(--text);">קבל את התבנית</strong><br>
-          <span style="font-size:12px;color:var(--text2);">פנה למפתח AirLog וקבל קישור ל-Google Sheets Template, פתח אותה וצור לך עותק אישי.</span></div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent2);background:var(--raised);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:1px;">2</div>
-          <div><strong style="color:var(--text);">הפעל את ה-Script</strong><br>
-          <span style="font-size:12px;color:var(--text2);">בגיליון שלך (העותק החדש שיצרת), תחת תפריט Extensions בצע Apps Script → Deploy. בסיום תקבל כתובת URL ייחודית שמזהה את הגיליון שלך.</span></div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent2);background:var(--raised);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:1px;">3</div>
-          <div><strong style="color:var(--text);">חבר את AirLog</strong><br>
-          <span style="font-size:12px;color:var(--text2);">העתק את כתובת ה-Apps Script שקיבלת והדבק אותה בתפריט ״חיבור ל-Google Sheets״ הנמצא בלשונית ״הגדרות״ של AirLog.</span></div>
-        </div>
-      </div>
-      <div style="font-size:13px;font-weight:600;color:var(--emerald);text-align:center;padding:4px 0;">
-        זהו! מרגע זה AirLog מחובר לגיליון שלך ומוכן לטיסה <span style="display:inline-block;transform:scaleX(-1);">✈</span>
-      </div>
-      <div style="font-size:11px;color:var(--text3);background:var(--raised);border-radius:6px;padding:8px 10px;">
-        🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.
-      </div>
-    </div>
-  </div>
+<div class="app-footer" dir="ltr">
+  <div class="af-main">AirLog · v2.34.030 · built by eligrt</div>
+  <div class="af-stamp" id="footerStamp"></div>
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
@@ -2886,16 +2900,22 @@ const toHM = m => `${Math.floor(m/60)}:${pad(m%60)}`;
 // ═══════════════════════════════════════════
 //  SETUP / URL MANAGEMENT
 // ═══════════════════════════════════════════
-const LS_KEY        = 'flight_log_gas_url';
+const LS_KEY        = 'flight_log_gas_url';   // legacy (pre-v2.34) — unused, kept for rollback
+const LS_SHEET_ID   = 'airlog_sheet_id';
 const LS_CACHE_ROWS = 'airlog_cache_rows';
 const LS_CACHE_TS   = 'airlog_cache_ts';
+
+// ── MASTER GAS (central multi-tenant backend, v2.34+) ──
+const MASTER_GAS_URL    = 'https://script.google.com/macros/s/AKfycbxbY-7egWr0Xyn4W9A_PfLNiXIrzmitqXOiE443xG2GlUJZWJmvdxKFRDtiEZLkNDWMgw/exec';
+const AIRLOG_EMAIL      = 'airlogsync@gmail.com';
+const TEMPLATE_COPY_URL = 'https://docs.google.com/spreadsheets/d/1KUTmYeUzlhQZBpdxtaaGfBr_i55SqZxumgAQo3Qs3MM/copy';
 
 // ── Tab loading state helpers ──
 // state: 'loading' | 'fresh' | 'idle'
 function setTabState(tabId, state, labelText) {
   const tab = el('tab-' + tabId);
   if (!tab) return;
-  tab.classList.remove('tab-loading', 'tab-fresh');
+  tab.classList.remove('tab-loading', 'tab-fresh', 'tab-pending');
   const lbl = el('tab-' + tabId + '-lbl');
   if (state === 'loading') {
     tab.classList.add('tab-loading');
@@ -2903,6 +2923,9 @@ function setTabState(tabId, state, labelText) {
   } else if (state === 'fresh') {
     tab.classList.add('tab-fresh');
     if (lbl) lbl.textContent = 'עודכן';
+  } else if (state === 'pending') {
+    tab.classList.add('tab-pending');
+    if (lbl) lbl.textContent = '';
   }
 }
 
@@ -2957,13 +2980,44 @@ function loadLeanCache() {
   } catch(e) { return null; }
 }
 
+// ── Save / load full (journal) rows cache — includes description+lessons ──
+const LS_CACHE_JOURNAL    = 'airlog_cache_journal';
+const LS_CACHE_JOURNAL_TS = 'airlog_cache_journal_ts';
+function saveJournalCache(rows) {
+  try {
+    localStorage.setItem(LS_CACHE_JOURNAL,    JSON.stringify(rows));
+    localStorage.setItem(LS_CACHE_JOURNAL_TS, Date.now().toString());
+  } catch(e) { /* storage full or private mode */ }
+}
+function loadJournalCache() {
+  try {
+    const raw = localStorage.getItem(LS_CACHE_JOURNAL);
+    if (!raw) return null;
+    return { rows: JSON.parse(raw), ts: parseInt(localStorage.getItem(LS_CACHE_JOURNAL_TS) || '0', 10) };
+  } catch(e) { return null; }
+}
+function clearJournalCache() {
+  try { localStorage.removeItem(LS_CACHE_JOURNAL); } catch(e) {}
+  try { localStorage.removeItem(LS_CACHE_JOURNAL_TS); } catch(e) {}
+}
+
 // ── CLOUDFLARE PROXY — iOS WebKit CORS bypass ────────────────────
 const CF_PROXY = 'https://airlog-proxy.eligrt.workers.dev/';
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+// Appends sheetId+token to master-GAS requests (no-op for other URLs)
+function withAuth(url) {
+  if (!url.startsWith(MASTER_GAS_URL)) return url;
+  const sid = getSheetId();
+  if (!sid) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return url + sep + 'sheetId=' + encodeURIComponent(sid);
+}
+
 async function smartFetch(url) {
+  url = withAuth(url);
   if (isIOS) {
     const qIdx   = url.indexOf('?');
     const base   = qIdx >= 0 ? url.slice(0, qIdx) : url;
@@ -2978,8 +3032,48 @@ async function smartFetch(url) {
   return res.json();
 }
 
-function getUrl()  { return localStorage.getItem(LS_KEY) || ''; }
-function saveUrl(u){ localStorage.setItem(LS_KEY, u.trim()); }
+// POST to master GAS with credentials injected (iOS via proxy)
+async function smartPost(payload) {
+  const body = JSON.stringify({ ...payload, sheetId: getSheetId() });
+  if (isIOS) {
+    const res = await fetch(CF_PROXY + '?gasUrl=' + encodeURIComponent(MASTER_GAS_URL),
+                            { method: 'POST', body });
+    return res.text();
+  }
+  const res = await fetch(MASTER_GAS_URL, { method: 'POST', body });
+  return res.text();
+}
+
+function getSheetId() { return localStorage.getItem(LS_SHEET_ID) || ''; }
+function saveCreds(sheetId) {
+  const clean = sheetId.trim();
+  const prev  = localStorage.getItem(LS_SHEET_ID) || '';
+  // If switching to a DIFFERENT sheet, purge locally-cached data from the old
+  // sheet so tabs don't show stale flights. This only clears the local cache /
+  // in-memory copies — it never touches the Google Sheet itself.
+  if (prev && prev !== clean) {
+    try { localStorage.removeItem(LS_CACHE_ROWS); } catch(e) {}
+    try { localStorage.removeItem(LS_CACHE_TS); } catch(e) {}
+    clearJournalCache();
+    allRows = [];
+    journalRows = [];
+    _journalLoading = false;
+    window._adminSheetName = '';
+  }
+  localStorage.setItem(LS_SHEET_ID, clean);
+}
+// getUrl(): connected ⇒ master URL, else '' (keeps all call-site checks intact)
+function getUrl()  { return getSheetId() ? MASTER_GAS_URL : ''; }
+function saveUrl(u){ localStorage.setItem(LS_KEY, u.trim()); } // legacy, unused
+
+// Extracts a spreadsheet ID from a pasted sheet link (or accepts a bare ID)
+function parseSheetId(raw) {
+  const s = String(raw || '').trim();
+  const m = s.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]{20,})/);
+  if (m) return m[1];
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return s;
+  return '';
+}
 
 // ═══════════════════════════════════════════
 //  ADMIN REPORTING
@@ -3048,17 +3142,17 @@ function getExtendedInfo() {
 async function reportEvent(event, extraData = {}) {
   if (!ADMIN_GAS_URL) return;
   try {
-    const gasUrl = getUrl();
+    const sid = getSheetId();
     const { device, os } = getDeviceInfo();
     const { browser, screenRes, isPWA, network } = getExtendedInfo();
-    const userId = gasUrl ? await hashString(gasUrl) : 'unknown';
+    const userId = sid ? await hashString(sid) : 'unknown';
     const payload = {
       event,
       sheetName:    extraData.sheetName    || '',
       userId,
       device,
       os,
-      appVersion:   'v2.33.015',
+      appVersion:   'v2.34.030',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3075,12 +3169,13 @@ async function reportEvent(event, extraData = {}) {
 }
 
 
-function openSetup() {
+function openSetup(forcePane) {
   el('setupUrl').value = '';
-  el('setupUrl').placeholder = '📋 הדבק כאן...';
+  el('setupUrl').placeholder = 'הדבק כאן את קישור ה-AirLog Sheet שלך';
   el('setupUrl').classList.remove('err');
   el('setupChecks').style.display = 'none';
   el('setupErrMsg').style.display = 'none';
+  const tst = el('suToast'); if (tst) tst.style.display = 'none';
   const btn = el('setupSaveBtn');
   if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
   // Show iOS warning if on iOS device
@@ -3090,20 +3185,141 @@ function openSetup() {
   if (iosWarn) iosWarn.style.display = isIOS ? 'block' : 'none';
   // Show close button only if already connected (not first-time setup)
   const closeBtn = el('setupCloseBtn');
-  if (closeBtn) closeBtn.style.display = getUrl() ? 'block' : 'none';
+  const connected = !!getUrl();
+  if (closeBtn) closeBtn.style.display = connected ? 'block' : 'none';
+  // Default: connected users jump to pane 2 (re-paste). forcePane overrides.
+  const target = forcePane || (connected ? 2 : 1);
+  gotoPane(target);
   el('setupOverlay').classList.add('show');
+}
+
+// From Settings "change sheet": always start at pane 1 so the user can
+// create a fresh sheet OR use "already have one" to paste a different link.
+function openSetupFromSettings() {
+  openSetup(1);
+}
+
+// Returning user tapped "I already have a sheet". They need to grab the
+// existing link, so open Drive recent for them (within the click gesture so
+// the popup is allowed), then advance to the paste pane.
+function haveSheetSkip() {
+  window.open('https://drive.google.com/drive/recent', '_blank', 'noopener');
+  gotoPane(2);
+}
+
+// Switch between the two onboarding panes
+function gotoPane(n) {
+  el('setupPane1').style.display = n === 1 ? 'block' : 'none';
+  el('setupPane2').style.display = n === 2 ? 'block' : 'none';
+  const cgb = el('cgBackBtn'); if (cgb) cgb.style.display = 'none';
+  // Always reset pane 1 to its main view (not the mobile primer) on entry.
+  if (n === 1) {
+    const m = el('pane1Main'), g = el('copyGuide');
+    if (m) m.style.display = 'block';
+    if (g) g.style.display = 'none';
+  }
+  el('suDot1').className = 'su-dot ' + (n === 1 ? 'on' : 'done');
+  el('suDot2').className = 'su-dot ' + (n === 2 ? 'on' : '');
+  const backBtn = el('suBackBtn');
+  if (backBtn) backBtn.style.display = n === 2 ? 'block' : 'none';
+  if (n === 2) {
+    // Field stays empty — user pastes their link manually (no clipboard autofill).
+    // NOTE: we deliberately do NOT auto-focus here. Auto-focusing pops the mobile
+    // keyboard the instant the pane opens, covering the checklist + CTA before the
+    // user can even read the card. The keyboard now only appears on a deliberate tap.
+    const i = el('setupUrl');
+    if (i) i.blur();
+  }
+}
+
+// Pane 1 action: open the template copy, copy the share email, confirm, advance
+function createAndShare() {
+  // On mobile the Google app opens the template WITHOUT a "make a copy" prompt,
+  // so we show a short primer first (window.open steals focus immediately, so
+  // the guidance has to come before the jump). Desktop keeps the copy dialog.
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    const m = el('pane1Main'), g = el('copyGuide'), b = el('cgBackBtn');
+    if (m) m.style.display = 'none';
+    if (g) g.style.display = 'block';
+    if (b) b.style.display = 'block';
+    return;
+  }
+  openTemplate();
+}
+
+function backToCreateStart() {
+  const m = el('pane1Main'), g = el('copyGuide'), b = el('cgBackBtn');
+  if (g) g.style.display = 'none';
+  if (b) b.style.display = 'none';
+  if (m) m.style.display = 'block';
+}
+
+function openTemplate() {
+  window.open(TEMPLATE_COPY_URL, '_blank');
+  const copied = () => {
+    const tst = el('suToast');
+    if (tst) tst.style.display = 'block';
+    setTimeout(() => gotoPane(2), 1100);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(AIRLOG_EMAIL).then(copied).catch(() => {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = AIRLOG_EMAIL; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+      } catch (e) { /* ignore */ }
+      copied();
+    });
+  } else {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = AIRLOG_EMAIL; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    } catch (e) { /* ignore */ }
+    copied();
+  }
 }
 
 function closeSetup() {
   el('setupOverlay').classList.remove('show');
 }
 
+function copyAirlogEmail(el) {
+  const cp = el.querySelector('.cp');
+  const done = () => {
+    el.classList.add('copied');
+    if (cp) { cp.dataset.orig = cp.dataset.orig || cp.innerHTML; cp.innerHTML = '✓'; }
+    setTimeout(() => {
+      el.classList.remove('copied');
+      if (cp && cp.dataset.orig) cp.innerHTML = cp.dataset.orig;
+    }, 1500);
+  };
+  const legacyCopy = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = AIRLOG_EMAIL; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    } catch (e) { /* ignore */ }
+    done();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(AIRLOG_EMAIL).then(done).catch(legacyCopy);
+  } else {
+    legacyCopy();
+  }
+}
+
 async function saveSetup() {
   const raw = el('setupUrl').value.trim();
-  const match = raw.match(/https:\/\/script\.google\.com\/[^\s]*/);
-  const u = match ? match[0] : raw;
-  if (!u.startsWith('https://script.google.com')) {
+  const sheetId = parseSheetId(raw);
+  if (!sheetId) {
     el('setupUrl').classList.add('err');
+    el('setupErrMsg').textContent = 'זה לא נראה כמו קישור לגיליון Google - העתק את הכתובת מהדפדפן';
+    el('setupErrMsg').style.display = 'block';
     return;
   }
   el('setupUrl').classList.remove('err');
@@ -3128,22 +3344,33 @@ async function saveSetup() {
     row.innerHTML = (icons[state] || icons.idle) + `<span>${text}</span>`;
   };
 
-  // Check 1 — validate URL format
-  setCheck('setupCheck1', 'spin', 'בודק כתובת...');
-  await new Promise(r => setTimeout(r, 400));
-  setCheck('setupCheck1', 'ok', 'כתובת תקינה');
+  // Reset checklist to pristine state. Critical for RE-connection (changing sheet):
+  // openSetup only hides this block, it doesn't clear the rows, so without this the
+  // ✓ marks from the previous successful run linger — e.g. check 3 shows "הכל מוכן!"
+  // while check 2 is still spinning.
+  setCheck('setupCheck2', 'idle', 'מתחבר לגיליון'); el('setupCheck2').style.opacity = '.3';
+  setCheck('setupCheck3', 'idle', 'טוען נתונים');   el('setupCheck3').style.opacity = '.3';
 
-  // Check 2 — connect to sheet
+  // Check 1 — validate link format
+  setCheck('setupCheck1', 'spin', 'בודק קישור...');
+  await new Promise(r => setTimeout(r, 400));
+  setCheck('setupCheck1', 'ok', 'קישור תקין');
+
+  // Check 2 — verify sheet via master GAS (checks share + AirLog structure)
   setCheck('setupCheck2', 'spin', 'מתחבר לגיליון...');
   try {
-    const data = await smartFetch(u + '?action=name');
-    if (!data || !data.name) throw new Error('invalid response');
+    const data = await smartFetch(MASTER_GAS_URL + '?action=name&sheetId=' + encodeURIComponent(sheetId));
+    if (!data || !data.name) {
+      const err = new Error((data && data.message) || 'name check failed');
+      err.code = data && data.code;
+      throw err;
+    }
     const sheetName = data.name;
-    setCheck('setupCheck2', 'ok', `גיליון נמצא — ${sheetName}`);
+    saveCreds(sheetId);
+    setCheck('setupCheck2', 'ok', `גיליון נמצא - ${sheetName}`);
 
     // Check 3 — actually load data
     setCheck('setupCheck3', 'spin', 'טוען נתונים...');
-    saveUrl(u);
     await loadStats();
     setCheck('setupCheck3', 'ok', 'הכל מוכן!');
     await new Promise(r => setTimeout(r, 600));
@@ -3166,9 +3393,16 @@ async function saveSetup() {
 
   } catch(err) {
     setCheck('setupCheck2', 'err', 'לא הצלחנו להתחבר לגיליון');
+    const code = err && err.code;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (isIOS) {
+    if (code === 'NOT_SHARED') {
+      el('setupErrMsg').innerHTML =
+        'הגיליון עדיין לא שותף איתנו 🤝<br>חזור לשלב 2️⃣ - הוסף את <span dir="ltr" style="font-family:var(--mono);color:var(--emerald);">' + AIRLOG_EMAIL + '</span> כעורך, ונסה שוב.';
+    } else if (code === 'NOT_AIRLOG_SHEET') {
+      el('setupErrMsg').textContent =
+        'זה לא נראה כמו גיליון AirLog - ודא שהעתקת את תבנית AirLog בשלב 1️⃣ והדבקת את הקישור של העותק שלך.';
+    } else if (isIOS) {
       // Build diagnostic report for mailto
       const { browser, screenRes, isPWA, network } = getExtendedInfo();
       const { device, os } = getDeviceInfo();
@@ -3178,7 +3412,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.33.015',
+        'App Ver:    v2.34.030',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3205,7 +3439,7 @@ async function saveSetup() {
           '📋 שלח דוח שגיאה למפתח' +
         '</a>';
     } else {
-      el('setupErrMsg').textContent = 'בדוק שהכתובת נכונה ושה-Script פורס כ-Web App';
+      el('setupErrMsg').textContent = 'לא הצלחנו להתחבר לגיליון - ודא שהדבקת את הקישור הנכון ושהגיליון שותף עם airlogsync@gmail.com';
     }
     el('setupErrMsg').style.display = 'block';
     btn.disabled = false;
@@ -3222,22 +3456,8 @@ window.addEventListener('DOMContentLoaded', () => {
   setLandings(0);
   refreshSettingsView();
 
-  // Handle return from GAS setup (?setup=1)
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('setup') === '1') {
-    window.history.replaceState({}, '', window.location.pathname);
-    // Switch to settings tab and show the return banner
-    ['log','currency','stats','search','settings'].forEach(id => {
-      el(`tab-${id}`).classList.toggle('active', id === 'settings');
-      el(`view-${id}`).classList.toggle('active', id === 'settings');
-    });
-    el('setupReturnBanner').style.display = 'block';
-    refreshSettingsView();
-    return;
-  }
-
   if (!getUrl()) {
-    openSetup();
+    showSplashThenOnboarding();
     return;
   }
 
@@ -3245,6 +3465,17 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchConnectedName();
   startupLoad();
 });
+
+// New/unconnected user: show the same 3.5s splash (consistency + branding),
+// then open onboarding. Nothing to fetch yet — there's no sheet linked.
+async function showSplashThenOnboarding() {
+  const splash = el('splashOverlay');
+  if (splash) splash.classList.add('show');
+  startSplashTypewriter();
+  await new Promise(r => setTimeout(r, 3500));
+  hideSplash();
+  openSetup();
+}
 
 // ═══════════════════════════════════════════
 //  ONBOARDING
@@ -3385,83 +3616,85 @@ function obEnterApp() {
 
 async function startupLoad() {
   const splash = el('splashOverlay');
-  splash.classList.add('show');
+  if (splash) splash.classList.add('show');
   startSplashTypewriter();
 
-  // ── Try cache first ──
+  // The splash is a FIXED 3.5s curtain — it never waits for data.
+  const splashTimer = new Promise(r => setTimeout(r, 3500));
+  // Kick the data load off immediately, running behind the splash.
+  const dataLoad = runInitialLoad();
+  // Lift the curtain at the fixed time regardless of fetch progress;
+  // in-app spinners / tab dots cover any overflow.
+  await splashTimer;
+  hideSplash();
+  await dataLoad;
+}
+
+// Renders everything derivable from allRows (used for both cache hydrate + fresh).
+function renderAllFromRows() {
+  updateFlightNum();
+  const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
+  const sel = el('fFilterType');
+  if (sel) {
+    sel.innerHTML = '<option value="">הכל</option>' +
+      types.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+  }
+  applyFilters();
+  populateJournalAcPills();
+  populateLogFormAcDropdowns();
+  buildYearPills();
+  applyDefaultAcToForm();
+  try { renderYearly(); } catch(e) {}
+  try { renderMonthly(); } catch(e) {}
+  renderFlightCards(allRows);
+}
+
+async function runInitialLoad() {
   const cached = loadLeanCache();
-  if (cached && cached.rows && cached.rows.length > 0) {
-    // Hydrate app instantly from cache
+  const haveCache = !!(cached && cached.rows && cached.rows.length > 0);
+
+  if (haveCache) {
+    // Hydrate instantly from cache (renders behind the splash)
     allRows = cached.rows;
-    updateFlightNum();
-    const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
-    const sel = el('fFilterType');
-    if (sel) {
-      sel.innerHTML = '<option value="">הכל</option>' +
-        types.map(t => '<option value="' + t + '">' + t + '</option>').join('');
-    }
-    applyFilters();
-    populateJournalAcPills();
-    populateLogFormAcDropdowns();
-    buildYearPills();
-    applyDefaultAcToForm();
-    try { renderYearly(); } catch(e) {}
-    try { renderMonthly(); } catch(e) {}
-    renderFlightCards(allRows);
+    renderAllFromRows();
     renderCurrency();
-    // Make sure stats content is visible (it starts hidden, normally shown by hideLB)
-    const sc = el('statsContent'); if (sc) sc.style.display = 'block';
+    const sc = el('statsContent');   if (sc) sc.style.display = 'block';
     const cc = el('currencyContent'); if (cc) cc.style.display = 'block';
-
-    // Wait for typewriter to finish + a beat before hiding splash
-    // line1 (35 chars * 40ms) + 300ms start delay + 200ms gap + 600ms line2 fade + 1000ms pause ≈ 3500ms
-    await new Promise(r => setTimeout(r, 3500));
-    hideSplash();
-
-    // Show amber state — data is from cache, refresh in background
-    setTabState('currency', 'loading', 'טוען...');
-    setTabState('stats',    'loading', 'טוען...');
-    setTabState('search',   'loading', 'טוען...');
     showCacheBanner(cached.ts);
-
-    // Background refresh
-    let _backgroundRefresh = true;
-    try {
-      await loadStats(_backgroundRefresh);
-      renderCurrency();   // re-render with fresh data
-      setTabState('currency', 'fresh');
-      setTabState('stats',    'fresh');
-      showFreshBanner();
-    } catch(e) {
-      // Keep showing cached data silently — no crash
-    }
-    if (!_journalLoading) loadJournal();
-    return;
+    // Prime journal from its own cache so יומן is instant if tapped
+    const jc = loadJournalCache();
+    if (jc && jc.rows && jc.rows.length) journalRows = jc.rows;
   }
 
-  // ── No cache — normal first-time load ──
   setTabState('currency', 'loading', 'טוען...');
   setTabState('stats',    'loading', 'טוען...');
-  setTabState('search',   'loading', 'טוען...');
+  setTabState('search',   'pending');   // journal waits for lean — grey, no spin
 
+  // ── Lean fetch (fast, text-free) ──
   try {
-    await loadStats();
+    await loadStats(haveCache);   // silent when cached data is already on screen
+    renderCurrency();
+    setTabState('currency', 'fresh');
+    setTabState('stats',    'fresh');
+    if (haveCache) showFreshBanner();
     reportEvent('app_open', {
       sheetName:    window._adminSheetName || '',
       totalFlights: allRows.length
     });
   } catch(e) {
-    hideSplash();
+    // Keep any cached data on screen; leave amber. No crash.
     return;
   }
 
-  renderCurrency();
-  setTabState('currency', 'fresh');
-  setTabState('stats',    'fresh');
-  // Wait for typewriter to finish before hiding
-  await new Promise(r => setTimeout(r, 3500));
-  hideSplash();
-  if (!_journalLoading) loadJournal();
+  // ── Sequential: only NOW consider the full (journal) fetch, so it never
+  //    competes with the lean fetch. loadStats clears journalRows + cache when
+  //    the flight count changed, so an empty journalRows means "needs fetch".
+  //    If we still hold a valid cached journal, skip the round-trip entirely. ──
+  if (journalRows.length === 0 && !_journalLoading) {
+    loadJournal();
+  } else if (journalRows.length > 0) {
+    setTabState('search', 'fresh');   // cached journal is still current
+  }
 }
 
 function hideSplash() {
@@ -3545,25 +3778,36 @@ async function switchTab(t) {
     el(`view-${id}`).classList.toggle('active', id === t);
   });
   // Data is loaded on startup — these are fallbacks only
-  if ((t === 'stats' || t === 'currency') && allRows.length === 0) {
-    await loadStats();
+  if ((t === 'stats' || t === 'currency') && allRows.length === 0 && !_statsLoading) {
+    loadStats();
   }
   if (t === 'currency') renderCurrency();
   if (t === 'search') {
-    if (journalRows.length === 0) {
-      // Show bar immediately
+    const showBar = (label) => {
       const wrap = el('loadBarJournal');
       const fill = el('loadBarJournalFill');
       const lbl  = el('loadBarJournalLabel');
       if (wrap) wrap.style.display = 'flex';
       if (fill) fill.style.width = '3%';
-      if (lbl)  lbl.textContent = 'מתחבר לשרת...';
+      if (lbl)  lbl.textContent = label;
       const card = el('view-search') ? el('view-search').querySelector('.card') : null;
       if (card) card.style.display = 'none';
-      if (allRows.length === 0) await loadStats();
-      if (!_journalLoading) loadJournal();
-    } else {
+    };
+    if (journalRows.length > 0) {
+      // Have data (fresh or from cache) — render instantly. Any in-flight
+      // background refresh will re-render itself on completion.
       searchJournal();
+    } else if (_journalLoading) {
+      // Fetch already running — just show its bar and wait.
+      showBar('טוען יומן...');
+    } else if (allRows.length > 0) {
+      // Lean is done, journal not started yet — start it now.
+      showBar('טוען יומן...');
+      loadJournal();
+    } else {
+      // Lean still loading — give immediate feedback but do NOT start a
+      // parallel fetch; the startup chain fires the journal once lean finishes.
+      showBar('טוען נתונים בסיסיים...');
     }
   }
   if (t === 'settings') { refreshSettingsView(); updateInstallUI(); }
@@ -3826,9 +4070,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res  = await fetch(gasUrl, { method:'POST', body: JSON.stringify(payload) });
-      const text = await res.text();
-      if (text.includes('success') || res.ok) {
+      const text = await smartPost(payload);
+      if (text.includes('success')) {
         form.style.display = 'none';
         el('successScreen').classList.add('show');
         // Report flight_recorded event silently
@@ -3859,10 +4102,11 @@ document.addEventListener('DOMContentLoaded', () => {
           ${flags.length ? '<div class="ok-row ok-flags">' + flagsHtml + '</div>' : ''}
         `;
         allRows = []; journalRows = []; _journalLoading = false; // force reload next time
+        clearJournalCache();
       } else { throw new Error(text); }
     } catch(err) {
       console.error(err);
-      errBar.textContent = 'שגיאה בשליחה — בדוק את כתובת ה-Apps Script';
+      errBar.textContent = 'שגיאה בשליחה — בדוק את החיבור לגיליון';
       errBar.classList.add('show');
       btn.disabled = false;
       el('btnLabel').style.display   = '';
@@ -4050,6 +4294,7 @@ let allRows      = [];   // lean rows: no description/lessons
 let journalRows  = [];   // full rows: includes description+lessons (lazy loaded)
 let activePeriod = 'all';
 let _journalLoading = false; // guard against double-fetch
+let _statsLoading   = false; // guard against double lean-fetch (e.g. tab tap mid-load)
 
 async function loadStatsAndJournal() {
   // Show journal bar immediately so user sees activity
@@ -4072,6 +4317,7 @@ async function loadStatsAndJournal() {
 async function loadStats(silent) {
   const gasUrl = getUrl();
   if (!gasUrl) { openSetup(); return; }
+  _statsLoading = true;
 
   ['btnRefresh'].forEach(b => { if(el(b)) el(b).classList.add('loading'); });
 
@@ -4100,24 +4346,16 @@ async function loadStats(silent) {
     var cc = el('currencyContent'); if (cc) cc.style.display = 'block';
   }
 
-  // Pre-fetch count for real progress
-  setLB(5, 'מתחבר לשרת...', '');
-  try {
-    var cj   = await smartFetch(gasUrl + '?action=count');
-    _totalCount = cj.count || 0;
-    if (_totalCount) setLB(12, 'נמצאו ' + _totalCount + ' טיסות — טוען...');
-  } catch(e) { /* continue without count */ }
-
-  // Animate bar while fetching
+  // Animate bar while fetching (no separate count call — the row count comes
+  // back with the data itself, so we don't pay an extra round-trip for it).
+  setLB(5, 'מתחבר לשרת...');
   var _lbStart = Date.now();
-  var estMs    = Math.max(1500, _totalCount * 6);
+  var estMs    = 2200;
   function _lbTick() {
     var raw   = (Date.now() - _lbStart) / estMs;
-    var pct   = 12 + Math.min(78, raw * 78);
+    var pct   = 5 + Math.min(85, raw * 85);
     var label = pct < 40 ? 'טוען טיסות...' : pct < 70 ? 'טוען נתונים...' : 'מעבד...';
-    var done  = _totalCount ? Math.min(_totalCount, Math.round(raw * _totalCount)) : null;
-    var label2 = label + (_totalCount && done !== null ? ' · ' + done + '/' + _totalCount : '');
-    setLB(pct, label2);
+    setLB(pct, label);
     if (pct < 90) _lbAnim = requestAnimationFrame(_lbTick);
   }
   _lbAnim = requestAnimationFrame(_lbTick);
@@ -4125,10 +4363,11 @@ async function loadStats(silent) {
   try {
     const json = await smartFetch(gasUrl + '?action=getFlights&lean=1');
     cancelAnimationFrame(_lbAnim);
-    setLB(95, 'מעבד נתונים...' + (_totalCount ? ' · ' + _totalCount + '/' + _totalCount : ''));
     const newRows = (json.rows || json.flights || []).filter(r => r.date);
+    _totalCount = newRows.length;
+    setLB(95, 'מעבד נתונים... · ' + _totalCount + '/' + _totalCount);
     // Only invalidate journal cache if data actually changed
-    if (newRows.length !== allRows.length) journalRows = [];
+    if (newRows.length !== allRows.length) { journalRows = []; clearJournalCache(); }
     allRows = newRows;
     saveLeanCache(allRows);
     updateFlightNum();
@@ -4159,6 +4398,7 @@ async function loadStats(silent) {
     setLB(100, '⚠ ' + (err && err.message ? err.message.slice(0,60) : 'שגיאה בטעינה'));
     ['s-flights','s-landings','s-total'].forEach(id => { if(el(id)) el(id).textContent = '!'; });
   } finally {
+    _statsLoading = false;
     ['btnRefresh'].forEach(b => { if(el(b)) el(b).classList.remove('loading'); });
   }
 }
@@ -4168,6 +4408,7 @@ async function loadStats(silent) {
 async function loadJournal() {
   if (_journalLoading) return;
   _journalLoading = true;
+  setTabState('search', 'loading', 'טוען...');   // pending → loading (amber spin)
   const gasUrl = getUrl();
   if (!gasUrl) { _journalLoading = false; return; }
   const total = allRows.length;
@@ -4215,6 +4456,7 @@ async function loadJournal() {
     setProgress(92, 'מעבד נתונים...');
     journalRows = (json.rows || json.flights || []).filter(r => r.date);
     _journalLoading = false;
+    saveJournalCache(journalRows);
     setTabState('search', 'fresh');
     setProgress(100, 'מוכן!');
     setTimeout(function() {
@@ -4225,13 +4467,14 @@ async function loadJournal() {
       const hh = now.getHours().toString().padStart(2,'0');
       const mm = now.getMinutes().toString().padStart(2,'0');
       const fs1 = el('footerStamp');
-      if (fs1) fs1.textContent = ' · updated ' + hh + ':' + mm;
+      if (fs1) fs1.textContent = 'updated ' + hh + ':' + mm;
       const btn = el('btnRefreshJournal');
       if (btn) btn.classList.remove('loading');
     }, 400);
   } catch(err) {
     cancelAnimationFrame(animFrame);
     _journalLoading = false;
+    setTabState('search', '');   // stop the spinner; no misleading state
     hideBar();
     console.error('loadJournal error:', err);
     const out = el('searchResults');
@@ -5433,6 +5676,26 @@ self.addEventListener('fetch', e => {
   navigator.serviceWorker.register(swUrl, {scope: '/'}).catch(()=>{});
 }
 
+// Force-fetch the latest app version: clear SW + caches, then reload bypassing cache
+async function hardRefresh() {
+  const r = document.querySelector('.su-ver-refresh');
+  if (r) r.textContent = 'מרענן...';
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if (window.caches && caches.keys) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch (e) { /* ignore — reload anyway */ }
+  // Cache-busting query param forces a fresh network fetch of the HTML
+  const u = new URL(window.location.href);
+  u.searchParams.set('v', Date.now());
+  window.location.replace(u.toString());
+}
+
 // ═══════════════════════════════════════════
 //  EDIT MODE
 // ═══════════════════════════════════════════
@@ -5519,12 +5782,8 @@ async function archiveFlight(e, idx) {
   }
 
   try {
-    const res  = await fetch(gasUrl, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'archive', rowId: row.rowId || row.timestamp || row.date + '_' + (row.aircraft||'') })
-    });
-    const text = await res.text();
-    if (!text.includes('success') && !res.ok) throw new Error(text);
+    const text = await smartPost({ action: 'archive', rowId: row.rowId || row.timestamp || row.date + '_' + (row.aircraft||'') });
+    if (!text.includes('success')) throw new Error(text);
 
     // success: banner turns green, card slides out, then re-render
     if (banner) {
@@ -5581,7 +5840,8 @@ function refreshJournal() {
 function refreshCurrency() {
   const btn = el('btnRefreshCurrency');
   if (btn) btn.classList.add('loading');
-  allRows = []; journalRows = []; _journalLoading = false;
+  // Currency only needs lean data — leave the journal cache alone.
+  allRows = [];
   loadStats().then(function() {
     renderCurrency();
     setTimeout(function() {
@@ -5589,7 +5849,7 @@ function refreshCurrency() {
       const hh = now.getHours().toString().padStart(2,'0');
       const mm = now.getMinutes().toString().padStart(2,'0');
       const fs = el('footerStamp');
-      if (fs) fs.textContent = ' · updated ' + hh + ':' + mm;
+      if (fs) fs.textContent = 'updated ' + hh + ':' + mm;
       if (btn) btn.classList.remove('loading');
     }, 1100);
   });
@@ -5624,7 +5884,7 @@ function globalRefresh() {
     const hh = now.getHours().toString().padStart(2,'0');
     const mm = now.getMinutes().toString().padStart(2,'0');
     const fs3 = el('footerStamp');
-    if (fs3) fs3.textContent = ' · updated ' + hh + ':' + mm;
+    if (fs3) fs3.textContent = 'updated ' + hh + ':' + mm;
     if (btn) btn.classList.remove('loading');
     // Re-render current tab content
     const active = ['log','currency','stats','search','settings'].find(id =>
@@ -5638,13 +5898,36 @@ function stampSync() { /* no-op — stamp shown in footer only */ }
 
 function refreshSettingsView() {
   const url = getUrl();
+  const sheetId = getSheetId();
   const display = el('currentUrlDisplay');
-  if (display) display.textContent = url || 'לא מוגדר';
-  if (el('ramClearedMsg')) el('ramClearedMsg').style.display = 'none';
+  if (display) display.textContent = sheetId
+    ? ('https://docs.google.com/spreadsheets/d/' + sheetId + '/edit')
+    : 'לא מוגדר';
+
+  // Sheet name — show cached name immediately, fetch if we don't have it yet
+  const nameEl = el('currentNameDisplay');
+  if (nameEl) {
+    if (window._adminSheetName) {
+      nameEl.textContent = window._adminSheetName;
+    } else if (url) {
+      nameEl.textContent = 'טוען...';
+      // fetchConnectedName sets window._adminSheetName; refresh the label when done
+      fetchConnectedName().then(function() {
+        if (window._adminSheetName) nameEl.textContent = window._adminSheetName;
+        else nameEl.textContent = '(לא זמין)';
+      }).catch(function(){ nameEl.textContent = '(לא זמין)'; });
+    } else {
+      nameEl.textContent = 'לא מוגדר';
+    }
+  }
 
   // GAS subtitle + show URL only when connected
   const gasSub = el('setGasSubtitle');
-  if (gasSub) gasSub.textContent = url ? '🟢 מחובר' : '🔴 לא מחובר';
+  if (gasSub) {
+    if (url && window._adminSheetName) gasSub.textContent = '🟢 ' + window._adminSheetName;
+    else if (url)                      gasSub.textContent = '🟢 מחובר';
+    else                               gasSub.textContent = '🔴 לא מחובר';
+  }
   if (el('gasConnectedState')) el('gasConnectedState').style.display = url ? 'block' : 'none';
   if (el('gasNotConnectedState')) el('gasNotConnectedState').style.display = 'none'; // no longer used
 
@@ -5663,9 +5946,302 @@ function refreshSettingsView() {
 function toggleSetRow(expandId, rowEl) {
   const expand = el(expandId);
   if (!expand) return;
-  const isOpen = expand.classList.toggle('open');
+  const willOpen = !expand.classList.contains('open');
+
+  // Accordion: close every other open panel + reset its arrow first.
+  document.querySelectorAll('.set-expand.open').forEach(function(openPanel) {
+    if (openPanel === expand) return;
+    openPanel.classList.remove('open');
+    // find the row that controls this panel and reset its arrow
+    const ctrlRow = openPanel.previousElementSibling;
+    if (ctrlRow) {
+      const a = ctrlRow.querySelector('.set-row-arrow');
+      if (a) a.classList.remove('open');
+    }
+  });
+
+  expand.classList.toggle('open', willOpen);
   const arrow = rowEl.querySelector('.set-row-arrow');
-  if (arrow) arrow.classList.toggle('open', isOpen);
+  if (arrow) arrow.classList.toggle('open', willOpen);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  IMPORT FLIGHTS FROM XLSX  (Settings → ייבוא טיסות)
+//  Expects a pre-structured file whose columns map to the same
+//  fields a single flight uses. Lenient: valid rows imported,
+//  invalid ones counted & reported. One bulkImport POST on confirm.
+// ══════════════════════════════════════════════════════════════
+
+let _importValidRows = [];   // parsed & validated rows, ready to POST
+
+// Column-name aliases → canonical field. Case-insensitive, trimmed.
+// Accepts both Hebrew and English headers so the offline-prepped file
+// can use whichever is convenient.
+const IMPORT_ALIASES = {
+  date:       ['date','תאריך'],
+  aircraft:   ['aircraft','זיהוי','זיהוי מטוס','או"ק','רישום'],
+  acType:     ['type','actype','סוג','סוג מטוס'],
+  pic:        ['pic','טייס','pic time'],
+  dual:       ['dual','הדרכה','dual time'],
+  total:      ['total','סהכ','סה"כ','משך','זמן טיסה'],
+  landings:   ['landings','נחיתות','נחיתה'],
+  description:['description','תיאור','desc'],
+  lessons:    ['lessons','לקחים','מה למדתי'],
+  xc:         ['xc','ניווט','cross country'],
+  night:      ['night','לילה'],
+  levelCheck: ['levelcheck','level check','מבחן רמה','רמה'],
+};
+
+// Map a raw header row to { fieldName: colIndex }
+function buildImportColMap(headerRow) {
+  const map = {};
+  const norm = s => String(s == null ? '' : s).trim().toLowerCase();
+  headerRow.forEach((cell, idx) => {
+    const h = norm(cell);
+    if (!h) return;
+    for (const field in IMPORT_ALIASES) {
+      if (IMPORT_ALIASES[field].some(a => norm(a) === h)) { map[field] = idx; break; }
+    }
+  });
+  return map;
+}
+
+// Normalise a date cell (Excel serial, Date, or dd/mm/yyyy string) → yyyy-mm-dd
+function normImportDate(v) {
+  if (v == null || v === '') return '';
+  // SheetJS with cellDates:true gives JS Date objects
+  if (v instanceof Date && !isNaN(v)) {
+    const y = v.getFullYear(), m = pad(v.getMonth() + 1), d = pad(v.getDate());
+    return `${y}-${m}-${d}`;
+  }
+  const s = String(v).trim();
+  // yyyy-mm-dd already
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  // dd/mm/yyyy or dd.mm.yyyy or dd-mm-yyyy
+  m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/);
+  if (m) {
+    let yr = m[3]; if (yr.length === 2) yr = '20' + yr;
+    return `${yr}-${pad(+m[2])}-${pad(+m[1])}`;
+  }
+  return ''; // unrecognised → row will be skipped
+}
+
+// Normalise a duration cell → "H:MM". Accepts "1:30", "1.5" (hours),
+// Excel time fractions (0.0625 = 1:30 of a day → handled as hours*24? no),
+// or plain numbers treated as hours.
+function normImportDur(v) {
+  if (v == null || v === '') return '0:00';
+  if (v instanceof Date && !isNaN(v)) {
+    return v.getHours() + ':' + pad(v.getMinutes());
+  }
+  const s = String(v).trim();
+  if (s.includes(':')) {
+    const [h, mm] = s.split(':');
+    return (parseInt(h, 10) || 0) + ':' + pad(parseInt(mm, 10) || 0);
+  }
+  // decimal hours e.g. "1.5" → 1:30
+  const f = parseFloat(s);
+  if (!isNaN(f)) {
+    const h = Math.floor(f);
+    const mm = Math.round((f - h) * 60);
+    return h + ':' + pad(mm);
+  }
+  return '0:00';
+}
+
+// Yes/no cell → 'כן' / 'לא'
+function normImportBool(v) {
+  const s = String(v == null ? '' : v).trim().toLowerCase();
+  if (['כן','yes','y','true','1','x','v','✓'].includes(s)) return 'כן';
+  return 'לא';
+}
+
+function handleImportFile(evt) {
+  const file = evt.target.files && evt.target.files[0];
+  el('importResultMsg').style.display = 'none';
+  if (!file) return;
+
+  if (typeof XLSX === 'undefined') {
+    showImportResult('שגיאה: ספריית הקריאה לא נטענה. בדוק חיבור אינטרנט ונסה שוב.', false);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb    = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws    = wb.Sheets[wb.SheetNames[0]];
+      const aoa   = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: true });
+      parseImportRows(aoa);
+    } catch (err) {
+      showImportResult('שגיאה בקריאת הקובץ: ' + err.message, false);
+    }
+  };
+  reader.onerror = function() { showImportResult('שגיאה בקריאת הקובץ.', false); };
+  reader.readAsArrayBuffer(file);
+
+  // reset the input so re-selecting the same file re-triggers change
+  evt.target.value = '';
+}
+
+function parseImportRows(aoa) {
+  _importValidRows = [];
+  let skipped = 0;
+  const skipReasons = {};
+
+  if (!aoa || aoa.length < 2) {
+    showImportResult('הקובץ ריק או ללא שורות נתונים.', false);
+    el('importPreview').style.display = 'none';
+    return;
+  }
+
+  const colMap = buildImportColMap(aoa[0]);
+  // Need at least a date column to make sense of anything
+  if (colMap.date == null) {
+    showImportResult('לא נמצאה עמודת תאריך בקובץ. ודא שהכותרות תקינות.', false);
+    el('importPreview').style.display = 'none';
+    return;
+  }
+
+  const get = (row, field) => (colMap[field] != null ? row[colMap[field]] : '');
+
+  for (let i = 1; i < aoa.length; i++) {
+    const row = aoa[i];
+    if (!row || row.every(c => c === '' || c == null)) continue; // blank line
+
+    const date = normImportDate(get(row, 'date'));
+    const pic  = normImportDur(get(row, 'pic'));
+    const dual = normImportDur(get(row, 'dual'));
+    let   total = normImportDur(get(row, 'total'));
+    const totMin = parseHM(pic) + parseHM(dual);
+    // If total missing/zero but pic+dual present, derive it
+    if (parseHM(total) === 0 && totMin > 0) total = toHM(totMin);
+
+    const aircraft = String(get(row, 'aircraft') || '').trim();
+    const acType   = String(get(row, 'acType')   || '').trim();
+
+    // Lenient validation — skip rows missing essentials
+    if (!date)                 { skipped++; skipReasons['תאריך חסר/שגוי'] = (skipReasons['תאריך חסר/שגוי']||0)+1; continue; }
+    if (parseHM(total) === 0 && totMin === 0) { skipped++; skipReasons['ללא משך טיסה'] = (skipReasons['ללא משך טיסה']||0)+1; continue; }
+
+    _importValidRows.push({
+      date:        date,
+      aircraft:    aircraft,
+      acType:      acType,
+      pic:         pic,
+      dual:        dual,
+      total:       total,
+      night:       normImportBool(get(row, 'night')),
+      xc:          normImportBool(get(row, 'xc')),
+      levelCheck:  normImportBool(get(row, 'levelCheck')),
+      landings:    parseInt(String(get(row, 'landings') || '0').replace(/[^\d]/g,''), 10) || 0,
+      description: String(get(row, 'description') || '').trim(),
+      lessons:     String(get(row, 'lessons') || '').trim(),
+    });
+  }
+
+  if (!_importValidRows.length) {
+    showImportResult('לא נמצאו טיסות תקינות בקובץ.', false);
+    el('importPreview').style.display = 'none';
+    return;
+  }
+
+  renderImportPreview(_importValidRows, skipped, skipReasons);
+}
+
+function renderImportPreview(rows, skipped, skipReasons) {
+  // Aggregate stats
+  const dates = rows.map(r => r.date).filter(Boolean).sort();
+  const from  = dates[0], to = dates[dates.length - 1];
+
+  let totMin = 0, picMin = 0, xcMin = 0, lastLevel = '';
+  rows.forEach(r => {
+    const t = parseHM(r.total) || (parseHM(r.pic) + parseHM(r.dual));
+    totMin += t;
+    picMin += parseHM(r.pic);
+    if (r.xc === 'כן') xcMin += t;
+    if (r.levelCheck === 'כן' && r.date > lastLevel) lastLevel = r.date;
+  });
+
+  const fmtD = iso => {
+    if (!iso) return '—';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  };
+
+  const lines = [
+    `נמצאו <b>${rows.length}</b> טיסות תקינות`,
+    `תקופה: <b>${fmtD(from)}</b> – <b>${fmtD(to)}</b>`,
+    `סה"כ שעות טיסה: <b>${toHM(totMin)}</b>`,
+    `סה"כ PIC: <b>${toHM(picMin)}</b>`,
+    `סה"כ ניווט (XC): <b>${toHM(xcMin)}</b>`,
+    `טיסה אחרונה: <b>${fmtD(to)}</b>`,
+    `מבחן רמה אחרון: <b>${lastLevel ? fmtD(lastLevel) : '-'}</b>`,
+  ];
+  el('importSummary').innerHTML = lines.join('<br>');
+
+  const skipEl = el('importSkipped');
+  if (skipped > 0) {
+    const reasons = Object.entries(skipReasons).map(([k,v]) => `${k} (${v})`).join(', ');
+    skipEl.innerHTML = `⏭️ דולגו ${skipped} שורות: ${reasons}`;
+    skipEl.style.display = 'block';
+  } else {
+    skipEl.style.display = 'none';
+  }
+
+  el('importResultMsg').style.display = 'none';
+  el('importPreview').style.display = 'block';
+}
+
+async function confirmImport() {
+  if (!_importValidRows.length) return;
+
+  if (!getSheetId()) {
+    showImportResult('אינך מחובר לגיליון. חבר קודם ב"חיבור ל-Google Sheets".', false);
+    return;
+  }
+
+  const btn = el('importConfirmBtn');
+  btn.disabled = true;
+  el('importConfirmLabel').style.display   = 'none';
+  el('importConfirmSpinner').style.display = 'inline';
+
+  try {
+    const text = await smartPost({ action: 'bulkImport', rows: _importValidRows });
+    let ok = false, written = _importValidRows.length;
+    try {
+      const j = JSON.parse(text);
+      ok = (j.status === 'success');
+      if (typeof j.written === 'number') written = j.written;
+    } catch(e) { ok = /success/.test(text); }
+
+    if (ok) {
+      showImportResult(`✓ יובאו ${written} טיסות בהצלחה`, true);
+      el('importPreview').style.display = 'none';
+      _importValidRows = [];
+      reportEvent('flights_imported', { count: written });
+      // Force a fresh reload of flight data next time tabs are opened
+      allRows = []; journalRows = []; _journalLoading = false;
+      try { localStorage.removeItem(LS_CACHE_ROWS); } catch(e) {}
+      clearJournalCache();
+    } else {
+      showImportResult('הייבוא נכשל. נסה שוב או בדוק את החיבור.', false);
+    }
+  } catch (err) {
+    showImportResult('שגיאה בייבוא: ' + err.message, false);
+  } finally {
+    btn.disabled = false;
+    el('importConfirmLabel').style.display   = 'inline';
+    el('importConfirmSpinner').style.display = 'none';
+  }
+}
+
+function showImportResult(msg, ok) {
+  const m = el('importResultMsg');
+  m.textContent = msg;
+  m.style.color = ok ? 'var(--emerald)' : '#ef4444';
+  m.style.display = 'block';
 }
 
 function populateSettingsAcDropdowns() {
@@ -5837,55 +6413,17 @@ function handleInstallClick() {
   }
 }
 
-async function clearRAM() {
-  const ok = await showConfirm({
-    icon: '🧹',
-    title: 'ניקוי זיכרון זמני',
-    text: 'האפליקציה שומרת את נתוני הטיסות זמנית בזיכרון המכשיר כדי לעבוד מהר יותר.\n\nניקוי הזיכרון מאלץ טעינה מחדש מ-Google Sheets בפעם הבאה. הנתונים בגיליון לא נפגעים.',
-    okLabel: 'נקה',
-    danger: false
-  });
-  if (!ok) return;
-  allRows = []; journalRows = []; _journalLoading = false;
-  // Clear rendered values in stats/history tabs
-  ['s-flights','s-landings','s-pic','s-dual','s-total',
-   'h-flights','h-landings','h-pic','h-dual','h-total'].forEach(id => {
-    if (el(id)) el(id).textContent = '—';
-  });
-  ['barXC','barLocal','barPic','barDual'].forEach(id => {
-    if (el(id)) el(id).style.width = '0%';
-  });
-  ['barXCVal','barLocalVal','barPicVal','barDualVal'].forEach(id => {
-    if (el(id)) el(id).textContent = '—';
-  });
-  if (el('yearlyBody')) el('yearlyBody').innerHTML =
-    '<div class="stats-empty" style="padding:20px 0;"><div>לחץ רענן כדי לטעון</div></div>';
-  if (el('monthlyChartBody')) el('monthlyChartBody').innerHTML =
-    '<div class="stats-empty" style="padding:16px 0;font-size:12px;"><div>לחץ רענן כדי לטעון</div></div>';
-  if (el('searchResults')) el('searchResults').innerHTML =
-    '<div class="stats-empty" style="padding:24px 0;text-align:center;">' +
-    '<div style="font-size:32px;margin-bottom:8px;">✈️</div>' +
-    '<div style="font-size:13px;color:var(--text2);">הזן מילת חיפוש</div></div>';
-  const msg = el('ramClearedMsg');
-  if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display='none', 3000); }
-  // Reset currency tab alert dot
-  const tabEl = el('tab-currency');
-  if (tabEl) { const dot = tabEl.querySelector('.tab-alert-dot'); if (dot) dot.remove(); }
-  // Reset currency banner
-  const banner = el('cur-summary-banner');
-  if (banner) banner.style.display = 'none';
-}
-
 async function disconnectApp() {
   const ok = await showConfirm({
     icon: '🔌',
-    title: 'ניתוק האפליקציה',
-    text: 'הכתובת תימחק מהמכשיר.\nהנתונים ב-Sheets בטוחים לחלוטין.',
+    title: 'ניתוק מהגיליון',
+    text: 'האפליקציה תתנתק מהגיליון במכשיר זה.\nהנתונים ב-Google Sheets נשארים שלמים לחלוטין.',
     okLabel: 'נתק',
     danger: true
   });
   if (!ok) return;
   localStorage.removeItem(LS_KEY);
+  clearJournalCache();
   allRows = []; journalRows = []; _journalLoading = false;
   const badge = el('connBadge');
   badge.textContent = '';
@@ -5976,15 +6514,6 @@ function confirmResolve(val) {
   if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
 }
 
-function showGasInfo() {
-  const m = el('gasInfoModal');
-  m.style.display = 'flex';
-  m.onclick = e => { if (e.target === m) closeGasInfo(); };
-}
-function closeGasInfo() {
-  el('gasInfoModal').style.display = 'none';
-}
-
 // ── NEW SHEET CREATION ──────────────────────────────────────────
 // ── NEW SHEET CREATION ──────────────────────────────────────────
 function createNewSheet() {
@@ -5999,62 +6528,97 @@ function createNewSheet() {
   </div>
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
-  <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.015</div>
-    <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
+  <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.030 · built by eligrt</div>
   </div>
 </div>
 
 <div id="setupOverlay">
   <div class="setup-box">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div class="setup-title" style="margin-bottom:0;">✈ הגדרה ראשונית</div>
-      <button id="setupCloseBtn" onclick="closeSetup()" style="display:none;background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+    <div class="su-brand"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="vertical-align:-3px;"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z" fill="var(--accent2)"/></svg> AirLog</div>
+    <div class="su-prog">
+      <span class="su-dot on" id="suDot1"></span>
+      <span class="su-dot" id="suDot2"></span>
     </div>
 
-    <!-- iOS warning — shown automatically if iOS detected -->
-    <div id="iosWarning" style="display:none;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:14px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7;text-align:right;">
-      <div style="font-weight:700;color:var(--amber);margin-bottom:6px;">📱 נראה שאתה משתמש במכשיר iPhone או iPad</div>
-      <div>לצערנו, אפל מגבילה את היכולת של אפליקציות דפדפן (WebApp) להתחבר לשירותים חיצוניים כמו Google Sheets, מה שעלול למנוע את החיבור של AirLog לגיליון שלך.</div>
-      <div style="margin-top:8px;">אפשר לנסות... ייתכן ויעבוד 🤞</div>
-    </div>
+    <!-- close (only when already connected) -->
+    <button id="setupCloseBtn" onclick="closeSetup()" style="display:none;position:absolute;top:14px;left:14px;background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;line-height:1;padding:0 4px;">×</button>
 
-    <div class="setup-sub">
-      הדבק את כתובת ה-Apps Script שקיבלת מגיליון ה-AirLog שלך.
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5;">
-      הכתובת נראית כך:<br>
-      <span style="font-family:var(--mono);font-size:10px;color:var(--cyan);">https://script.google.com/macros/s/.../exec</span>
-    </div>
-    <input type="text" class="setup-input" id="setupUrl"
-           placeholder="📋 הדבק כאן..."
-           dir="ltr" autocomplete="off" spellcheck="false">
+    <!-- back chevron (pane 2 only) -->
+    <button id="suBackBtn" onclick="gotoPane(1)" aria-label="חזרה" style="display:none;position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:26px;cursor:pointer;line-height:1;padding:0 4px;direction:ltr;">&#8250;</button>
 
-    <!-- Validation checks (hidden until save clicked) -->
-    <div id="setupChecks" style="display:none;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
-      <div class="ob-check-row" id="setupCheck1">
-        <div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div>
-        <span>בודק כתובת...</span>
+    <!-- back chevron for the mobile primer (same style as pane 2's) -->
+    <button id="cgBackBtn" onclick="backToCreateStart()" aria-label="חזרה" style="display:none;position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:26px;cursor:pointer;line-height:1;padding:0 4px;direction:ltr;">&#8250;</button>
+
+    <!-- ══ PANE 1 : create + share ══ -->
+    <div id="setupPane1">
+      <div id="pane1Main">
+        <div class="su-kick">הגדרה · שלב 1 / 2</div>
+        <h1 class="su-title">צור <span class="en">AirLog Sheet</span></h1>
+        <p class="su-lead">היומן שלך נשמר ב-Google Drive הפרטי שלך.<br>שתף אותו עם <span class="su-email" onclick="copyAirlogEmail(this)">airlogsync@gmail.com <span class="cp"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:-1px;"><rect x="9" y="9" width="11" height="11" rx="2" stroke="var(--text3)" stroke-width="1.8"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="var(--text3)" stroke-width="1.8"/></svg></span></span> כדי לאפשר לאפליקציה להסתנכרן מולו.</p>
+
+        <button class="setup-btn" id="suCreateBtn" onclick="createAndShare()">צור <span class="en">AirLog Sheet</span></button>
+
+        <div id="suToast" class="su-toast" style="display:none;">✓ הכתובת הועתקה — שתף בגיליון כ-Editor</div>
+
+        <div class="su-skip" onclick="haveSheetSkip()">כבר יש לי AirLog Sheet</div>
       </div>
-      <div class="ob-check-row" id="setupCheck2" style="opacity:.3;">
-        <div style="width:14px;height:14px;border:1px solid var(--border);border-radius:50%;flex-shrink:0;"></div>
-        <span>מתחבר לגיליון</span>
-      </div>
-      <div class="ob-check-row" id="setupCheck3" style="opacity:.3;">
-        <div style="width:14px;height:14px;border:1px solid var(--border);border-radius:50%;flex-shrink:0;"></div>
-        <span>טוען נתונים</span>
-      </div>
-    </div>
-    <div id="setupErrMsg" style="display:none;font-size:12px;color:var(--red);text-align:center;margin-bottom:10px;"></div>
 
-    <button class="setup-btn" id="setupSaveBtn" onclick="saveSetup()" style="display:flex;align-items:center;justify-content:center;gap:8px;">
-      שמור והתחל <span style="display:inline-block;transform:scaleX(-1);">✈</span>
-    </button>
-    <div class="setup-note">🔒 הכתובת נשמרת רק במכשיר שלך ולא משותפת עם אף אחד.</div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">v2.33.015</div>
-      <div style="font-size:11px;color:var(--text2);">built by eligrt</div>
+      <!-- mobile primer: shown before jumping to the template, because the Google
+           app opens it without a "make a copy" prompt -->
+      <div id="copyGuide" style="display:none;">
+        <div class="su-kick">הגדרה · שלב 1 / 2</div>
+        <h1 class="su-title">יצירת העותק שלך</h1>
+        <p class="su-lead">תבנית <span class="en">AirLog</span> תיפתח ב-<span class="en">Google Sheets</span>. בצעו שני צעדים:</p>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;text-align:right;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.7;">
+          <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--text2);">1</div>
+          <div>הקישו על <span style="display:inline-flex;vertical-align:-3px;padding:0 3px;"><svg width="4" height="16" viewBox="0 0 4 16"><circle cx="2" cy="2" r="1.7" fill="var(--text)"/><circle cx="2" cy="8" r="1.7" fill="var(--text)"/><circle cx="2" cy="14" r="1.7" fill="var(--text)"/></svg></span> (למעלה מימין) ובחרו <b style="color:var(--text);">«צור עותק»</b></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;text-align:right;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.7;">
+          <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--text2);">2</div>
+          <div>שתפו את העותק עם <span class="su-email" onclick="copyAirlogEmail(this)">airlogsync@gmail.com <span class="cp"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:-1px;"><rect x="9" y="9" width="11" height="11" rx="2" stroke="var(--text3)" stroke-width="1.8"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="var(--text3)" stroke-width="1.8"/></svg></span></span> כ-<b style="color:var(--text);">Editor</b></div>
+        </div>
+
+        <button class="setup-btn" onclick="openTemplate()">פתח את תבנית <span class="en">AirLog</span></button>
+      </div>
     </div>
+
+    <!-- ══ PANE 2 : connect ══ -->
+    <div id="setupPane2" style="display:none;">
+      <div class="su-kick">הגדרה · שלב 2 / 2</div>
+      <h1 class="su-title">קישור האפליקציה ל-<span class="en">AirLog Sheet</span></h1>
+
+      <!-- iOS warning -->
+      <div id="iosWarning" style="display:none;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:14px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7;text-align:right;">
+        <div style="font-weight:700;color:var(--amber);margin-bottom:6px;">📱 נראה שאתה משתמש במכשיר iPhone או iPad</div>
+        <div>לצערנו, אפל מגבילה את היכולת של אפליקציות דפדפן (WebApp) להתחבר לשירותים חיצוניים כמו Google Sheets.</div>
+        <div style="margin-top:8px;">אפשר לנסות... ייתכן ויעבוד 🤞</div>
+      </div>
+
+      <input type="text" class="setup-input" id="setupUrl"
+             placeholder="הדבק כאן את קישור ה-AirLog Sheet שלך"
+             dir="ltr" autocomplete="off" spellcheck="false" style="margin-bottom:12px;">
+
+      <!-- validation checks -->
+      <div id="setupChecks" style="display:none;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+        <div class="ob-check-row" id="setupCheck1"><div style="width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div><span>בודק כתובת...</span></div>
+        <div class="ob-check-row" id="setupCheck2" style="opacity:.3;"><div style="width:14px;height:14px;border:1px solid var(--border);border-radius:50%;flex-shrink:0;"></div><span>מתחבר לגיליון</span></div>
+        <div class="ob-check-row" id="setupCheck3" style="opacity:.3;"><div style="width:14px;height:14px;border:1px solid var(--border);border-radius:50%;flex-shrink:0;"></div><span>טוען נתונים</span></div>
+      </div>
+      <div id="setupErrMsg" style="display:none;font-size:12px;color:var(--red);text-align:center;margin-bottom:10px;"></div>
+
+      <button class="setup-btn" id="setupSaveBtn" onclick="saveSetup()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">
+        התחבר והתחל <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:-3px;"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z" fill="currentColor"/></svg>
+      </button>
+    </div>
+
+    <div class="su-ver">
+      <span dir="ltr">v2.34.030</span>
+      <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
+    </div>
+
   </div>
 </div>
 
