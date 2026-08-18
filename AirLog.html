@@ -360,7 +360,13 @@ body::before {
   overflow: hidden; text-overflow: ellipsis;
   display: none; flex-shrink: 0;
   align-items: center; justify-content: center; gap: 6px;
+  direction: ltr;   /* green dot + English name read left-to-right */
 }
+/* long-name marquee: gentle ping-pong, only when the text overflows */
+.conn-badge .cb-view  { overflow: hidden; max-width: 100%; }
+.conn-badge .cb-track { display: inline-block; white-space: nowrap; }
+.conn-badge.cb-scrolling { justify-content: flex-start; }
+.conn-badge.cb-scrolling .cb-view { flex: 1 1 auto; min-width: 0; text-align: left; }
 .conn-badge.visible { display: flex; }
 .conn-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; display: inline-block; }
 
@@ -413,8 +419,9 @@ body::before {
 /* state: fresh */
 .tab.tab-fresh .tab-dot       { display: inline-block; background: var(--emerald, #34d399); }
 .tab.tab-fresh .tab-status-lbl { display: block; color: var(--emerald, #34d399); }
-/* state: pending — queued, not fetching yet (dim static dot, no spin) */
-.tab.tab-pending .tab-dot     { display: inline-block; background: var(--text3, #6b7280); }
+/* state: pending — queued, not fetching yet (dim neutral-grey dot + label, no spin) */
+.tab.tab-pending .tab-dot     { display: inline-block; background: #6b7280; opacity: .7; }
+.tab.tab-pending .tab-status-lbl { display: block; color: #6b7280; }
 /* hide status label by default */
 .tab-status-lbl { display: none; }
 
@@ -2884,7 +2891,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.030 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.036 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
 </div>
 
@@ -2925,7 +2932,7 @@ function setTabState(tabId, state, labelText) {
     if (lbl) lbl.textContent = 'עודכן';
   } else if (state === 'pending') {
     tab.classList.add('tab-pending');
-    if (lbl) lbl.textContent = '';
+    if (lbl) lbl.textContent = 'ממתין...';
   }
 }
 
@@ -3152,7 +3159,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.030',
+      appVersion:   'v2.34.036',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3412,7 +3419,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.030',
+        'App Ver:    v2.34.036',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3760,13 +3767,44 @@ async function fetchConnectedName() {
     if (d && d.name) {
       // Strip common prefixes like "AirLog - " or "AeroLog - "
       const name = d.name.replace(/^(air|aero)log\s*[-–]\s*/i, '').trim() || d.name;
-      badge.textContent = name;
+      // Render into a track so a long name can scroll inside the fixed pill.
+      badge.innerHTML = '<span class="cb-view"><span class="cb-track"></span></span>';
+      const track = badge.querySelector('.cb-track');
+      track.textContent = name;        // textContent = safe from HTML in sheet names
       badge.title = d.name;
       window._adminSheetName = d.name; // store for admin reporting
+      requestAnimationFrame(() => applyBadgeMarquee(badge));
     }
   } catch(e) {
     console.log('name fetch error:', e);
   }
+}
+
+// Gentle ping-pong marquee — only runs when the name overflows the pill.
+function applyBadgeMarquee(badge) {
+  if (!badge) return;
+  const view  = badge.querySelector('.cb-view');
+  const track = badge.querySelector('.cb-track');
+  if (!view || !track) return;
+  if (track._anim) { try { track._anim.cancel(); } catch(e){} track._anim = null; }
+
+  // Constrain the view first, then measure how far the text overflows.
+  badge.classList.add('cb-scrolling');
+  const overflow = track.scrollWidth - view.clientWidth;
+  if (overflow <= 1) {
+    badge.classList.remove('cb-scrolling');   // fits — leave it centered, no motion
+    return;
+  }
+
+  // Gentle constant-speed drift — slower for longer names, long rests at both ends.
+  const dur = Math.max(6000, overflow * 150);
+  track._anim = track.animate([
+    { transform: 'translateX(0)',                    offset: 0    },
+    { transform: 'translateX(0)',                    offset: 0.22 }, // rest — start
+    { transform: 'translateX(' + (-overflow) + 'px)', offset: 0.50 }, // slide to end
+    { transform: 'translateX(' + (-overflow) + 'px)', offset: 0.72 }, // rest — end
+    { transform: 'translateX(0)',                    offset: 1    }  // slide back
+  ], { duration: dur, iterations: Infinity, easing: 'linear' });
 }
 
 // ═══════════════════════════════════════════
@@ -5842,8 +5880,12 @@ function refreshCurrency() {
   if (btn) btn.classList.add('loading');
   // Currency only needs lean data — leave the journal cache alone.
   allRows = [];
+  setTabState('currency', 'loading', 'טוען...');
+  setTabState('stats',    'loading', 'טוען...');
   loadStats().then(function() {
     renderCurrency();
+    setTabState('currency', 'fresh');
+    setTabState('stats',    'fresh');
     setTimeout(function() {
       const now = new Date();
       const hh = now.getHours().toString().padStart(2,'0');
@@ -5859,27 +5901,34 @@ function globalRefresh() {
   const btn = el('btnRefreshGlobal');
   if (btn) btn.classList.add('loading');
 
-  // Always reload lean data
-  allRows = []; _journalLoading = false;
+  // Refresh everything: clear so lean + journal both re-pull fresh.
+  allRows = []; journalRows = []; _journalLoading = false;
+  clearJournalCache();
 
-  // Smart: also reload journal only if on journal tab
+  // Same indicator story as launch: amber on stats/currency, grey "pending" on יומן.
+  setTabState('currency', 'loading', 'טוען...');
+  setTabState('stats',    'loading', 'טוען...');
+  setTabState('search',   'pending');
+
+  // If on the journal tab, show its bar immediately for feedback
   const onJournal = el('tab-search') && el('tab-search').classList.contains('active');
   if (onJournal) {
-    journalRows = [];
-    // Show journal bar immediately — don't wait for loadStats to finish
     const wrap = el('loadBarJournal');
     const fill = el('loadBarJournalFill');
     const lbl  = el('loadBarJournalLabel');
     if (wrap) wrap.style.display = 'flex';
     if (fill) fill.style.width = '3%';
-    if (lbl)  lbl.textContent = 'מתחבר לשרת...';
+    if (lbl)  lbl.textContent = 'טוען יומן...';
     const card = el('view-search') ? el('view-search').querySelector('.card') : null;
     if (card) card.style.display = 'none';
   }
 
   loadStats().then(function() {
     renderCurrency();
-    if (onJournal) loadJournal();
+    setTabState('currency', 'fresh');
+    setTabState('stats',    'fresh');
+    // Sequential: journal loads after lean — grey → amber → green.
+    if (!_journalLoading) loadJournal();
     const now = new Date();
     const hh = now.getHours().toString().padStart(2,'0');
     const mm = now.getMinutes().toString().padStart(2,'0');
@@ -5890,7 +5939,6 @@ function globalRefresh() {
     const active = ['log','currency','stats','search','settings'].find(id =>
       el('tab-' + id) && el('tab-' + id).classList.contains('active'));
     if (active === 'stats') { try { renderYearly(); } catch(e){} try { renderMonthly(); } catch(e){} }
-    if (active === 'search' && !onJournal) searchJournal();
   });
 }
 
@@ -6529,7 +6577,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
-    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.030 · built by eligrt</div>
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.036 · built by eligrt</div>
   </div>
 </div>
 
@@ -6615,7 +6663,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.030</span>
+      <span dir="ltr">v2.34.036</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
