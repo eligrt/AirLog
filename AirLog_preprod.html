@@ -413,6 +413,8 @@ body::before {
 /* state: fresh */
 .tab.tab-fresh .tab-dot       { display: inline-block; background: var(--emerald, #34d399); }
 .tab.tab-fresh .tab-status-lbl { display: block; color: var(--emerald, #34d399); }
+/* state: pending — queued, not fetching yet (dim static dot, no spin) */
+.tab.tab-pending .tab-dot     { display: inline-block; background: var(--text3, #6b7280); }
 /* hide status label by default */
 .tab-status-lbl { display: none; }
 
@@ -2882,7 +2884,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.024 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.030 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
 </div>
 
@@ -2913,7 +2915,7 @@ const TEMPLATE_COPY_URL = 'https://docs.google.com/spreadsheets/d/1KUTmYeUzlhQZB
 function setTabState(tabId, state, labelText) {
   const tab = el('tab-' + tabId);
   if (!tab) return;
-  tab.classList.remove('tab-loading', 'tab-fresh');
+  tab.classList.remove('tab-loading', 'tab-fresh', 'tab-pending');
   const lbl = el('tab-' + tabId + '-lbl');
   if (state === 'loading') {
     tab.classList.add('tab-loading');
@@ -2921,6 +2923,9 @@ function setTabState(tabId, state, labelText) {
   } else if (state === 'fresh') {
     tab.classList.add('tab-fresh');
     if (lbl) lbl.textContent = 'עודכן';
+  } else if (state === 'pending') {
+    tab.classList.add('tab-pending');
+    if (lbl) lbl.textContent = '';
   }
 }
 
@@ -2973,6 +2978,27 @@ function loadLeanCache() {
     if (!raw || !ts) return null;
     return { rows: JSON.parse(raw), ts: parseInt(ts, 10) };
   } catch(e) { return null; }
+}
+
+// ── Save / load full (journal) rows cache — includes description+lessons ──
+const LS_CACHE_JOURNAL    = 'airlog_cache_journal';
+const LS_CACHE_JOURNAL_TS = 'airlog_cache_journal_ts';
+function saveJournalCache(rows) {
+  try {
+    localStorage.setItem(LS_CACHE_JOURNAL,    JSON.stringify(rows));
+    localStorage.setItem(LS_CACHE_JOURNAL_TS, Date.now().toString());
+  } catch(e) { /* storage full or private mode */ }
+}
+function loadJournalCache() {
+  try {
+    const raw = localStorage.getItem(LS_CACHE_JOURNAL);
+    if (!raw) return null;
+    return { rows: JSON.parse(raw), ts: parseInt(localStorage.getItem(LS_CACHE_JOURNAL_TS) || '0', 10) };
+  } catch(e) { return null; }
+}
+function clearJournalCache() {
+  try { localStorage.removeItem(LS_CACHE_JOURNAL); } catch(e) {}
+  try { localStorage.removeItem(LS_CACHE_JOURNAL_TS); } catch(e) {}
 }
 
 // ── CLOUDFLARE PROXY — iOS WebKit CORS bypass ────────────────────
@@ -3028,6 +3054,7 @@ function saveCreds(sheetId) {
   if (prev && prev !== clean) {
     try { localStorage.removeItem(LS_CACHE_ROWS); } catch(e) {}
     try { localStorage.removeItem(LS_CACHE_TS); } catch(e) {}
+    clearJournalCache();
     allRows = [];
     journalRows = [];
     _journalLoading = false;
@@ -3125,7 +3152,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.024',
+      appVersion:   'v2.34.030',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3172,30 +3199,63 @@ function openSetupFromSettings() {
   openSetup(1);
 }
 
+// Returning user tapped "I already have a sheet". They need to grab the
+// existing link, so open Drive recent for them (within the click gesture so
+// the popup is allowed), then advance to the paste pane.
+function haveSheetSkip() {
+  window.open('https://drive.google.com/drive/recent', '_blank', 'noopener');
+  gotoPane(2);
+}
+
 // Switch between the two onboarding panes
 function gotoPane(n) {
   el('setupPane1').style.display = n === 1 ? 'block' : 'none';
   el('setupPane2').style.display = n === 2 ? 'block' : 'none';
+  const cgb = el('cgBackBtn'); if (cgb) cgb.style.display = 'none';
+  // Always reset pane 1 to its main view (not the mobile primer) on entry.
+  if (n === 1) {
+    const m = el('pane1Main'), g = el('copyGuide');
+    if (m) m.style.display = 'block';
+    if (g) g.style.display = 'none';
+  }
   el('suDot1').className = 'su-dot ' + (n === 1 ? 'on' : 'done');
   el('suDot2').className = 'su-dot ' + (n === 2 ? 'on' : '');
   const backBtn = el('suBackBtn');
   if (backBtn) backBtn.style.display = n === 2 ? 'block' : 'none';
   if (n === 2) {
     // Field stays empty — user pastes their link manually (no clipboard autofill).
-    // Focus the field, then scroll it into view so the mobile keyboard
-    // doesn't cover the input / popup.
-    setTimeout(() => {
-      const i = el('setupUrl');
-      if (i) {
-        i.focus();
-        try { i.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e) {}
-      }
-    }, 60);
+    // NOTE: we deliberately do NOT auto-focus here. Auto-focusing pops the mobile
+    // keyboard the instant the pane opens, covering the checklist + CTA before the
+    // user can even read the card. The keyboard now only appears on a deliberate tap.
+    const i = el('setupUrl');
+    if (i) i.blur();
   }
 }
 
 // Pane 1 action: open the template copy, copy the share email, confirm, advance
 function createAndShare() {
+  // On mobile the Google app opens the template WITHOUT a "make a copy" prompt,
+  // so we show a short primer first (window.open steals focus immediately, so
+  // the guidance has to come before the jump). Desktop keeps the copy dialog.
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    const m = el('pane1Main'), g = el('copyGuide'), b = el('cgBackBtn');
+    if (m) m.style.display = 'none';
+    if (g) g.style.display = 'block';
+    if (b) b.style.display = 'block';
+    return;
+  }
+  openTemplate();
+}
+
+function backToCreateStart() {
+  const m = el('pane1Main'), g = el('copyGuide'), b = el('cgBackBtn');
+  if (g) g.style.display = 'none';
+  if (b) b.style.display = 'none';
+  if (m) m.style.display = 'block';
+}
+
+function openTemplate() {
   window.open(TEMPLATE_COPY_URL, '_blank');
   const copied = () => {
     const tst = el('suToast');
@@ -3284,6 +3344,13 @@ async function saveSetup() {
     row.innerHTML = (icons[state] || icons.idle) + `<span>${text}</span>`;
   };
 
+  // Reset checklist to pristine state. Critical for RE-connection (changing sheet):
+  // openSetup only hides this block, it doesn't clear the rows, so without this the
+  // ✓ marks from the previous successful run linger — e.g. check 3 shows "הכל מוכן!"
+  // while check 2 is still spinning.
+  setCheck('setupCheck2', 'idle', 'מתחבר לגיליון'); el('setupCheck2').style.opacity = '.3';
+  setCheck('setupCheck3', 'idle', 'טוען נתונים');   el('setupCheck3').style.opacity = '.3';
+
   // Check 1 — validate link format
   setCheck('setupCheck1', 'spin', 'בודק קישור...');
   await new Promise(r => setTimeout(r, 400));
@@ -3334,7 +3401,7 @@ async function saveSetup() {
         'הגיליון עדיין לא שותף איתנו 🤝<br>חזור לשלב 2️⃣ - הוסף את <span dir="ltr" style="font-family:var(--mono);color:var(--emerald);">' + AIRLOG_EMAIL + '</span> כעורך, ונסה שוב.';
     } else if (code === 'NOT_AIRLOG_SHEET') {
       el('setupErrMsg').textContent =
-        'זה לא נראה כמו גיליון AirLog - ודא שהעתקת את התבנית בשלב 1️⃣ והדבקת את הקישור של העותק שלך.';
+        'זה לא נראה כמו גיליון AirLog - ודא שהעתקת את תבנית AirLog בשלב 1️⃣ והדבקת את הקישור של העותק שלך.';
     } else if (isIOS) {
       // Build diagnostic report for mailto
       const { browser, screenRes, isPWA, network } = getExtendedInfo();
@@ -3345,7 +3412,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.024',
+        'App Ver:    v2.34.030',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3390,7 +3457,7 @@ window.addEventListener('DOMContentLoaded', () => {
   refreshSettingsView();
 
   if (!getUrl()) {
-    openSetup();
+    showSplashThenOnboarding();
     return;
   }
 
@@ -3398,6 +3465,17 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchConnectedName();
   startupLoad();
 });
+
+// New/unconnected user: show the same 3.5s splash (consistency + branding),
+// then open onboarding. Nothing to fetch yet — there's no sheet linked.
+async function showSplashThenOnboarding() {
+  const splash = el('splashOverlay');
+  if (splash) splash.classList.add('show');
+  startSplashTypewriter();
+  await new Promise(r => setTimeout(r, 3500));
+  hideSplash();
+  openSetup();
+}
 
 // ═══════════════════════════════════════════
 //  ONBOARDING
@@ -3538,83 +3616,85 @@ function obEnterApp() {
 
 async function startupLoad() {
   const splash = el('splashOverlay');
-  splash.classList.add('show');
+  if (splash) splash.classList.add('show');
   startSplashTypewriter();
 
-  // ── Try cache first ──
+  // The splash is a FIXED 3.5s curtain — it never waits for data.
+  const splashTimer = new Promise(r => setTimeout(r, 3500));
+  // Kick the data load off immediately, running behind the splash.
+  const dataLoad = runInitialLoad();
+  // Lift the curtain at the fixed time regardless of fetch progress;
+  // in-app spinners / tab dots cover any overflow.
+  await splashTimer;
+  hideSplash();
+  await dataLoad;
+}
+
+// Renders everything derivable from allRows (used for both cache hydrate + fresh).
+function renderAllFromRows() {
+  updateFlightNum();
+  const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
+  const sel = el('fFilterType');
+  if (sel) {
+    sel.innerHTML = '<option value="">הכל</option>' +
+      types.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+  }
+  applyFilters();
+  populateJournalAcPills();
+  populateLogFormAcDropdowns();
+  buildYearPills();
+  applyDefaultAcToForm();
+  try { renderYearly(); } catch(e) {}
+  try { renderMonthly(); } catch(e) {}
+  renderFlightCards(allRows);
+}
+
+async function runInitialLoad() {
   const cached = loadLeanCache();
-  if (cached && cached.rows && cached.rows.length > 0) {
-    // Hydrate app instantly from cache
+  const haveCache = !!(cached && cached.rows && cached.rows.length > 0);
+
+  if (haveCache) {
+    // Hydrate instantly from cache (renders behind the splash)
     allRows = cached.rows;
-    updateFlightNum();
-    const types = [...new Set(allRows.map(r => r.acType).filter(Boolean))].sort();
-    const sel = el('fFilterType');
-    if (sel) {
-      sel.innerHTML = '<option value="">הכל</option>' +
-        types.map(t => '<option value="' + t + '">' + t + '</option>').join('');
-    }
-    applyFilters();
-    populateJournalAcPills();
-    populateLogFormAcDropdowns();
-    buildYearPills();
-    applyDefaultAcToForm();
-    try { renderYearly(); } catch(e) {}
-    try { renderMonthly(); } catch(e) {}
-    renderFlightCards(allRows);
+    renderAllFromRows();
     renderCurrency();
-    // Make sure stats content is visible (it starts hidden, normally shown by hideLB)
-    const sc = el('statsContent'); if (sc) sc.style.display = 'block';
+    const sc = el('statsContent');   if (sc) sc.style.display = 'block';
     const cc = el('currencyContent'); if (cc) cc.style.display = 'block';
-
-    // Wait for typewriter to finish + a beat before hiding splash
-    // line1 (35 chars * 40ms) + 300ms start delay + 200ms gap + 600ms line2 fade + 1000ms pause ≈ 3500ms
-    await new Promise(r => setTimeout(r, 3500));
-    hideSplash();
-
-    // Show amber state — data is from cache, refresh in background
-    setTabState('currency', 'loading', 'טוען...');
-    setTabState('stats',    'loading', 'טוען...');
-    setTabState('search',   'loading', 'טוען...');
     showCacheBanner(cached.ts);
-
-    // Background refresh
-    let _backgroundRefresh = true;
-    try {
-      await loadStats(_backgroundRefresh);
-      renderCurrency();   // re-render with fresh data
-      setTabState('currency', 'fresh');
-      setTabState('stats',    'fresh');
-      showFreshBanner();
-    } catch(e) {
-      // Keep showing cached data silently — no crash
-    }
-    if (!_journalLoading) loadJournal();
-    return;
+    // Prime journal from its own cache so יומן is instant if tapped
+    const jc = loadJournalCache();
+    if (jc && jc.rows && jc.rows.length) journalRows = jc.rows;
   }
 
-  // ── No cache — normal first-time load ──
   setTabState('currency', 'loading', 'טוען...');
   setTabState('stats',    'loading', 'טוען...');
-  setTabState('search',   'loading', 'טוען...');
+  setTabState('search',   'pending');   // journal waits for lean — grey, no spin
 
+  // ── Lean fetch (fast, text-free) ──
   try {
-    await loadStats();
+    await loadStats(haveCache);   // silent when cached data is already on screen
+    renderCurrency();
+    setTabState('currency', 'fresh');
+    setTabState('stats',    'fresh');
+    if (haveCache) showFreshBanner();
     reportEvent('app_open', {
       sheetName:    window._adminSheetName || '',
       totalFlights: allRows.length
     });
   } catch(e) {
-    hideSplash();
+    // Keep any cached data on screen; leave amber. No crash.
     return;
   }
 
-  renderCurrency();
-  setTabState('currency', 'fresh');
-  setTabState('stats',    'fresh');
-  // Wait for typewriter to finish before hiding
-  await new Promise(r => setTimeout(r, 3500));
-  hideSplash();
-  if (!_journalLoading) loadJournal();
+  // ── Sequential: only NOW consider the full (journal) fetch, so it never
+  //    competes with the lean fetch. loadStats clears journalRows + cache when
+  //    the flight count changed, so an empty journalRows means "needs fetch".
+  //    If we still hold a valid cached journal, skip the round-trip entirely. ──
+  if (journalRows.length === 0 && !_journalLoading) {
+    loadJournal();
+  } else if (journalRows.length > 0) {
+    setTabState('search', 'fresh');   // cached journal is still current
+  }
 }
 
 function hideSplash() {
@@ -3698,25 +3778,36 @@ async function switchTab(t) {
     el(`view-${id}`).classList.toggle('active', id === t);
   });
   // Data is loaded on startup — these are fallbacks only
-  if ((t === 'stats' || t === 'currency') && allRows.length === 0) {
-    await loadStats();
+  if ((t === 'stats' || t === 'currency') && allRows.length === 0 && !_statsLoading) {
+    loadStats();
   }
   if (t === 'currency') renderCurrency();
   if (t === 'search') {
-    if (journalRows.length === 0) {
-      // Show bar immediately
+    const showBar = (label) => {
       const wrap = el('loadBarJournal');
       const fill = el('loadBarJournalFill');
       const lbl  = el('loadBarJournalLabel');
       if (wrap) wrap.style.display = 'flex';
       if (fill) fill.style.width = '3%';
-      if (lbl)  lbl.textContent = 'מתחבר לשרת...';
+      if (lbl)  lbl.textContent = label;
       const card = el('view-search') ? el('view-search').querySelector('.card') : null;
       if (card) card.style.display = 'none';
-      if (allRows.length === 0) await loadStats();
-      if (!_journalLoading) loadJournal();
-    } else {
+    };
+    if (journalRows.length > 0) {
+      // Have data (fresh or from cache) — render instantly. Any in-flight
+      // background refresh will re-render itself on completion.
       searchJournal();
+    } else if (_journalLoading) {
+      // Fetch already running — just show its bar and wait.
+      showBar('טוען יומן...');
+    } else if (allRows.length > 0) {
+      // Lean is done, journal not started yet — start it now.
+      showBar('טוען יומן...');
+      loadJournal();
+    } else {
+      // Lean still loading — give immediate feedback but do NOT start a
+      // parallel fetch; the startup chain fires the journal once lean finishes.
+      showBar('טוען נתונים בסיסיים...');
     }
   }
   if (t === 'settings') { refreshSettingsView(); updateInstallUI(); }
@@ -4011,6 +4102,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${flags.length ? '<div class="ok-row ok-flags">' + flagsHtml + '</div>' : ''}
         `;
         allRows = []; journalRows = []; _journalLoading = false; // force reload next time
+        clearJournalCache();
       } else { throw new Error(text); }
     } catch(err) {
       console.error(err);
@@ -4202,6 +4294,7 @@ let allRows      = [];   // lean rows: no description/lessons
 let journalRows  = [];   // full rows: includes description+lessons (lazy loaded)
 let activePeriod = 'all';
 let _journalLoading = false; // guard against double-fetch
+let _statsLoading   = false; // guard against double lean-fetch (e.g. tab tap mid-load)
 
 async function loadStatsAndJournal() {
   // Show journal bar immediately so user sees activity
@@ -4224,6 +4317,7 @@ async function loadStatsAndJournal() {
 async function loadStats(silent) {
   const gasUrl = getUrl();
   if (!gasUrl) { openSetup(); return; }
+  _statsLoading = true;
 
   ['btnRefresh'].forEach(b => { if(el(b)) el(b).classList.add('loading'); });
 
@@ -4252,24 +4346,16 @@ async function loadStats(silent) {
     var cc = el('currencyContent'); if (cc) cc.style.display = 'block';
   }
 
-  // Pre-fetch count for real progress
-  setLB(5, 'מתחבר לשרת...', '');
-  try {
-    var cj   = await smartFetch(gasUrl + '?action=count');
-    _totalCount = cj.count || 0;
-    if (_totalCount) setLB(12, 'נמצאו ' + _totalCount + ' טיסות — טוען...');
-  } catch(e) { /* continue without count */ }
-
-  // Animate bar while fetching
+  // Animate bar while fetching (no separate count call — the row count comes
+  // back with the data itself, so we don't pay an extra round-trip for it).
+  setLB(5, 'מתחבר לשרת...');
   var _lbStart = Date.now();
-  var estMs    = Math.max(1500, _totalCount * 6);
+  var estMs    = 2200;
   function _lbTick() {
     var raw   = (Date.now() - _lbStart) / estMs;
-    var pct   = 12 + Math.min(78, raw * 78);
+    var pct   = 5 + Math.min(85, raw * 85);
     var label = pct < 40 ? 'טוען טיסות...' : pct < 70 ? 'טוען נתונים...' : 'מעבד...';
-    var done  = _totalCount ? Math.min(_totalCount, Math.round(raw * _totalCount)) : null;
-    var label2 = label + (_totalCount && done !== null ? ' · ' + done + '/' + _totalCount : '');
-    setLB(pct, label2);
+    setLB(pct, label);
     if (pct < 90) _lbAnim = requestAnimationFrame(_lbTick);
   }
   _lbAnim = requestAnimationFrame(_lbTick);
@@ -4277,10 +4363,11 @@ async function loadStats(silent) {
   try {
     const json = await smartFetch(gasUrl + '?action=getFlights&lean=1');
     cancelAnimationFrame(_lbAnim);
-    setLB(95, 'מעבד נתונים...' + (_totalCount ? ' · ' + _totalCount + '/' + _totalCount : ''));
     const newRows = (json.rows || json.flights || []).filter(r => r.date);
+    _totalCount = newRows.length;
+    setLB(95, 'מעבד נתונים... · ' + _totalCount + '/' + _totalCount);
     // Only invalidate journal cache if data actually changed
-    if (newRows.length !== allRows.length) journalRows = [];
+    if (newRows.length !== allRows.length) { journalRows = []; clearJournalCache(); }
     allRows = newRows;
     saveLeanCache(allRows);
     updateFlightNum();
@@ -4311,6 +4398,7 @@ async function loadStats(silent) {
     setLB(100, '⚠ ' + (err && err.message ? err.message.slice(0,60) : 'שגיאה בטעינה'));
     ['s-flights','s-landings','s-total'].forEach(id => { if(el(id)) el(id).textContent = '!'; });
   } finally {
+    _statsLoading = false;
     ['btnRefresh'].forEach(b => { if(el(b)) el(b).classList.remove('loading'); });
   }
 }
@@ -4320,6 +4408,7 @@ async function loadStats(silent) {
 async function loadJournal() {
   if (_journalLoading) return;
   _journalLoading = true;
+  setTabState('search', 'loading', 'טוען...');   // pending → loading (amber spin)
   const gasUrl = getUrl();
   if (!gasUrl) { _journalLoading = false; return; }
   const total = allRows.length;
@@ -4367,6 +4456,7 @@ async function loadJournal() {
     setProgress(92, 'מעבד נתונים...');
     journalRows = (json.rows || json.flights || []).filter(r => r.date);
     _journalLoading = false;
+    saveJournalCache(journalRows);
     setTabState('search', 'fresh');
     setProgress(100, 'מוכן!');
     setTimeout(function() {
@@ -4384,6 +4474,7 @@ async function loadJournal() {
   } catch(err) {
     cancelAnimationFrame(animFrame);
     _journalLoading = false;
+    setTabState('search', '');   // stop the spinner; no misleading state
     hideBar();
     console.error('loadJournal error:', err);
     const out = el('searchResults');
@@ -5749,7 +5840,8 @@ function refreshJournal() {
 function refreshCurrency() {
   const btn = el('btnRefreshCurrency');
   if (btn) btn.classList.add('loading');
-  allRows = []; journalRows = []; _journalLoading = false;
+  // Currency only needs lean data — leave the journal cache alone.
+  allRows = [];
   loadStats().then(function() {
     renderCurrency();
     setTimeout(function() {
@@ -6132,6 +6224,7 @@ async function confirmImport() {
       // Force a fresh reload of flight data next time tabs are opened
       allRows = []; journalRows = []; _journalLoading = false;
       try { localStorage.removeItem(LS_CACHE_ROWS); } catch(e) {}
+      clearJournalCache();
     } else {
       showImportResult('הייבוא נכשל. נסה שוב או בדוק את החיבור.', false);
     }
@@ -6330,6 +6423,7 @@ async function disconnectApp() {
   });
   if (!ok) return;
   localStorage.removeItem(LS_KEY);
+  clearJournalCache();
   allRows = []; journalRows = []; _journalLoading = false;
   const badge = el('connBadge');
   badge.textContent = '';
@@ -6435,7 +6529,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div style="position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;">
-    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.024 · built by eligrt</div>
+    <div dir="ltr" style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);">AirLog · v2.34.030 · built by eligrt</div>
   </div>
 </div>
 
@@ -6453,17 +6547,42 @@ function createNewSheet() {
     <!-- back chevron (pane 2 only) -->
     <button id="suBackBtn" onclick="gotoPane(1)" aria-label="חזרה" style="display:none;position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:26px;cursor:pointer;line-height:1;padding:0 4px;direction:ltr;">&#8250;</button>
 
+    <!-- back chevron for the mobile primer (same style as pane 2's) -->
+    <button id="cgBackBtn" onclick="backToCreateStart()" aria-label="חזרה" style="display:none;position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:26px;cursor:pointer;line-height:1;padding:0 4px;direction:ltr;">&#8250;</button>
+
     <!-- ══ PANE 1 : create + share ══ -->
     <div id="setupPane1">
-      <div class="su-kick">הגדרה · שלב 1 / 2</div>
-      <h1 class="su-title">צור <span class="en">AirLog Sheet</span></h1>
-      <p class="su-lead">היומן שלך נשמר ב-Google Drive הפרטי שלך.<br>שתף אותו עם <span class="su-email" onclick="copyAirlogEmail(this)">airlogsync@gmail.com <span class="cp"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:-1px;"><rect x="9" y="9" width="11" height="11" rx="2" stroke="var(--text3)" stroke-width="1.8"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="var(--text3)" stroke-width="1.8"/></svg></span></span> כדי לאפשר לאפליקציה להסתנכרן מולו.</p>
+      <div id="pane1Main">
+        <div class="su-kick">הגדרה · שלב 1 / 2</div>
+        <h1 class="su-title">צור <span class="en">AirLog Sheet</span></h1>
+        <p class="su-lead">היומן שלך נשמר ב-Google Drive הפרטי שלך.<br>שתף אותו עם <span class="su-email" onclick="copyAirlogEmail(this)">airlogsync@gmail.com <span class="cp"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:-1px;"><rect x="9" y="9" width="11" height="11" rx="2" stroke="var(--text3)" stroke-width="1.8"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="var(--text3)" stroke-width="1.8"/></svg></span></span> כדי לאפשר לאפליקציה להסתנכרן מולו.</p>
 
-      <button class="setup-btn" id="suCreateBtn" onclick="createAndShare()">צור <span class="en">AirLog Sheet</span></button>
+        <button class="setup-btn" id="suCreateBtn" onclick="createAndShare()">צור <span class="en">AirLog Sheet</span></button>
 
-      <div id="suToast" class="su-toast" style="display:none;">✓ הכתובת הועתקה — שתף בגיליון כ-Editor</div>
+        <div id="suToast" class="su-toast" style="display:none;">✓ הכתובת הועתקה — שתף בגיליון כ-Editor</div>
 
-      <div class="su-skip" onclick="gotoPane(2)">כבר יש לי AirLog Sheet</div>
+        <div class="su-skip" onclick="haveSheetSkip()">כבר יש לי AirLog Sheet</div>
+      </div>
+
+      <!-- mobile primer: shown before jumping to the template, because the Google
+           app opens it without a "make a copy" prompt -->
+      <div id="copyGuide" style="display:none;">
+        <div class="su-kick">הגדרה · שלב 1 / 2</div>
+        <h1 class="su-title">יצירת העותק שלך</h1>
+        <p class="su-lead">תבנית <span class="en">AirLog</span> תיפתח ב-<span class="en">Google Sheets</span>. בצעו שני צעדים:</p>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;text-align:right;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.7;">
+          <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--text2);">1</div>
+          <div>הקישו על <span style="display:inline-flex;vertical-align:-3px;padding:0 3px;"><svg width="4" height="16" viewBox="0 0 4 16"><circle cx="2" cy="2" r="1.7" fill="var(--text)"/><circle cx="2" cy="8" r="1.7" fill="var(--text)"/><circle cx="2" cy="14" r="1.7" fill="var(--text)"/></svg></span> (למעלה מימין) ובחרו <b style="color:var(--text);">«צור עותק»</b></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;text-align:right;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.7;">
+          <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--text2);">2</div>
+          <div>שתפו את העותק עם <span class="su-email" onclick="copyAirlogEmail(this)">airlogsync@gmail.com <span class="cp"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="vertical-align:-1px;"><rect x="9" y="9" width="11" height="11" rx="2" stroke="var(--text3)" stroke-width="1.8"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="var(--text3)" stroke-width="1.8"/></svg></span></span> כ-<b style="color:var(--text);">Editor</b></div>
+        </div>
+
+        <button class="setup-btn" onclick="openTemplate()">פתח את תבנית <span class="en">AirLog</span></button>
+      </div>
     </div>
 
     <!-- ══ PANE 2 : connect ══ -->
@@ -6480,13 +6599,7 @@ function createNewSheet() {
 
       <input type="text" class="setup-input" id="setupUrl"
              placeholder="הדבק כאן את קישור ה-AirLog Sheet שלך"
-             dir="ltr" autocomplete="off" spellcheck="false" style="margin-bottom:10px;">
-
-      <!-- find-the-sheet helper -->
-      <div class="su-help">
-        <span>הגיליון שיצרת מחכה ב-Google Drive שלך.</span>
-        <a href="https://drive.google.com/drive/recent" target="_blank" rel="noopener" class="su-help-link">פתח את Google Drive</a>
-      </div>
+             dir="ltr" autocomplete="off" spellcheck="false" style="margin-bottom:12px;">
 
       <!-- validation checks -->
       <div id="setupChecks" style="display:none;background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
@@ -6502,7 +6615,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.024</span>
+      <span dir="ltr">v2.34.030</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
