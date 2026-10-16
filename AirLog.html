@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AirLog.html · v2.34.039 · built by eligrt -->
+<!-- AirLog.html · v2.34.040 · built by eligrt -->
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -2298,7 +2298,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   }
 }
 
-/* ═══ v2.34.039 · family restyle (cream / navy / gold) - appended overrides ═══ */
+/* ═══ v2.34.040 · family restyle (cream / navy / gold) - appended overrides ═══ */
 body::before { display: none; }
 body { background: var(--paper); color: var(--text); }
 
@@ -2942,7 +2942,7 @@ body { background: var(--paper); color: var(--text); }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.039 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.040 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
 </div>
 
@@ -3195,8 +3195,81 @@ function getExtendedInfo() {
   return { browser, screenRes, isPWA, network };
 }
 
+
+// ═══════════════════════════════════════════
+//  ANONYMOUS USAGE STATS (Firebase REST, fire and forget)
+//  airlog/devices/{random device id}: no names, no sheet id, no flight details - only counters
+// ═══════════════════════════════════════════
+const AL_DB  = 'https://aircheck-80530-default-rtdb.europe-west1.firebasedatabase.app';
+const AL_SV  = {'.sv':'timestamp'}, AL_INC = {'.sv':{increment:1}};
+const AL_QK  = 'alst_q';
+function alRand(){
+  let s='';
+  try{ const a=new Uint8Array(12); crypto.getRandomValues(a); a.forEach(b=>s+=(b%36).toString(36)); }
+  catch(e){ while(s.length<12) s+=Math.floor(Math.random()*36).toString(36); }
+  return s;
+}
+function alDevId(){
+  try{
+    let id=localStorage.getItem('alst_id');
+    if(!id||!/^[a-z0-9]{8,32}$/.test(id)){ id=alRand(); localStorage.setItem('alst_id',id); }
+    return id;
+  }catch(e){ return window.__alTmp||(window.__alTmp=alRand()); }
+}
+function alOS(){
+  const u=navigator.userAgent||'';
+  if(/android/i.test(u)) return 'Android';
+  if(/iphone|ipad|ipod/i.test(u)) return 'iOS';
+  return 'Desktop';
+}
+function alDay(){ const d=new Date(),p=v=>String(v).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function alQ(){ try{ return JSON.parse(localStorage.getItem(AL_QK)||'[]'); }catch(e){ return []; } }
+function alQSave(q){ try{ localStorage.setItem(AL_QK, JSON.stringify(q.slice(-50))); return true; }catch(e){ return false; } }
+// 'ok' = stored, 'drop' = rejected as invalid (never retry), 'retry' = offline or not allowed yet
+async function alPost(fields){
+  try{
+    const r = await fetch(AL_DB+'/airlog/devices/'+alDevId()+'.json',{method:'PATCH',body:JSON.stringify(fields),keepalive:true});
+    if(r.ok) return 'ok';
+    return r.status===400 ? 'drop' : 'retry';
+  }catch(e){ return 'retry'; }
+}
+let alBusy = false;
+async function alFlush(){
+  if(alBusy) return; alBusy = true;
+  try{
+    while(true){
+      const q = alQ(); if(!q.length) break;
+      const res = await alPost(q[0]);
+      if(res==='retry') break;
+      const r = alQ(); r.shift(); alQSave(r);
+    }
+  }catch(e){}
+  alBusy = false;
+}
+function alStat(event, x){
+  try{
+    x = x || {};
+    const f = {
+      os: alOS(),
+      pwaInstalled: (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true,
+      appVersion: 'v2.34.040',
+      lastSeen: AL_SV
+    };
+    const tf = Number(x.totalFlights);
+    if(event==='setup_started'){ f.setupStarted = true; f.setupStartedAt = AL_SV; }
+    else if(event==='setup_completed'){ f.setupDone = true; if(isFinite(tf)&&tf>=0) f.flights = tf; }
+    else if(event==='app_open'){ f.opens = AL_INC; f['daily/'+alDay()+'/o'] = AL_INC; if(isFinite(tf)&&tf>=0) f.flights = tf; }
+    else if(event==='flight_recorded'){ f['daily/'+alDay()+'/f'] = AL_INC; if(isFinite(tf)&&tf>=0) f.flights = tf; }
+    else if(event==='flight_archived'){ if(isFinite(tf)&&tf>=0) f.flights = tf; }
+    const q = alQ(); q.push(f);
+    if(alQSave(q)) alFlush(); else alPost(f);
+  }catch(e){}
+}
+window.addEventListener('online', () => { try{ alFlush(); }catch(e){} });
+
 // Send event to admin sheet — silent, never blocks the app
 async function reportEvent(event, extraData = {}) {
+  alStat(event, extraData);   // Firebase counters (anonymous)
   if (!ADMIN_GAS_URL) return;
   try {
     const sid = getSheetId();
@@ -3209,7 +3282,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.039',
+      appVersion:   'v2.34.040',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3243,6 +3316,7 @@ function openSetup(forcePane) {
   // Show close button only if already connected (not first-time setup)
   const closeBtn = el('setupCloseBtn');
   const connected = !!getUrl();
+  if (!connected) { try{ if(!localStorage.getItem('alst_started')){ alStat('setup_started'); localStorage.setItem('alst_started','1'); } }catch(e){ alStat('setup_started'); } }
   if (closeBtn) closeBtn.style.display = connected ? 'block' : 'none';
   // Default: connected users jump to pane 2 (re-paste). forcePane overrides.
   const target = forcePane || (connected ? 2 : 1);
@@ -3469,7 +3543,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.039',
+        'App Ver:    v2.34.040',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -6627,7 +6701,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div class="sp-skip" id="spSkip">tap to skip</div>
-  <div class="app-footer sp-foot" dir="ltr"><div class="af-main">AirLog · v2.34.039 · built by eligrt</div></div>
+  <div class="app-footer sp-foot" dir="ltr"><div class="af-main">AirLog · v2.34.040 · built by eligrt</div></div>
 </div>
 <script>
 /* family chrome: one embedded icon feeds the header logo and the favicon; UTC clock; tap to skip the splash */
@@ -6731,7 +6805,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.039</span>
+      <span dir="ltr">v2.34.040</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
