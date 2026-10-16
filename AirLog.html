@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AirLog.html · v2.34.040 · built by eligrt -->
+<!-- AirLog.html · v2.34.042 · built by eligrt -->
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -2298,7 +2298,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   }
 }
 
-/* ═══ v2.34.040 · family restyle (cream / navy / gold) - appended overrides ═══ */
+/* ═══ v2.34.042 · family restyle (cream / navy / gold) - appended overrides ═══ */
 body::before { display: none; }
 body { background: var(--paper); color: var(--text); }
 
@@ -2942,7 +2942,7 @@ body { background: var(--paper); color: var(--text); }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.040 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.042 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
 </div>
 
@@ -3252,10 +3252,12 @@ function alStat(event, x){
     const f = {
       os: alOS(),
       pwaInstalled: (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true,
-      appVersion: 'v2.34.040',
+      appVersion: 'v2.34.042',
       lastSeen: AL_SV
     };
     const tf = Number(x.totalFlights);
+    const nm = (x.sheetName||'').toString().trim().slice(0,40);
+    if(nm) f.name = nm;   // name of the linked sheet, as shown in the app
     if(event==='setup_started'){ f.setupStarted = true; f.setupStartedAt = AL_SV; }
     else if(event==='setup_completed'){ f.setupDone = true; if(isFinite(tf)&&tf>=0) f.flights = tf; }
     else if(event==='app_open'){ f.opens = AL_INC; f['daily/'+alDay()+'/o'] = AL_INC; if(isFinite(tf)&&tf>=0) f.flights = tf; }
@@ -3282,7 +3284,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.040',
+      appVersion:   'v2.34.042',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3543,7 +3545,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.040',
+        'App Ver:    v2.34.042',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3897,6 +3899,7 @@ async function fetchConnectedName() {
       track.textContent = name;        // textContent = safe from HTML in sheet names
       badge.title = d.name;
       window._adminSheetName = d.name; // store for admin reporting
+      try{ if(localStorage.getItem('alst_name')!==d.name){ alStat('name',{sheetName:d.name}); localStorage.setItem('alst_name',d.name); } }catch(e){}
       requestAnimationFrame(() => applyBadgeMarquee(badge));
     }
   } catch(e) {
@@ -6701,7 +6704,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div class="sp-skip" id="spSkip">tap to skip</div>
-  <div class="app-footer sp-foot" dir="ltr"><div class="af-main">AirLog · v2.34.040 · built by eligrt</div></div>
+  <div class="app-footer sp-foot" dir="ltr"><div class="af-main">AirLog · v2.34.042 · built by eligrt</div></div>
 </div>
 <script>
 /* family chrome: one embedded icon feeds the header logo and the favicon; UTC clock; tap to skip the splash */
@@ -6805,7 +6808,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.040</span>
+      <span dir="ltr">v2.34.042</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
