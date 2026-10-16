@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!-- AirLog.html · v2.34.047 · built by eligrt -->
+<!-- AirLog.html · v2.34.052 · built by eligrt -->
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>✈ יומן טיסות</title>
 
 <!-- PWA -->
@@ -228,6 +228,9 @@ body::before {
   color: var(--emerald); font-weight: 700; font-size: 14px;
 }
 .su-skip { font-size: 13px; color: var(--text2); text-align: center; margin-top: 18px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border2); -webkit-tap-highlight-color: transparent; }
+.su-skip-later { margin-top: 10px; font-size: 12px; opacity: .7; text-decoration: none; }
+.nosheet-banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 12px; padding: 10px 12px; background: var(--paper-hi); border: 1px solid var(--gold-lite); border-radius: 10px; font-size: 12px; color: var(--ink-muted); }
+.nosheet-banner button { flex: 0 0 auto; background: var(--ink); color: var(--paper); border: 0; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
 .su-ver {
   position: relative;
   margin-top: 20px; text-align: center;
@@ -2298,7 +2301,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   }
 }
 
-/* ═══ v2.34.047 · family restyle (cream / navy / gold) - appended overrides ═══ */
+/* ═══ v2.34.052 · family restyle (cream / navy / gold) - appended overrides ═══ */
 body::before { display: none; }
 body { background: var(--paper); color: var(--text); }
 
@@ -2361,6 +2364,37 @@ body { background: var(--paper); color: var(--text); }
 .app-footer { min-height: calc(41px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: center; }  /* same height in the splash, before and after refresh, and in the other apps */
 @media (prefers-reduced-motion: reduce) { #splashOverlay { transition: none; } }
 
+/* LSA-ALIGN v1 START - shared chassis: scroll, header inset, footer. Do not edit per app; update the machine instead. */
+:root{
+  --lsa-hdr-min:58px;                                   /* navy header content height */
+  --lsa-foot-h:33px;                                    /* footer content height */
+  --lsa-foot-pad:max(8px,calc(env(safe-area-inset-bottom,0px) - 16px)); /* sits low, clear of the home bar */
+}
+*{overscroll-behavior:none;}                            /* no rubber-band, no scroll chaining */
+html,body{overscroll-behavior:none;}
+.lsa-hdr{box-sizing:border-box;min-height:calc(var(--lsa-hdr-min) + env(safe-area-inset-top,0px));padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:10px;}
+.lsa-foot{box-sizing:border-box;flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;direction:ltr;
+  height:calc(var(--lsa-foot-h) + var(--lsa-foot-pad));padding:0 12px var(--lsa-foot-pad);margin:0;
+  background:var(--paper-hi,#fbf6e8);border-top:1px solid var(--gold-lite,#d4b878);
+  font-family:var(--font-mono,var(--mono,'JetBrains Mono',monospace));font-size:9px;font-weight:400;letter-spacing:.04em;line-height:1.2;
+  color:var(--ink-faint,#8a7a5a);text-transform:none;text-align:center;position:relative;z-index:5;}
+.lsa-foot.sp{position:absolute;left:0;right:0;bottom:0;}
+.lsa-foot-ver{grid-column:2;max-width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lsa-foot-ver a{color:inherit;text-decoration:none;}
+.lsa-foot-slot{grid-column:1;justify-self:start;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75;font-size:9px;letter-spacing:.04em;background:none;border:0;padding:0;font-family:inherit;color:inherit;}
+.lsa-foot-slot:empty{visibility:hidden;}
+button.lsa-foot-slot{cursor:pointer;padding:8px 0;}
+.lsa-foot-reload{grid-column:3;justify-self:end;background:none;border:0;padding:8px 0;margin:0;font-family:var(--font-ui,'IBM Plex Sans Hebrew',sans-serif);font-size:11px;letter-spacing:.02em;
+  color:var(--ink-muted,#5a4a3a);text-decoration:underline;text-underline-offset:2px;opacity:.75;cursor:pointer;white-space:nowrap;}
+.lsa-foot-reload:active{opacity:.4;}
+.lsa-skip{position:absolute;left:0;right:0;bottom:calc(var(--lsa-foot-h) + var(--lsa-foot-pad) + 14px);text-align:center;font-family:var(--font-mono,var(--mono,'JetBrains Mono',monospace));font-size:9px;letter-spacing:.18em;color:var(--ink-faint,#8a7a5a);text-transform:uppercase;pointer-events:none;}
+#splash.lobby .lsa-skip{display:none;}
+/* header clock: time on top, UTC label beneath (all apps) */
+.hdr-clock,.strip-clock{display:flex!important;flex-direction:column!important;align-items:center!important;gap:3px!important;}
+.hdr-clock>.hdr-clock-lbl,.strip-clock>.strip-clock-lbl{order:2;font-size:9px!important;line-height:1;letter-spacing:.22em;margin:0!important;}
+.hdr-clock>:not(.hdr-clock-lbl),.strip-clock>:not(.strip-clock-lbl){order:1;}
+.hdr-clock-row{display:flex;flex-direction:column-reverse!important;align-items:center!important;gap:3px!important;}
+/* LSA-ALIGN v1 END */
 </style>
 
 <!-- SheetJS (xlsx) — used by Settings → import flights from XLSX -->
@@ -2371,7 +2405,7 @@ body { background: var(--paper); color: var(--text); }
 
 <!-- ── SETUP OVERLAY (shown on first run) ── -->
 <!-- ── APP HEADER (logo, name, UTC clock) ── -->
-<header class="app-hdr">
+<header class="app-hdr lsa-hdr">
   <div class="hdr-rail">
     <div class="hdr-glyph"><img id="hdrLogo" alt="AirLog"></div>
     <div class="hdr-title"><h1>AirLog</h1><p>Pilot Logbook</p></div>
@@ -2942,10 +2976,7 @@ body { background: var(--paper); color: var(--text); }
 
 </div><!-- /page -->
 
-<div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.047 · built by eligrt</div>
-  <div class="af-stamp" id="footerStamp"></div>
-</div>
+<div class="lsa-foot" dir="ltr"><span class="lsa-foot-slot" id="footerStamp"></span><span class="lsa-foot-ver">AirLog · v2.34.052 · built by eligrt</span><button type="button" class="lsa-foot-reload" onclick="hardRefresh()">טען מחדש</button></div>
 
 <script>
 // ═══════════════════════════════════════════
@@ -3258,7 +3289,7 @@ function alStat(event, x){
     const f = {
       os: alOS(),
       pwaInstalled: (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true,
-      appVersion: 'v2.34.047',
+      appVersion: 'v2.34.052',
       lastSeen: AL_SV
     };
     const tf = Number(x.totalFlights);
@@ -3290,7 +3321,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.047',
+      appVersion:   'v2.34.052',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3341,6 +3372,30 @@ function openSetupFromSettings() {
 // Returning user tapped "I already have a sheet". They need to grab the
 // existing link, so open Drive recent for them (within the click gesture so
 // the popup is allowed), then advance to the paste pane.
+// ── Skip onboarding: explore the app without a linked sheet ──
+const LS_SKIP = 'airlog_onboarding_skipped';
+function noSheetMode() { try { return !getUrl() && localStorage.getItem(LS_SKIP) === '1'; } catch (e) { return false; } }
+function skipOnboarding() {
+  try { localStorage.setItem(LS_SKIP, '1'); } catch (e) {}
+  closeSetup();
+  applyNoSheetUI();
+}
+function applyNoSheetUI() {
+  const on = noSheetMode();
+  ['currency', 'stats', 'search'].forEach(id => {
+    const v = el('view-' + id); if (!v) return;
+    let b = el('noSheetBanner_' + id);
+    if (on && !b) {
+      b = document.createElement('div');
+      b.id = 'noSheetBanner_' + id; b.className = 'nosheet-banner';
+      b.innerHTML = '<span>עדיין לא חוברה לגיליון Google</span><button type="button" onclick="openSetup(1)">חבר עכשיו</button>';
+      v.insertBefore(b, v.firstChild);
+    }
+    if (!on && b) b.remove();
+  });
+  if (on) document.querySelectorAll('#view-currency .stats-empty div, #view-stats .stats-empty div').forEach(d => { if (d.textContent.trim() === 'טוען...') d.textContent = '-'; });
+}
+
 function haveSheetSkip() {
   window.open('https://drive.google.com/drive/recent', '_blank', 'noopener');
   gotoPane(2);
@@ -3519,6 +3574,8 @@ async function saveSetup() {
     el('setupChecks').style.display = 'none';
     btn.disabled = false;
     btn.style.opacity = '1';
+    try { localStorage.removeItem(LS_SKIP); } catch (e) {}
+    applyNoSheetUI();
     refreshSettingsView();
     fetchConnectedName();
     renderCurrency();
@@ -3551,7 +3608,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.047',
+        'App Ver:    v2.34.052',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -3611,8 +3668,13 @@ async function showSplashThenOnboarding() {
   const splash = el('splashOverlay');
   if (splash) splash.classList.add('show');
   startSplashTypewriter();
-  await new Promise(r => setTimeout(r, 3500));
+  // tap anywhere skips the wait (same as for connected users), otherwise the splash runs 3.5s
+  await new Promise(r => {
+    const t = setTimeout(r, 3500);
+    if (splash) splash.addEventListener('click', () => { clearTimeout(t); r(); }, { once: true });
+  });
   hideSplash();
+  if (noSheetMode()) { applyNoSheetUI(); return; }   // user chose to skip onboarding earlier
   openSetup();
 }
 
@@ -3948,6 +4010,7 @@ async function switchTab(t) {
     el(`tab-${id}`).classList.toggle('active', id === t);
     el(`view-${id}`).classList.toggle('active', id === t);
   });
+  if (noSheetMode() && t !== 'log' && t !== 'settings') { applyNoSheetUI(); return; }   // skipped onboarding: no data to load
   // Data is loaded on startup — these are fallbacks only
   if ((t === 'stats' || t === 'currency') && allRows.length === 0 && !_statsLoading) {
     loadStats();
@@ -4638,7 +4701,7 @@ async function loadJournal() {
       const hh = now.getHours().toString().padStart(2,'0');
       const mm = now.getMinutes().toString().padStart(2,'0');
       const fs1 = el('footerStamp');
-      if (fs1) fs1.textContent = 'updated ' + hh + ':' + mm;
+      if (fs1) fs1.textContent = '↻ ' + hh + ':' + mm;
       const btn = el('btnRefreshJournal');
       if (btn) btn.classList.remove('loading');
     }, 400);
@@ -6024,7 +6087,7 @@ function refreshCurrency() {
       const hh = now.getHours().toString().padStart(2,'0');
       const mm = now.getMinutes().toString().padStart(2,'0');
       const fs = el('footerStamp');
-      if (fs) fs.textContent = 'updated ' + hh + ':' + mm;
+      if (fs) fs.textContent = '↻ ' + hh + ':' + mm;
       if (btn) btn.classList.remove('loading');
     }, 1100);
   });
@@ -6066,7 +6129,7 @@ function globalRefresh() {
     const hh = now.getHours().toString().padStart(2,'0');
     const mm = now.getMinutes().toString().padStart(2,'0');
     const fs3 = el('footerStamp');
-    if (fs3) fs3.textContent = 'updated ' + hh + ':' + mm;
+    if (fs3) fs3.textContent = '↻ ' + hh + ':' + mm;
     if (btn) btn.classList.remove('loading');
     // Re-render current tab content
     const active = ['log','currency','stats','search','settings'].find(id =>
@@ -6709,8 +6772,8 @@ function createNewSheet() {
   <div class="sp-tag">Pilot Logbook</div>
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
-  <div class="sp-skip" id="spSkip">tap to skip</div>
-  <div class="app-footer sp-foot" dir="ltr"><div class="af-main">AirLog · v2.34.047 · built by eligrt</div></div>
+  <div class="sp-skip lsa-skip" id="spSkip">tap to skip</div>
+  <div class="lsa-foot sp" dir="ltr"><span class="lsa-foot-slot"></span><span class="lsa-foot-ver">AirLog · v2.34.052 · built by eligrt</span><button type="button" class="lsa-foot-reload" onclick="event.stopPropagation();hardRefresh()">טען מחדש</button></div>
 </div>
 <script>
 /* family chrome: one embedded icon feeds the header logo and the favicon; UTC clock; tap to skip the splash */
@@ -6727,7 +6790,6 @@ function createNewSheet() {
   var ov = document.getElementById('splashOverlay'), sk = document.getElementById('spSkip');
   var connected = false;
   try { connected = !!getUrl(); } catch (e) {}
-  if (!connected && sk) sk.style.display = 'none';
   if (ov && connected) ov.addEventListener('click', function(){ hideSplash(); });
 })();
 </script>
@@ -6761,6 +6823,7 @@ function createNewSheet() {
         <div id="suToast" class="su-toast" style="display:none;">✓ הכתובת הועתקה — שתף בגיליון כ-Editor</div>
 
         <div class="su-skip" onclick="haveSheetSkip()">כבר יש לי AirLog Sheet</div>
+        <div class="su-skip su-skip-later" onclick="skipOnboarding()">דלג לעת עתה</div>
       </div>
 
       <!-- mobile primer: shown before jumping to the template, because the Google
@@ -6814,7 +6877,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.047</span>
+      <span dir="ltr">v2.34.052</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
