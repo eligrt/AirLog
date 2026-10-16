@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AirLog.html · v2.34.042 · built by eligrt -->
+<!-- AirLog.html · v2.34.043 · built by eligrt -->
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -2298,7 +2298,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   }
 }
 
-/* ═══ v2.34.042 · family restyle (cream / navy / gold) - appended overrides ═══ */
+/* ═══ v2.34.043 · family restyle (cream / navy / gold) - appended overrides ═══ */
 body::before { display: none; }
 body { background: var(--paper); color: var(--text); }
 
@@ -2942,7 +2942,7 @@ body { background: var(--paper); color: var(--text); }
 </div><!-- /page -->
 
 <div class="app-footer" dir="ltr">
-  <div class="af-main">AirLog · v2.34.042 · built by eligrt</div>
+  <div class="af-main">AirLog · v2.34.043 · built by eligrt</div>
   <div class="af-stamp" id="footerStamp"></div>
 </div>
 
@@ -3220,6 +3220,7 @@ function alOS(){
   const u=navigator.userAgent||'';
   if(/android/i.test(u)) return 'Android';
   if(/iphone|ipad|ipod/i.test(u)) return 'iOS';
+  if(/macintosh/i.test(u) && (navigator.maxTouchPoints||0)>1) return 'iOS'; // iPadOS reports a Mac UA
   return 'Desktop';
 }
 function alDay(){ const d=new Date(),p=v=>String(v).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
@@ -3252,7 +3253,7 @@ function alStat(event, x){
     const f = {
       os: alOS(),
       pwaInstalled: (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true,
-      appVersion: 'v2.34.042',
+      appVersion: 'v2.34.043',
       lastSeen: AL_SV
     };
     const tf = Number(x.totalFlights);
@@ -3284,7 +3285,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.042',
+      appVersion:   'v2.34.043',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3545,7 +3546,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.042',
+        'App Ver:    v2.34.043',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -6704,7 +6705,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div class="sp-skip" id="spSkip">tap to skip</div>
-  <div class="app-footer sp-foot" dir="ltr"><div class="af-main">AirLog · v2.34.042 · built by eligrt</div></div>
+  <div class="app-footer sp-foot" dir="ltr"><div class="af-main">AirLog · v2.34.043 · built by eligrt</div></div>
 </div>
 <script>
 /* family chrome: one embedded icon feeds the header logo and the favicon; UTC clock; tap to skip the splash */
@@ -6808,7 +6809,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.042</span>
+      <span dir="ltr">v2.34.043</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
