@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AirLog.html · v2.34.052 · built by eligrt -->
+<!-- AirLog.html · v2.34.053 · built by eligrt -->
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -39,7 +39,7 @@
   --r-sm: 8px;
 }
 
-html { font-size: 16px; }
+html { font-size: 16px; height: 100%; height: var(--app-h, 100%); }
 
 body {
   font-family: var(--sans);
@@ -47,6 +47,7 @@ body {
   color: var(--text);
   height: 100vh;
   height: 100svh; /* mobile address-bar fix — see AirCheck */
+  height: var(--app-h, 100svh); /* iPhone home-screen app: real screen height, no gap under the footer */
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -142,7 +143,7 @@ body::before {
   display: none;
   position: fixed;
   top: 0; left: 0; right: 0; margin: 0 auto; width: 100%;
-  height: 100vh; height: 100svh;
+  height: 100vh; height: 100svh; height: var(--app-h, 100svh);
   background: var(--paper);
   z-index: 200;
   flex-direction: column;
@@ -412,6 +413,7 @@ body::before {
 .page {
   max-width: 520px;
   margin: 0 auto;
+  background: var(--paper);
   padding: 14px 14px 14px;
   flex: 1;
   width: 100%;
@@ -2301,7 +2303,7 @@ textarea { resize: none; overflow: hidden; min-height: 56px; }
   }
 }
 
-/* ═══ v2.34.052 · family restyle (cream / navy / gold) - appended overrides ═══ */
+/* ═══ v2.34.053 · family restyle (cream / navy / gold) - appended overrides ═══ */
 body::before { display: none; }
 body { background: var(--paper); color: var(--text); }
 
@@ -2369,10 +2371,14 @@ body { background: var(--paper); color: var(--text); }
   --lsa-hdr-min:58px;                                   /* navy header content height */
   --lsa-foot-h:33px;                                    /* footer content height */
   --lsa-foot-pad:max(8px,calc(env(safe-area-inset-bottom,0px) - 16px)); /* sits low, clear of the home bar */
+  --lsa-navy:#1c3d6e;                                   /* body/html background: colours the iPhone status bar fade */
+  --lsa-hdr-extra:min(12px,env(safe-area-inset-top,0px)); /* 12px on iPhone only, 0 on desktop and browser tabs */
 }
 *{overscroll-behavior:none;}                            /* no rubber-band, no scroll chaining */
 html,body{overscroll-behavior:none;}
-.lsa-hdr{box-sizing:border-box;min-height:calc(var(--lsa-hdr-min) + env(safe-area-inset-top,0px));padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:10px;}
+body{background:var(--lsa-navy);}                       /* app containers must carry their own paper background */
+@media (max-width:599px){html{background:var(--lsa-navy);}}
+.lsa-hdr{box-sizing:border-box;min-height:calc(var(--lsa-hdr-min) + env(safe-area-inset-top,0px) + var(--lsa-hdr-extra));padding-top:calc(10px + env(safe-area-inset-top,0px) + var(--lsa-hdr-extra));padding-bottom:10px;}
 .lsa-foot{box-sizing:border-box;flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;direction:ltr;
   height:calc(var(--lsa-foot-h) + var(--lsa-foot-pad));padding:0 12px var(--lsa-foot-pad);margin:0;
   background:var(--paper-hi,#fbf6e8);border-top:1px solid var(--gold-lite,#d4b878);
@@ -2394,7 +2400,25 @@ button.lsa-foot-slot{cursor:pointer;padding:8px 0;}
 .hdr-clock>.hdr-clock-lbl,.strip-clock>.strip-clock-lbl{order:2;font-size:9px!important;line-height:1;letter-spacing:.22em;margin:0!important;}
 .hdr-clock>:not(.hdr-clock-lbl),.strip-clock>:not(.strip-clock-lbl){order:1;}
 .hdr-clock-row{display:flex;flex-direction:column-reverse!important;align-items:center!important;gap:3px!important;}
+/* header family v2: icon+name LEFT, optional middle, UTC RIGHT (add class hdr-fam next to lsa-hdr) */
+.hdr-fam{direction:ltr!important;display:flex;justify-content:space-between;align-items:center;background:var(--ink);padding-left:16px;padding-right:16px;gap:6px}
+.hdr-fam .hdr-rail{display:flex;align-items:center;gap:10px;min-width:0}
+.hdr-fam .hdr-glyph{display:block;width:38px;height:38px;flex:0 0 38px;border-radius:9px;overflow:hidden;border:1px solid var(--gold);background:var(--paper)}
+.hdr-fam .hdr-glyph img{width:100%;height:100%;display:block;object-fit:cover}
+.hdr-fam .hdr-title{direction:ltr;text-align:left}
+.hdr-fam .hdr-title h1{font-size:16.5px;line-height:1.25;font-weight:700;letter-spacing:-.1px;color:var(--paper);margin:0;white-space:nowrap}
+.hdr-fam .hdr-title p{color:var(--gold-lite);font-weight:500;margin:1px 0 0;line-height:1.3;font-size:10.5px}
+.hdr-fam .hdr-clock{color:var(--paper);font-family:var(--font-mono,monospace);direction:ltr;flex:0 0 auto}
+.hdr-fam .hdr-utc{font-size:21px;font-weight:700;line-height:1}
+/* fonts pinned in every app: header text IBM Plex Sans Hebrew, clock and footer JetBrains Mono */
+.hdr-fam .hdr-title h1,.hdr-fam .hdr-title p{font-family:'IBM Plex Sans Hebrew',sans-serif}
+.hdr-fam .hdr-clock,.hdr-fam .hdr-utc,.hdr-fam .hdr-clock-lbl{font-family:'JetBrains Mono',monospace}
+.lsa-foot,.lsa-foot-ver,.lsa-foot-slot{font-family:'JetBrains Mono',monospace}
+.lsa-foot-reload{font-family:'IBM Plex Sans Hebrew',sans-serif}
+.lsa-hdr.hdr-fam .hdr-clock-lbl{font-size:9px;letter-spacing:.22em;opacity:.75}
 /* LSA-ALIGN v1 END */
+/* v2.34.053: while the cream splash is up, html/body are cream so the iPhone status bar fade is cream, not navy (switches to navy as the splash starts fading) */
+html:has(#splashOverlay.show:not(.fade)),body:has(#splashOverlay.show:not(.fade)){background:var(--paper);}
 </style>
 
 <!-- SheetJS (xlsx) — used by Settings → import flights from XLSX -->
@@ -2976,7 +3000,7 @@ button.lsa-foot-slot{cursor:pointer;padding:8px 0;}
 
 </div><!-- /page -->
 
-<div class="lsa-foot" dir="ltr"><span class="lsa-foot-slot" id="footerStamp"></span><span class="lsa-foot-ver">AirLog · v2.34.052 · built by eligrt</span><button type="button" class="lsa-foot-reload" onclick="hardRefresh()">טען מחדש</button></div>
+<div class="lsa-foot" dir="ltr"><span class="lsa-foot-slot" id="footerStamp"></span><span class="lsa-foot-ver">AirLog · v2.34.053 · built by eligrt</span><button type="button" class="lsa-foot-reload" onclick="hardRefresh()">טען מחדש</button></div>
 
 <script>
 // ═══════════════════════════════════════════
@@ -3289,7 +3313,7 @@ function alStat(event, x){
     const f = {
       os: alOS(),
       pwaInstalled: (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true,
-      appVersion: 'v2.34.052',
+      appVersion: 'v2.34.053',
       lastSeen: AL_SV
     };
     const tf = Number(x.totalFlights);
@@ -3321,7 +3345,7 @@ async function reportEvent(event, extraData = {}) {
       userId,
       device,
       os,
-      appVersion:   'v2.34.052',
+      appVersion:   'v2.34.053',
       totalFlights: extraData.totalFlights || 0,
       status:       extraData.status       || 'success',
       errorMsg:     extraData.errorMsg     || '',
@@ -3608,7 +3632,7 @@ async function saveSetup() {
         'AirLog iOS Error Report',
         '=======================',
         'Timestamp:  ' + now,
-        'App Ver:    v2.34.052',
+        'App Ver:    v2.34.053',
         'Device:     ' + device,
         'OS:         ' + os,
         'Browser:    ' + browser,
@@ -6773,7 +6797,7 @@ function createNewSheet() {
   <div class="splash-concept" id="splashConcept"></div>
   <div class="splash-tagline" id="splashTagline"></div>
   <div class="sp-skip lsa-skip" id="spSkip">tap to skip</div>
-  <div class="lsa-foot sp" dir="ltr"><span class="lsa-foot-slot"></span><span class="lsa-foot-ver">AirLog · v2.34.052 · built by eligrt</span><button type="button" class="lsa-foot-reload" onclick="event.stopPropagation();hardRefresh()">טען מחדש</button></div>
+  <div class="lsa-foot sp" dir="ltr"><span class="lsa-foot-slot"></span><span class="lsa-foot-ver">AirLog · v2.34.053 · built by eligrt</span><button type="button" class="lsa-foot-reload" onclick="event.stopPropagation();hardRefresh()">טען מחדש</button></div>
 </div>
 <script>
 /* family chrome: one embedded icon feeds the header logo and the favicon; UTC clock; tap to skip the splash */
@@ -6877,7 +6901,7 @@ function createNewSheet() {
     </div>
 
     <div class="su-ver">
-      <span dir="ltr">v2.34.052</span>
+      <span dir="ltr">v2.34.053</span>
       <span class="su-ver-refresh" onclick="hardRefresh()">רענן</span>
     </div>
 
@@ -6903,5 +6927,23 @@ function createNewSheet() {
   </div>
 </div>
 
+<script>
+// Full-height fix: on an iPhone home-screen app, CSS 100vh/svh AND window.innerHeight both come out
+// shorter than the real screen and leave an empty strip under the footer. The app covers the whole
+// screen there (portrait only), so use the screen height; everywhere else use the window height.
+function setAppHeight(){
+  const iosApp = window.navigator.standalone === true;
+  const h = iosApp ? Math.max(window.innerHeight, screen.height) : window.innerHeight;
+  document.documentElement.style.setProperty('--app-h', h+'px');
+}
+setAppHeight();
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', () => setTimeout(setAppHeight, 300));
+// iOS can restore the app with a stale, shorter viewport: re-measure on every return
+function refitAppHeight(){ setAppHeight(); setTimeout(setAppHeight, 250); setTimeout(setAppHeight, 800); }
+window.addEventListener('pageshow', refitAppHeight);
+window.addEventListener('focus', refitAppHeight);
+document.addEventListener('visibilitychange', () => { if(!document.hidden) refitAppHeight(); });
+</script>
 </body>
 </html>
